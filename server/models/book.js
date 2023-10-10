@@ -19,7 +19,7 @@ const BookSchema = new mongoose.Schema(
 		description: {
 			type: String,
 			trim: true,
-			maxlength: [500, "Description must not exceed 500 characters"],
+			//maxlength: [500, "Description must not exceed 500 characters"],
 		},
 		imageUrl: {
 			type: String,

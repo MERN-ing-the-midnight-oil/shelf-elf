@@ -5,9 +5,14 @@ const Book = require("../../models/book"); // adjusted the path to go up two lev
 const router = express.Router();
 
 // Routes
-router.get("/", (req, res) => {
-	// Here you'd normally fetch books from your database
-	res.json(books);
+router.get("/", async (req, res) => {
+	try {
+		const books = await Book.find(); // Query all books from the database
+		res.json(books); // Respond with the fetched books
+	} catch (error) {
+		console.error("Error fetching books:", error); // Log detailed error information
+		res.status(500).send("Internal Server Error"); // Send a 500 status code with an error message
+	}
 });
 
 // for adding a book to a lending library
