@@ -11,6 +11,7 @@ interface Book {
 const MyLendingLibrary: React.FC = () => {
   const [myBooks, setMyBooks] = useState<Book[]>([]);
 
+  //displays saved titles
   const fetchBooksOwnedByUser = async () => {
     try {
       const response = await fetch('http://localhost:5001/books');
@@ -25,9 +26,27 @@ const MyLendingLibrary: React.FC = () => {
     }
   };
 
+  //deletes a saved title
+  const handleDeleteBook = async (id: string) => {
+    try {
+      const response = await fetch(`http://localhost:5001/books/${id}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        // Re-fetch books to update the UI
+        fetchBooksOwnedByUser();
+      } else {
+        console.error('Failed to delete book');
+      }
+    } catch (error) {
+      console.error('Failed to delete book:', error);
+    }
+  };
+  
   useEffect(() => {
     fetchBooksOwnedByUser();
   }, []); // Empty dependency array to run once on mount
+
 
   return (
     <div>
@@ -36,11 +55,12 @@ const MyLendingLibrary: React.FC = () => {
         <p>You don't have any books in your library yet.</p>
       ) : (
         <ul>
-          {myBooks.map(book => (
+          {myBooks.map((book: any) => (
             <li key={book._id || book.googleBooksId}>
               <h2>{book.title}</h2>
               <p>{book.author}</p>
-              {/* Render other book details as needed */}
+              <button onClick={() => handleDeleteBook(book._id)}>Delete</button>
+              {/* Add more book details and functionalities as needed */}
             </li>
           ))}
         </ul>

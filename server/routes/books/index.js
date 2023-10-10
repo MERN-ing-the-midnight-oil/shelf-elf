@@ -28,5 +28,16 @@ router.post("/add", async (req, res) => {
 	}
 });
 
+//for deleting a book from the lending library
+router.delete("/:id", async (req, res) => {
+	try {
+		await Book.findByIdAndDelete(req.params.id);
+		res.status(200).send("Book deleted");
+	} catch (error) {
+		console.error("Error deleting book:", error);
+		res.status(500).send("Internal Server Error");
+	}
+});
+
 // Exporting the router to be used in the main server file
 module.exports = router;
