@@ -50,7 +50,6 @@ const MyLendingLibrary: React.FC = () => {
 
   return (
     <div>
-      <h1>My Lending Library</h1>
       {myBooks.length === 0 ? (
         <p>You don't have any books in your library yet.</p>
       ) : (

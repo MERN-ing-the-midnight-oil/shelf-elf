@@ -1,34 +1,28 @@
 import React from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
-import { Button, TextField, Container, Typography } from '@mui/material';
-import { styled } from '@mui/system';
+import { Typography, Button, TextField } from '@material-ui/core';
+import styled from 'styled-components';
+import axios from 'axios';
 
-const FormContainer = styled(Container)({
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  marginTop: '5rem',
-  padding: '2rem',
-  backgroundColor: '#f0f0f0',
-  borderRadius: '8px',
-});
-
-const StyledField = styled(Field)({
-  margin: '1rem 0',
-});
-
-const ErrorText = styled('div')({
-  color: 'red',
-});
+const FormContainer = styled.div` /* Add your styles here */ `;
+const StyledField = styled(Field)` /* Add your styles here */ `;
+const ErrorText = styled.div` /* Add your styles here */ `;
 
 const RegisterForm: React.FC = () => {
   return (
     <Formik
       initialValues={{ username: '', email: '', password: '' }}
-      // Add validation and submission logic here
-      onSubmit={(values) => {
-        console.log('Form Data: ', values);
+      // Add validation logic here if necessary
+      onSubmit={async (values, { setSubmitting }) => {
+        try {
+          // Send a post request to your API endpoint for user registration
+          const response = await axios.post('http://localhost:5001/users', values);
+          console.log('Server Response: ', response.data); // Log server response
+          setSubmitting(false);
+        } catch (error) {
+          console.error('Registration Error: ', error);
+          setSubmitting(false);
+        }
       }}
     >
       {({ isSubmitting }) => (

@@ -1,25 +1,43 @@
-//route file for handling user related requests
-// Importing necessary modules
 const express = require("express");
 const router = express.Router();
+const User = require("../../models/user"); // Adjust the path as needed
 
-// Dummy Data (For testing purposes)
-const users = [
-	{ id: 1, name: "John Doe", books: [] },
-	{ id: 2, name: "Jane Doe", books: [] },
-];
-
-// Routes
-router.get("/", (req, res) => {
-	// Here you'd normally fetch users from your database
-	res.json(users);
+// GET route to retrieve all users (consider pagination for large data sets)
+router.get("/", async (req, res) => {
+	try {
+		const users = await User.find({});
+		res.json(users);
+	} catch (error) {
+		console.error(error);
+		res.status(500).send("Internal Server Error");
+	}
 });
 
-router.post("/", (req, res) => {
-	// Handle user creation (registration)
-	// Validate and save the user to the database
-	// Send appropriate response back (like the created user object or an error message)
+// POST route to create a new user
+router.post("/", async (req, res) => {
+	try {
+		const { username, email, password } = req.body;
+
+		// Basic validation
+		if (!username || !email || !password) {
+			return res.status(400).json({ error: "All fields are required" });
+		}
+		if (!validator.isEmail(email)) {
+			return res.status(400).json({ error: "Invalid email format" });
+		}
+
+		// Encrypt the password
+		const hashedPassword = await bcrypt.hash(password, 10);
+
+		const newUser = new User({ username, email, password: hashedPassword });
+		await newUser.save();
+		res
+			.status(201)
+			.json({ message: "User created successfully", user: newUser._id }); // Respond with the user ID
+	} catch (error) {
+		console.error(error);
+		res.status(500).send("Internal Server Error"); // Respond with a generic error message
+	}
 });
 
-// Exporting the router to be used in the main server file
 module.exports = router;

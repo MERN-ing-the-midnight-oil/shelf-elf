@@ -19,18 +19,18 @@ function App() {
 
       <main>
         {/* You can conditionally render these based on user navigation or other logic */}
-        <h3>Sign Up:</h3>
+        
         <RegisterForm />
 
         <hr style={{ margin: '2rem 0' }} /> {/* Add a divider or style as needed */}
-        
-        <h3>Lend a Book:</h3>
+                <h1>My Lending Library:</h1>
+        <MyLendingLibrary />
+      
         <LendForm />
 
         <hr style={{ margin: '2rem 0' }} /> {/* Add another divider or style as needed */}
         
-        <h3>My Lending Library:</h3>
-        <MyLendingLibrary />
+
       </main>
     </div>
   );

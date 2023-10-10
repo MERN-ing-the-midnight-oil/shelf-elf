@@ -32,6 +32,15 @@ const BookSchema = new mongoose.Schema(
 			enum: ["available", "checked-out", "reserved"],
 			default: "available",
 		},
+		owner: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "User", // Reference to the User model
+			required: true,
+		},
+		currentBorrower: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "User", // Reference to the User model
+		},
 	},
 	{
 		timestamps: true,
