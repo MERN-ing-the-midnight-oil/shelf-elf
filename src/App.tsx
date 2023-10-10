@@ -4,6 +4,7 @@ import LendForm from './components/LendForm';
 import './App.css';
 import RegisterForm from './components/RegisterForm'; // Adjust the path based on your file structure
 import { Typography } from '@mui/material';
+import MyLendingLibrary from './components/MyLendingLibrary'; // Update the path to where MyLendingLibrary is located
 
 function App() {
   return (
@@ -25,11 +26,14 @@ function App() {
         
         <h3>Lend a Book:</h3>
         <LendForm />
+
+        <hr style={{ margin: '2rem 0' }} /> {/* Add another divider or style as needed */}
+        
+        <h3>My Lending Library:</h3>
+        <MyLendingLibrary />
       </main>
     </div>
   );
 }
-
-
 
 export default App;
