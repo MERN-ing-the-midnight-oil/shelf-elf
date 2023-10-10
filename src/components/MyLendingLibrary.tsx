@@ -26,7 +26,7 @@ const MyLendingLibrary: React.FC = () => {
       ) : (
         <ul>
           {myBooks.map(book => (
-            <li key={book._id}>
+            <li key={book.googleBooksId}>
               <h2>{book.title}</h2>
               <p>{book.author}</p>
               {/* Add more book details and functionalities as needed */}
@@ -36,6 +36,7 @@ const MyLendingLibrary: React.FC = () => {
       )}
     </div>
   );
+  
 };
 
 export default MyLendingLibrary;

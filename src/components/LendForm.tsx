@@ -36,6 +36,7 @@ const handleSearch = (value: string) => {
   
 
 const handleOwnBookClick = (book: any) => {
+  console.log('Book data to send:', book); // Log the data being sent
   // Construct the book data object
   const bookData = {
       title: book.volumeInfo.title,
@@ -72,7 +73,7 @@ const handleOwnBookClick = (book: any) => {
       {book.volumeInfo.imageLinks && book.volumeInfo.imageLinks.thumbnail && (
         <img src={book.volumeInfo.imageLinks.thumbnail} alt={book.volumeInfo.title} />
       )}
-      <button onClick={() => handleOwnBookClick(book)}>I Own This Book</button>
+      <button onClick={() => handleOwnBookClick(book)}>Offer to lend</button>
     </div>
   ));
 
