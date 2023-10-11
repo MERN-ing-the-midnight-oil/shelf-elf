@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '../context/AuthContext'; // Adjust the path as needed
+import { useAuth } from '../context/AuthContext'; 
 import { Formik, Form, Field, FieldProps, ErrorMessage,  } from 'formik';
 import { Typography, Button, TextField } from '@material-ui/core';
 import styled from 'styled-components';
@@ -31,41 +31,43 @@ const ErrorText = styled.div`
 
 
 const LoginForm: React.FC = () => {
+  const { setToken, setUser } = useAuth();  // added setUser
 
-  const { setToken } = useAuth(); 
   return (
     <Formik
       initialValues={{ email: '', password: '' }}
       validationSchema={validationSchema}
       onSubmit={async (values, { setSubmitting, setErrors }) => {
         try {
-          const response = await axios.post('http://localhost:5001/api/users/login', values);
-          console.log('Server Response: ', response.data);
-      
-          // Here, I'm assuming your server responds with a 200 status code on success
-          // and includes the token in the response data. Adjust this as needed.
-          if (response.status === 200 && response.data.token) {
-            localStorage.setItem('userToken', response.data.token);
-            setToken(response.data.token);
+          // First, the user logs in
+          console.log('Sending login request with values: ', values);
+          const loginResponse = await axios.post('http://localhost:5001/api/users/login', values);
+          console.log('Login Response to : ', loginResponse.data);
+          console.log('Login Request Headers:', loginResponse.config.headers);
+          if (loginResponse.status === 200 && loginResponse.data.token) {
+            const token = loginResponse.data.token;
+            localStorage.setItem('userToken', token);
+            setToken(token);  // Set token in context
+            
+            // Then, fetch the user data with the obtained token
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+            console.log('Fetch User Request Headers:', config.headers);
+            //ADJUST THIS PATH TO THE ENDPOINT THAT RETURNS THE AUTHENTICATED USER"S DATA
+            const userResponse = await axios.get('http://localhost:5001/api/users/me', config);
+            console.log('User Response: ', userResponse.data);
+            setUser(userResponse.data);  // Set user data in context
+            
             setSubmitting(false);
           } else {
-            // If the response is anything other than a successful status, handle it as an error.
-            // Adjust this to fit the actual structure of your server's error response.
-            setErrors({ email: ' ', password: response.data.message || 'Invalid credentials' });
+            setErrors({ email: ' ', password: loginResponse.data.message || 'Invalid credentials' });
             setSubmitting(false);
           }
-      
         } catch (error) {
           console.error('Login Error: ', error);
-          // If an error is caught, it might be due to network issues or the server being unreachable,
-          // or the credentials being invalid. Adjust the error messages as needed.
-          setErrors({ email: ' ', password: 'wrong password or server error' });
+          setErrors({ email: ' ', password: 'Invalid credentials or server error' });
           setSubmitting(false);
         }
       }}
-      
-      
-
     >
       {({ isSubmitting }) => (
         <FormContainer>

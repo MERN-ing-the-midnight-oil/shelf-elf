@@ -1,3 +1,5 @@
+console.log("users/index.js directory name is " + __dirname); // Log the current directory.
+
 const express = require("express");
 const router = express.Router();
 const User = require("../../models/user"); // Adjust the path as needed
@@ -5,11 +7,22 @@ const validator = require("validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-// GET route to retrieve all users (consider pagination for large data sets)
-router.get("/", async (req, res) => {
+const { checkAuthentication } = require("../../../middlewares/authentication");
+router.get("/me", checkAuthentication, async (req, res) => {
 	try {
-		const users = await User.find({});
-		res.json(users);
+		// Assuming that the checkAuthentication middleware sets req.user
+		if (!req.user) {
+			return res.status(401).json({ error: "Not authenticated" });
+		}
+
+		// You might not want to send back all user data; select only what's needed
+		const userData = {
+			username: req.user.username,
+			email: req.user.email,
+			// ... (other necessary user fields)
+		};
+
+		res.json(userData);
 	} catch (error) {
 		console.error(error);
 		res.status(500).send("Internal Server Error");
