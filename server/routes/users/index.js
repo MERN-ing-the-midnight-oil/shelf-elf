@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require("../../models/user"); // Adjust the path as needed
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 // GET route to retrieve all users (consider pagination for large data sets)
 router.get("/", async (req, res) => {
@@ -40,6 +41,43 @@ router.post("/", async (req, res) => {
 	} catch (error) {
 		console.error(error);
 		res.status(500).send("Internal Server Error"); // Respond with a generic error message
+	}
+});
+// LOGIN route
+router.post("/login", async (req, res) => {
+	try {
+		// Destructure email and password from the request body
+		const { email, password } = req.body;
+
+		// Check if email and password are provided
+		if (!email || !password) {
+			return res.status(400).json({ error: "Email and password are required" });
+		}
+
+		// Find user by email
+		const user = await User.findOne({ email });
+		if (!user) {
+			return res.status(400).json({ error: "Invalid email or password" });
+		}
+
+		// Compare the provided password with the hashed password in the database
+		const isMatch = await bcrypt.compare(password, user.password);
+		if (!isMatch) {
+			return res.status(400).json({ error: "Invalid email or password" });
+		}
+
+		// User is authenticated, generate a token
+		const token = jwt.sign(
+			{ userId: user._id, username: user.username },
+			"mysecretkey", //  store secret key in environment variables
+			{ expiresIn: "1h" }
+		);
+
+		// Send token back as a response
+		res.json({ token });
+	} catch (error) {
+		console.error(error);
+		res.status(500).send("Internal Server Error");
 	}
 });
 
