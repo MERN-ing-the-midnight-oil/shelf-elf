@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../../models/user"); // Adjust the path as needed
+const validator = require("validator");
+const bcrypt = require("bcryptjs");
 
 // GET route to retrieve all users (consider pagination for large data sets)
 router.get("/", async (req, res) => {
@@ -15,6 +17,7 @@ router.get("/", async (req, res) => {
 
 // POST route to create a new user
 router.post("/", async (req, res) => {
+	console.log("Received a create a new user POST request on /");
 	try {
 		const { username, email, password } = req.body;
 

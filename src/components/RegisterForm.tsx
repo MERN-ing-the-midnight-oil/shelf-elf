@@ -1,23 +1,29 @@
 import React from 'react';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { Formik, Form, Field, ErrorMessage, FieldInputProps, FieldMetaProps } from 'formik';
 import { Typography, Button, TextField } from '@material-ui/core';
 import styled from 'styled-components';
 import axios from 'axios';
+import * as Yup from 'yup';
 
 const FormContainer = styled.div` /* Add your styles here */ `;
-const StyledField = styled(Field)` /* Add your styles here */ `;
 const ErrorText = styled.div` /* Add your styles here */ `;
+
+const validationSchema = Yup.object({
+  username: Yup.string().required('Username is required').min(2, 'Username must be at least 2 characters'),
+  email: Yup.string().required('Email is required').email('Invalid email address'),
+  password: Yup.string().required('Password is required').min(6, 'Password must be at least 6 characters'),
+});
 
 const RegisterForm: React.FC = () => {
   return (
     <Formik
       initialValues={{ username: '', email: '', password: '' }}
-      // Add validation logic here if necessary
+      validationSchema={validationSchema}
       onSubmit={async (values, { setSubmitting }) => {
+        console.log('Form Values: ', values);
         try {
-          // Send a post request to your API endpoint for user registration
-          const response = await axios.post('http://localhost:5001/users', values);
-          console.log('Server Response: ', response.data); // Log server response
+          const response = await axios.post('http://localhost:5001/api/users', values);
+          console.log('Server Response: ', response.data);
           setSubmitting(false);
         } catch (error) {
           console.error('Registration Error: ', error);
@@ -32,33 +38,48 @@ const RegisterForm: React.FC = () => {
               Register
             </Typography>
 
-            <StyledField
-              name="username"
-              as={TextField}
-              label="Username"
-              variant="outlined"
-              fullWidth
-            />
+            <Field name="username">
+              {({ field, meta }: { field: FieldInputProps<string>; meta: FieldMetaProps<string> }) => (
+                <TextField
+                  {...field}
+                  label="Username"
+                  variant="outlined"
+                  fullWidth
+                  error={meta.touched && !!meta.error}
+                  helperText={meta.touched && meta.error}
+                />
+              )}
+            </Field>
             <ErrorMessage name="username" component={ErrorText} />
 
-            <StyledField
-              name="email"
-              type="email"
-              as={TextField}
-              label="Email"
-              variant="outlined"
-              fullWidth
-            />
+            <Field name="email">
+              {({ field, meta }: { field: FieldInputProps<string>; meta: FieldMetaProps<string> }) => (
+                <TextField
+                  {...field}
+                  type="email"
+                  label="Email"
+                  variant="outlined"
+                  fullWidth
+                  error={meta.touched && !!meta.error}
+                  helperText={meta.touched && meta.error}
+                />
+              )}
+            </Field>
             <ErrorMessage name="email" component={ErrorText} />
 
-            <StyledField
-              name="password"
-              type="password"
-              as={TextField}
-              label="Password"
-              variant="outlined"
-              fullWidth
-            />
+            <Field name="password">
+              {({ field, meta }: { field: FieldInputProps<string>; meta: FieldMetaProps<string> }) => (
+                <TextField
+                  {...field}
+                  type="password"
+                  label="Password"
+                  variant="outlined"
+                  fullWidth
+                  error={meta.touched && !!meta.error}
+                  helperText={meta.touched && meta.error}
+                />
+              )}
+            </Field>
             <ErrorMessage name="password" component={ErrorText} />
 
             <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>
