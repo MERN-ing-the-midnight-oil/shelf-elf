@@ -5,15 +5,28 @@ import styled from 'styled-components';
 import axios from 'axios';
 import * as Yup from 'yup';
 
-const FormContainer = styled.div` /* Add your styles here */ `;
-const ErrorText = styled.div` /* Add your styles here */ `;
+
 
 const validationSchema = Yup.object({
   username: Yup.string().required('Username is required').min(2, 'Username must be at least 2 characters'),
   email: Yup.string().required('Email is required').email('Invalid email address'),
   password: Yup.string().required('Password is required').min(6, 'Password must be at least 6 characters'),
 });
+const FormContainer = styled.div`
+  /* Add your specific styles here. For example: */
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  width: 300px;
+  margin: auto;
+`;
 
+const ErrorText = styled.div`
+  /* Add your specific styles here. For example: */
+  color: red;
+  margin: 5px 0;
+`;
 const RegisterForm: React.FC = () => {
   return (
     <Formik

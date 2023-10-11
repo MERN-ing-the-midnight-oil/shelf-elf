@@ -39,9 +39,7 @@ function App() {
         <hr style={{ margin: '2rem 0' }} /> 
             </>
           )}
-      
-        {/* The components below might or might not need access to the auth context. Adjust as necessary. */}
-
+    
       </main>
     </div>
   );

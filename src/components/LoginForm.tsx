@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext'; // Adjust the path as needed
-import { Formik, Form, Field, FieldProps, ErrorMessage } from 'formik';
+import { Formik, Form, Field, FieldProps, ErrorMessage,  } from 'formik';
 import { Typography, Button, TextField } from '@material-ui/core';
 import styled from 'styled-components';
 import axios from 'axios';
@@ -9,7 +9,7 @@ import * as Yup from 'yup';
 
 
 const validationSchema = Yup.object({
-    email: Yup.string().required('Email is required').email('Invalid email address'),
+    email: Yup.string().required('We need your email address').email('Something is strange about that email address'),
     password: Yup.string().required('Password is required'),
   });
 
@@ -37,26 +37,33 @@ const LoginForm: React.FC = () => {
     <Formik
       initialValues={{ email: '', password: '' }}
       validationSchema={validationSchema}
-      onSubmit={async (values, { setSubmitting }) => {
+      onSubmit={async (values, { setSubmitting, setErrors }) => {
         try {
           const response = await axios.post('http://localhost:5001/api/users/login', values);
           console.log('Server Response: ', response.data);
-          
-          // Storing token in localStorage for now, you might want to use a more secure storage method
-          localStorage.setItem('userToken', response.data.token);
       
-   
-      // Now use setToken to update your global state
-      setToken(response.data.token); // Adjust based on your actual server response structure
-
+          // Here, I'm assuming your server responds with a 200 status code on success
+          // and includes the token in the response data. Adjust this as needed.
+          if (response.status === 200 && response.data.token) {
+            localStorage.setItem('userToken', response.data.token);
+            setToken(response.data.token);
+            setSubmitting(false);
+          } else {
+            // If the response is anything other than a successful status, handle it as an error.
+            // Adjust this to fit the actual structure of your server's error response.
+            setErrors({ email: ' ', password: response.data.message || 'Invalid credentials' });
+            setSubmitting(false);
+          }
       
-          setSubmitting(false);
         } catch (error) {
           console.error('Login Error: ', error);
-          // Handle login error here (e.g., show error message to user)
+          // If an error is caught, it might be due to network issues or the server being unreachable,
+          // or the credentials being invalid. Adjust the error messages as needed.
+          setErrors({ email: ' ', password: 'wrong password or server error' });
           setSubmitting(false);
         }
       }}
+      
       
 
     >
