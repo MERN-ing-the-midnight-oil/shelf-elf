@@ -45,7 +45,7 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token }) => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5001/books/${id}`, {
+      const response = await fetch(`http://localhost:5001/books/delete-offer/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -71,19 +71,22 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token }) => {
       {myBooks.length === 0 ? (
         <p>You don't have any books in your library yet.</p>
       ) : (
-        <ul>
-          {myBooks.map((book) => (
-            <li key={book._id || book.googleBooksId}>
-              <h2>{book.title}</h2>
-              <p>{book.author}</p>
-              <button onClick={() => handleDeleteBook(book._id)}>Delete</button>
-              {/* Add more book details and functionalities as needed */}
-            </li>
-          ))}
-        </ul>
+        <>
+          <h1>You are offering to lend the following books:</h1>
+          <ul>
+            {myBooks.map((book) => (
+              <li key={book._id || book.googleBooksId}>
+                <h2>{book.title}</h2>
+                <p>{book.author}</p>
+                <button onClick={() => handleDeleteBook(book._id)}>Delete</button>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </div>
   );
+  
 };
 
 export default MyLendingLibrary;
