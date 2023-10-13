@@ -4,7 +4,6 @@ import * as Yup from 'yup';
 import { Button, TextField, Typography, Container, CircularProgress } from '@mui/material';
 import { styled } from '@mui/system';
 
-
 const BookSchema = Yup.object().shape({
   title: Yup.string()
     .min(2, 'Too Short!')
@@ -18,54 +17,64 @@ const FormContainer = styled(Container)({
 });
 
 const LendForm: React.FC = () => {
-  const [bookSearch, setBookSearch] = useState('');
   const [searchResults, setSearchResults] = useState([]);
 
-//use the const KEY from .env
-const apiKey = process.env.REACT_APP_API_KEY;
+  const apiKey = process.env.REACT_APP_API_KEY;
 
-const handleSearch = (value: string) => {
-  if (value) {
-    fetch(`https://www.googleapis.com/books/v1/volumes?q=${value}&key=${apiKey}`)
-      .then(response => response.json())
-      .then(data => setSearchResults(data.items || []))
-      .catch(error => console.error(error));
-  }
-};
+  const handleSearch = (value: string) => {
+    if (value) {
+      fetch(`https://www.googleapis.com/books/v1/volumes?q=${value}&key=${apiKey}`)
+        .then(response => response.json())
+        .then(data => setSearchResults(data.items || []))
+        .catch(error => console.error(error));
+    }
+  };
 
-  
+  const handleOwnBookClick = (book: any) => {
+    console.log('Book data received:', book); // Logging the book data received from API
 
-const handleOwnBookClick = (book: any) => {
-  console.log('Book data to send:', book); // Log the data being sent
-  // Construct the book data object
-  const bookData = {
+    const token = localStorage.getItem('userToken');
+    if (!token) {
+        console.error('Token not found in local storage.');
+        return;
+    }
+    const userId = localStorage.getItem('userId');  // Assuming you've stored user ID in local storage
+    const bookData = {
+      userId: userId,
       title: book.volumeInfo.title,
       author: book.volumeInfo.authors && book.volumeInfo.authors.join(', '),
       description: book.volumeInfo.description,
       imageUrl: book.volumeInfo.imageLinks && book.volumeInfo.imageLinks.thumbnail,
       googleBooksId: book.id,
-      // ... add other necessary fields
-  };
+      currentBorrower: null,
+    };
 
-  // Make the POST request to your backend
-  fetch('http://localhost:5001/books/add', {  // Adjust the URL to your actual backend endpoint
+    console.log('Book data to send:', bookData); // Logging the book data before sending
+
+    fetch('http://localhost:5001/books/add', {
       method: 'POST',
       headers: {
-          'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(bookData)
-  })
-  .then(response => response.json())
-  .then(data => {
-      console.log(data);  // Log the response for debugging
-      // ... handle the response, update UI, etc.
-  })
-  .catch(error => {
+    })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(errData => {
+            console.error('Error from server:', errData); // Log any server response error message
+            throw new Error('Network response was not ok');
+        });
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Book added to library:', data); // Log the success response from server
+    })
+    .catch(error => {
       console.error('Error during fetch operation: ', error);
-      // ... handle errors
-  });
+    });
 };
-
 
   const renderSearchResults = searchResults.map((book: any) => (
     <div key={book.id}>
@@ -105,7 +114,7 @@ const handleOwnBookClick = (book: any) => {
             <Button type="submit" disabled={isSubmitting} variant="contained" color="primary">
               Submit book title
             </Button>
-            {isSubmitting && <CircularProgress />} {/* Loading Spinner */}
+            {isSubmitting && <CircularProgress />}
           </Form>
         )}
       </Formik>

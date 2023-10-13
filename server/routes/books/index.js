@@ -1,43 +1,104 @@
 // routes for handling book-related requests
-// Importing necessary modules
 const express = require("express");
-const Book = require("../../models/book"); // adjusted the path to go up two levels, then into models
+const Book = require("../../models/book");
 const router = express.Router();
 
-// Routes
-router.get("/", async (req, res) => {
-	try {
-		const books = await Book.find(); // Query all books from the database
-		res.json(books); // Respond with the fetched books
-	} catch (error) {
-		console.error("Error fetching books:", error); // Log detailed error information
-		res.status(500).send("Internal Server Error"); // Send a 500 status code with an error message
-	}
-});
-
-// for adding a book to a lending library
+// Offer a book for lending
 router.post("/add", async (req, res) => {
-	console.log("Received data:", req.body); // Log received data
 	try {
-		const book = new Book(req.body); // Create a new book with the data from the request body
-		await book.save(); // Save the book to the database
-		res.status(201).send(book); // Respond with the created book
+		// Extract the relevant book data from the request
+		const { title, description } = req.body;
+
+		const newBook = new Book({
+			title,
+			description,
+			owner: req.user._id, // assuming req.user contains the authenticated user data
+		});
+
+		await newBook.save();
+		res.status(201).json(newBook);
 	} catch (error) {
-		console.error(error); // Log the error for debugging
-		res.status(400).send(error); // Respond with error if something goes wrong
+		console.error("Error when offering the book:", error); // Add this line
+		res.status(500).json({ error: "Error offering the book." });
 	}
 });
 
-//for deleting a book from the lending library
-router.delete("/:id", async (req, res) => {
+// Delete a book offer
+router.delete("/delete-offer/:bookId", async (req, res) => {
 	try {
-		await Book.findByIdAndDelete(req.params.id);
-		res.status(200).send("Book deleted");
+		const bookToDelete = await Book.findOne({
+			_id: req.params.bookId,
+			owner: req.user._id,
+		});
+		if (!bookToDelete) {
+			return res
+				.status(403)
+				.json({ error: "You cannot delete a book you did not offer." });
+		}
+
+		await Book.findByIdAndRemove(req.params.bookId);
+		res.status(200).json({ message: "Book offer removed successfully." });
 	} catch (error) {
-		console.error("Error deleting book:", error);
-		res.status(500).send("Internal Server Error");
+		res.status(500).json({ error: "Error removing book offer." });
+	}
+});
+// Display the logged-in user's lending library
+router.get("/my-library", async (req, res) => {
+	try {
+		// Find all books owned by the logged-in user
+		const myBooks = await Book.find({ owner: req.user._id });
+
+		res.status(200).json(myBooks);
+	} catch (error) {
+		res.status(500).json({ error: "Error fetching your lending library." });
 	}
 });
 
-// Exporting the router to be used in the main server file
+// Borrow a book
+router.post("/borrow/:bookId", async (req, res) => {
+	try {
+		// Fetch the book to borrow using its ID
+		const bookToBorrow = await Book.findById(req.params.bookId);
+
+		if (!bookToBorrow) {
+			return res.status(404).json({ error: "Book not found." });
+		}
+
+		// Add the book to the user's list of borrowed books and save the user
+		req.user.borrowedBooks.push(bookToBorrow);
+		await req.user.save();
+
+		res.status(200).json({ message: "Book borrowed successfully." });
+	} catch (error) {
+		res.status(500).json({ error: "Error borrowing the book." });
+	}
+});
+// Display all books offered by other users
+router.get("/offeredByOthers", async (req, res) => {
+	try {
+		const otherUsersBooks = await Book.find({ owner: { $ne: req.user._id } });
+		res.status(200).json(otherUsersBooks);
+	} catch (error) {
+		res.status(500).json({ error: "Error fetching books from other users." });
+	}
+});
+
+// Return a borrowed book
+router.post("/return/:bookId", async (req, res) => {
+	try {
+		const bookIndex = req.user.borrowedBooks.findIndex(
+			(b) => b._id.toString() === req.params.bookId
+		);
+		if (bookIndex > -1) {
+			req.user.borrowedBooks.splice(bookIndex, 1);
+			await req.user.save();
+			res.status(200).json({ message: "Book returned successfully." });
+		} else {
+			res.status(404).json({ error: "Book not found in your borrowed list." });
+		}
+	} catch (error) {
+		res.status(500).json({ error: "Error returning the book." });
+	}
+});
+
 module.exports = router;

@@ -14,7 +14,7 @@ const MyLendingLibrary: React.FC = () => {
   //displays saved titles
   const fetchBooksOwnedByUser = async () => {
     try {
-      const response = await fetch('http://localhost:5001/books');
+      const response = await fetch('http://localhost:5001/my-library');
       if (!response.ok) {
         console.error('Server response:', response.statusText);
         return;

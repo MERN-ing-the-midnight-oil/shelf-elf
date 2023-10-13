@@ -52,10 +52,16 @@ const LoginForm: React.FC = () => {
             // Then, fetch the user data with the obtained token
             const config = { headers: { Authorization: `Bearer ${token}` } };
             console.log('Fetch User Request Headers:', config.headers);
-            //ADJUST THIS PATH TO THE ENDPOINT THAT RETURNS THE AUTHENTICATED USER"S DATA
+            // ADJUST THIS PATH TO THE ENDPOINT THAT RETURNS THE AUTHENTICATED USER'S DATA
             const userResponse = await axios.get('http://localhost:5001/api/users/me', config);
             console.log('User Response: ', userResponse.data);
             setUser(userResponse.data);  // Set user data in context
+    
+            // Store user's ID in local storage
+            const userId = userResponse.data._id;
+            if (userId) {
+              localStorage.setItem('userId', userId);
+            }
             
             setSubmitting(false);
           } else {
@@ -68,6 +74,7 @@ const LoginForm: React.FC = () => {
           setSubmitting(false);
         }
       }}
+    
     >
       {({ isSubmitting }) => (
         <FormContainer>

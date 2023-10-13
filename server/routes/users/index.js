@@ -19,6 +19,7 @@ router.get("/me", checkAuthentication, async (req, res) => {
 		const userData = {
 			username: req.user.username,
 			email: req.user.email,
+			_id: req.user._id,
 			// ... (other necessary user fields)
 		};
 
@@ -91,6 +92,16 @@ router.post("/login", async (req, res) => {
 	} catch (error) {
 		console.error(error);
 		res.status(500).send("Internal Server Error");
+	}
+});
+
+//Display the logged in users lending library
+router.get("/lending-library", async (req, res) => {
+	try {
+		const user = await User.findById(req.user._id).populate("lendingLibrary");
+		res.status(200).json(user.lendingLibrary);
+	} catch (error) {
+		res.status(500).json({ error: "Failed to fetch lending library" });
 	}
 });
 
