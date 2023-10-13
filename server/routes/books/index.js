@@ -8,7 +8,7 @@ const { checkAuthentication } = require("../../../middlewares/authentication"); 
 router.post("/add", checkAuthentication, async (req, res) => {
 	try {
 		// Extract the relevant book data from the request
-		const { title, description } = req.body;
+		const { title, description, author } = req.body;
 
 		const newBook = new Book({
 			title,
