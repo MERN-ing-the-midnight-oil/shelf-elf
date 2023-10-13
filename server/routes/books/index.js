@@ -44,12 +44,24 @@ router.delete("/delete-offer/:bookId", async (req, res) => {
 });
 // Display the logged-in user's lending library
 router.get("/my-library", async (req, res) => {
+	// Log when route is accessed
+	console.log("Accessed /books/my-library route");
+
 	try {
+		// Log the user details to check if the user info is being correctly retrieved
+		console.log("Logged-in User ID:", req.user._id);
+
 		// Find all books owned by the logged-in user
 		const myBooks = await Book.find({ owner: req.user._id });
 
+		// Log the found books
+		console.log("Fetched books:", myBooks);
+
 		res.status(200).json(myBooks);
 	} catch (error) {
+		// Log the error for debugging purposes
+		console.error("Error fetching user's lending library:", error);
+
 		res.status(500).json({ error: "Error fetching your lending library." });
 	}
 });
