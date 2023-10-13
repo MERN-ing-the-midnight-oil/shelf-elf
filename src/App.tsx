@@ -1,12 +1,8 @@
 // src/App.tsx
-import React from 'react';
 import './App.css';
-import LendForm from './components/LendForm';
 import RegisterForm from './components/RegisterForm'; 
 import LoginForm from './components/LoginForm'; 
 import Dashboard from './components/Dashboard';
-import MyLendingLibrary from './components/MyLendingLibrary'; 
-import { Typography } from '@mui/material';
 import { useAuth } from './context/AuthContext'; // Adjust the path as needed
 
 function App() {
@@ -33,9 +29,6 @@ function App() {
             <>
               <Dashboard />
               <hr style={{ margin: '2rem 0' }} />
-              <h1>My Lending Library:</h1>
-              <MyLendingLibrary />        
-              <LendForm />
         <hr style={{ margin: '2rem 0' }} /> 
             </>
           )}

@@ -1,20 +1,32 @@
 import React, { useEffect, useState } from 'react';
 
 interface Book {
-  _id?: string;
+  _id: string;
   googleBooksId: string;
   title: string;
   author: string;
   // Add other properties as needed
 }
 
-const MyLendingLibrary: React.FC = () => {
+interface MyLendingLibraryProps {
+  token: string | null;
+}
+
+const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token }) => {
   const [myBooks, setMyBooks] = useState<Book[]>([]);
 
-  //displays saved titles
   const fetchBooksOwnedByUser = async () => {
+    if (!token) {
+      console.error('Token not provided.');
+      return;
+    }
+
     try {
-      const response = await fetch('http://localhost:5001/books/my-library');
+      const response = await fetch('http://localhost:5001/books/my-library', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (!response.ok) {
         console.error('Server response:', response.statusText);
         return;
@@ -26,11 +38,18 @@ const MyLendingLibrary: React.FC = () => {
     }
   };
 
-  //deletes a saved title
   const handleDeleteBook = async (id: string) => {
+    if (!token) {
+      console.error('Token not provided.');
+      return;
+    }
+
     try {
       const response = await fetch(`http://localhost:5001/books/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       if (response.ok) {
         // Re-fetch books to update the UI
@@ -47,14 +66,13 @@ const MyLendingLibrary: React.FC = () => {
     fetchBooksOwnedByUser();
   }, []); // Empty dependency array to run once on mount
 
-
   return (
     <div>
       {myBooks.length === 0 ? (
         <p>You don't have any books in your library yet.</p>
       ) : (
         <ul>
-          {myBooks.map((book: any) => (
+          {myBooks.map((book) => (
             <li key={book._id || book.googleBooksId}>
               <h2>{book.title}</h2>
               <p>{book.author}</p>

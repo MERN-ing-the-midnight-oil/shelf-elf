@@ -16,9 +16,12 @@ const FormContainer = styled(Container)({
   alignItems: 'center',
 });
 
-const LendForm: React.FC = () => {
-  const [searchResults, setSearchResults] = useState([]);
+interface LendFormProps {
+  token: string | null;
+}
 
+const LendForm: React.FC<LendFormProps> = ({ token }) => {
+  const [searchResults, setSearchResults] = useState([]);
   const apiKey = process.env.REACT_APP_API_KEY;
 
   const handleSearch = (value: string) => {
@@ -31,16 +34,14 @@ const LendForm: React.FC = () => {
   };
 
   const handleOwnBookClick = (book: any) => {
-    console.log('Book data received:', book); // Logging the book data received from API
+    console.log('Book data received:', book);
 
-    const token = localStorage.getItem('userToken');
     if (!token) {
-        console.error('Token not found in local storage.');
+        console.error('Token not found.');
         return;
     }
-    const userId = localStorage.getItem('userId');  // Assuming you've stored user ID in local storage
+    
     const bookData = {
-      userId: userId,
       title: book.volumeInfo.title,
       author: book.volumeInfo.authors && book.volumeInfo.authors.join(', '),
       description: book.volumeInfo.description,
@@ -49,7 +50,7 @@ const LendForm: React.FC = () => {
       currentBorrower: null,
     };
 
-    console.log('Book data to send:', bookData); // Logging the book data before sending
+    console.log('Book data to send:', bookData);
 
     fetch('http://localhost:5001/books/add', {
       method: 'POST',
@@ -62,19 +63,19 @@ const LendForm: React.FC = () => {
     .then(response => {
       if (!response.ok) {
         return response.json().then(errData => {
-            console.error('Error from server:', errData); // Log any server response error message
+            console.error('Error from server:', errData);
             throw new Error('Network response was not ok');
         });
       }
       return response.json();
     })
     .then(data => {
-      console.log('Book added to library:', data); // Log the success response from server
+      console.log('Book added to library:', data);
     })
     .catch(error => {
       console.error('Error during fetch operation: ', error);
     });
-};
+  };
 
   const renderSearchResults = searchResults.map((book: any) => (
     <div key={book.id}>

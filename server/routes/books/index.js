@@ -2,9 +2,10 @@
 const express = require("express");
 const Book = require("../../models/book");
 const router = express.Router();
+const { checkAuthentication } = require("../../../middlewares/authentication"); // Import the middleware
 
 // Offer a book for lending
-router.post("/add", async (req, res) => {
+router.post("/add", checkAuthentication, async (req, res) => {
 	try {
 		// Extract the relevant book data from the request
 		const { title, description } = req.body;
@@ -24,28 +25,38 @@ router.post("/add", async (req, res) => {
 });
 
 // Delete a book offer
-router.delete("/delete-offer/:bookId", async (req, res) => {
-	try {
-		const bookToDelete = await Book.findOne({
-			_id: req.params.bookId,
-			owner: req.user._id,
-		});
-		if (!bookToDelete) {
-			return res
-				.status(403)
-				.json({ error: "You cannot delete a book you did not offer." });
-		}
+router.delete(
+	"/delete-offer/:bookId",
+	checkAuthentication,
+	async (req, res) => {
+		try {
+			const bookToDelete = await Book.findOne({
+				_id: req.params.bookId,
+				owner: req.user._id,
+			});
+			if (!bookToDelete) {
+				return res
+					.status(403)
+					.json({ error: "You cannot delete a book you did not offer." });
+			}
 
-		await Book.findByIdAndRemove(req.params.bookId);
-		res.status(200).json({ message: "Book offer removed successfully." });
-	} catch (error) {
-		res.status(500).json({ error: "Error removing book offer." });
+			await Book.findByIdAndRemove(req.params.bookId);
+			res.status(200).json({ message: "Book offer removed successfully." });
+		} catch (error) {
+			res.status(500).json({ error: "Error removing book offer." });
+		}
 	}
-});
+);
 // Display the logged-in user's lending library
-router.get("/my-library", async (req, res) => {
+router.get("/my-library", checkAuthentication, async (req, res) => {
 	// Log when route is accessed
 	console.log("Accessed /books/my-library route");
+
+	// Check if req.user exists
+	if (!req.user) {
+		console.error("User not authenticated or user object not populated.");
+		return res.status(401).json({ error: "User not authenticated." });
+	}
 
 	try {
 		// Log the user details to check if the user info is being correctly retrieved
@@ -67,7 +78,7 @@ router.get("/my-library", async (req, res) => {
 });
 
 // Borrow a book
-router.post("/borrow/:bookId", async (req, res) => {
+router.post("/borrow/:bookId", checkAuthentication, async (req, res) => {
 	try {
 		// Fetch the book to borrow using its ID
 		const bookToBorrow = await Book.findById(req.params.bookId);
@@ -96,7 +107,7 @@ router.get("/offeredByOthers", async (req, res) => {
 });
 
 // Return a borrowed book
-router.post("/return/:bookId", async (req, res) => {
+router.post("/return/:bookId", checkAuthentication, async (req, res) => {
 	try {
 		const bookIndex = req.user.borrowedBooks.findIndex(
 			(b) => b._id.toString() === req.params.bookId
