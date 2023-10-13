@@ -13,6 +13,7 @@ router.post("/add", checkAuthentication, async (req, res) => {
 		const newBook = new Book({
 			title,
 			description,
+			author,
 			owner: req.user._id, // assuming req.user contains the authenticated user data
 		});
 
