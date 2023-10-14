@@ -18,9 +18,11 @@ const FormContainer = styled(Container)({
 
 interface LendFormProps {
   token: string | null;
+  setRefetchCounter: React.Dispatch<React.SetStateAction<number>>;
+
 }
 
-const LendForm: React.FC<LendFormProps> = ({ token }) => {
+const LendForm: React.FC<LendFormProps> = ({ token, setRefetchCounter  }) => {
   const [searchResults, setSearchResults] = useState([]);
   const apiKey = process.env.REACT_APP_API_KEY;
 
@@ -71,9 +73,11 @@ const LendForm: React.FC<LendFormProps> = ({ token }) => {
     })
     .then(data => {
       console.log('Book added to library:', data);
+      setRefetchCounter(prev => prev + 1);
     })
     .catch(error => {
       console.error('Error during fetch operation: ', error);
+      
     });
   };
 

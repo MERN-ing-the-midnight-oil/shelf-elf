@@ -1,5 +1,5 @@
 // src/components/Dashboard.tsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Typography } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import MyLendingLibrary from './MyLendingLibrary';
@@ -9,7 +9,7 @@ const Dashboard: React.FC = () => {
   const { user, setToken, setUser } = useAuth(); // Get user and authentication functions
 
   const token = localStorage.getItem('userToken'); // Retrieve the token from local storage
-
+  const [refetchCounter, setRefetchCounter] = useState(0);
   // Logout handler
   const handleLogout = () => {
     setToken(null);
@@ -26,10 +26,10 @@ const Dashboard: React.FC = () => {
       </Typography>
       
       {/* Display user's books */}
-      <MyLendingLibrary token={token} />
+      <MyLendingLibrary token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />
 
       {/* Form to lend books */}
-      <LendForm token={token} />
+      <LendForm token={token} setRefetchCounter={setRefetchCounter} />
 
       {/* Logout button */}
       <div style={{ margin: '20px 0' }}>
@@ -39,6 +39,6 @@ const Dashboard: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Dashboard;

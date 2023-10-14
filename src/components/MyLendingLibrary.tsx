@@ -10,10 +10,14 @@ interface Book {
 
 interface MyLendingLibraryProps {
   token: string | null;
+  setRefetchCounter: React.Dispatch<React.SetStateAction<number>>;
+  refetchCounter: number;
 }
 
-const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token }) => {
+const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCounter, refetchCounter  }) => {
   const [myBooks, setMyBooks] = useState<Book[]>([]);
+
+
 
   const fetchBooksOwnedByUser = async () => {
     if (!token) {
@@ -53,7 +57,8 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token }) => {
       });
       if (response.ok) {
         // Re-fetch books to update the UI
-        fetchBooksOwnedByUser();
+        setRefetchCounter(prev => prev + 1);  // Increment the counter
+
       } else {
         console.error('Failed to delete book');
       }
@@ -65,7 +70,10 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token }) => {
   useEffect(() => {
     fetchBooksOwnedByUser();
   }, []); // Empty dependency array to run once on mount
-
+  useEffect(() => {
+    fetchBooksOwnedByUser();
+  }, [refetchCounter]);
+  
   return (
     <div>
       {myBooks.length === 0 ? (
