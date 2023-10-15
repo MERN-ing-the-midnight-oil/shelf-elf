@@ -6,8 +6,8 @@ import Dashboard from './components/Dashboard';
 import { useAuth } from './context/AuthContext'; // Adjust the path as needed
 
 function App() {
-  const { token } = useAuth(); // Now it should work without error
-
+  const { token } = useAuth(); 
+  console.log('Token in App component:', token);
   return (
     <div className="App">
       <header className="App-header">

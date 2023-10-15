@@ -31,7 +31,7 @@ router.get("/me", checkAuthentication, async (req, res) => {
 });
 
 // POST route to create a new user
-router.post("/", async (req, res) => {
+router.post("/register", async (req, res) => {
 	console.log("Received a create a new user POST request on /");
 	try {
 		const { username, email, password } = req.body;

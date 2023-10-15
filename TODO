@@ -1,39 +1,9 @@
-1. Dynamic Form for Lending Library:
-   Design the form fields needed to add books (like title, author, etc.).
-   Implement a dynamic form using Formik with real-time validation.
-   Use the Yup library for schema validation.
-   Incorporate state tracking and management techniques (with React's Context API, Redux, or other state management libraries).
-   Ensure the form is dynamic and responsive to user interactions.
-2. Integrate with Book API:
-   Choose between Open Library API or Google Books API.
-   Make requests to the selected API based on form input to fetch suggestions of books.
-   Display suggested books with titles and images to the user.
-   Allow users to select a suggested book to add to their lending library.
-3. Backend Setup for Lending Library (Simplified):
-   Set up schemas and models for books and lending libraries in MongoDB.
-   Implement routes and controllers to handle adding, removing, and editing books in the lending library.
-   Seed the database with placeholder data if necessary.
-4. Frontend Connection and Display:
-   Connect the dynamic form to your backend to submit data.
-   Display the user’s lending library (you can use placeholder user data for now).
-   Implement functions to handle adding, removing, and editing books.
-5. Styling and User Experience:
-   Style the dynamic form and lending library display.
-   Make sure the user interface is intuitive and responsive.
-6. Testing and Debugging:
-   Test the dynamic form’s functionality and ensure it interacts with the backend correctly.
-   Debug any issues that arise during the testing process.
-   Future Tasks (To be done later):\*\*
-   User Authentication and Authorization.
-   User Dashboard Setup.
-   Finalize Backend Setup with User Data.
-   Extensive Testing and Debugging.
-   Documentation and Code Cleanup.
-
 Possible Features
 Ratings or karma for users. Karma points when you lend a book.
 borrowing e-books worldwide. (Do some e-readers allow lending e-books?)
 Geographic delivery features. Set the areas you can easily delver to (near home, near work, near church, daycare, other places you go regularly.
+
+Make Forms Dynamic with validation and state tracking
 
 Dynamic password strength.
 
@@ -42,3 +12,7 @@ Silly comments about the user's name and a famous authors with that name.
 "We're going to spam this email, okay? Just kidding!"
 
 Auto-complete neighborhood form field as the user starts typing?
+
+If your password strength were a book it would be (pulp, paperback, new hardback, first edition, signed by author)
+
+Have chat give the user a picture from a clip art library API so they can recognize their login screen. The art could be suggested. gobblygook user name woule get snark.

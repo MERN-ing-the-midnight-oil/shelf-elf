@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Formik, Form, Field, ErrorMessage, FieldInputProps, FieldMetaProps } from 'formik';
+import { useAuth } from '../context/AuthContext';
+import { Formik, Form, Field, FieldProps, ErrorMessage } from 'formik';
 import { Typography, Button, TextField } from '@material-ui/core';
 import styled from 'styled-components';
 import axios from 'axios';
@@ -7,14 +8,9 @@ import * as Yup from 'yup';
 import zxcvbn from 'zxcvbn';
 
 const validationSchema = Yup.object({
-  username: Yup.string().required('Username is required').min(2, 'Username must be at least 2 characters'),
-  email: Yup.string().required('Email is required').email('Invalid email address'),
-  password: Yup.string()
-    .required('Password is required')
-    .min(6, 'Password must be at least 6 characters')
-    .test('password-strength', 'Password is too weak', (value = '') => {
-      return zxcvbn(value).score >= 2;
-    }),
+  username: Yup.string().required('Username is required'),
+  email: Yup.string().required('We need your email address').email('Something is strange about that email address'),
+  password: Yup.string().required('Password is required')
 });
 
 const FormContainer = styled.div`
@@ -32,36 +28,21 @@ const ErrorText = styled.div`
 `;
 
 const PasswordStrengthMeter = styled.div`
-  height: 10px;
-  width: 100%;
-  border: 1px solid #ccc;
-  border-radius: 4px;
   margin-top: 10px;
 `;
 
-const PasswordStrengthBar = styled.div<{strength: number}>`
-  height: 100%;
-  width: ${props => `${props.strength * 25}%`};
-  background-color: ${props => {
-    switch (props.strength) {
-      case 0: return 'red';
-      case 1: return 'orange';
-      case 2: return 'yellow';
-      case 3: return 'lightgreen';
-      case 4: return 'green';
-      default: return 'red';
-    }
-  }};
-  transition: width 300ms;
+const PasswordStrengthBar = styled.div<{ strength: number }>`
+  height: 5px;
+  width: ${(props) => (props.strength * 20)}%;
+  background-color: ${(props) => (props.strength === 0 ? '#ccc' : props.strength === 1 ? 'red' : props.strength === 2 ? 'orange' : props.strength === 3 ? 'yellow' : 'green')};
+  transition: width 0.3s ease-in-out;
 `;
-
-
-
 
 const RegisterForm: React.FC = () => {
   const [passwordStrength, setPasswordStrength] = useState(0);
-  //hook to hold the registration status
-const [registrationStatus, setRegistrationStatus] = useState<string | null>(null);
+  const [registrationStatus, setRegistrationStatus] = useState<string | null>(null);
+  const { setToken, setUser } = useAuth();
+
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setPasswordStrength(zxcvbn(val).score);
@@ -71,34 +52,64 @@ const [registrationStatus, setRegistrationStatus] = useState<string | null>(null
     <Formik
       initialValues={{ username: '', email: '', password: '' }}
       validationSchema={validationSchema}
-      onSubmit={async (values, { setSubmitting }) => {
-        console.log('Form Values: ', values);
+      onSubmit={async (values, { setSubmitting, setErrors }) => {
         try {
-          const response = await axios.post('http://localhost:5001/api/users', values);
-          if (response.data && response.data.message === 'User created successfully') {
-            setRegistrationStatus("You have Successfully registered!");
-            // TODO: handle login and redirect to dashboard.
-          }
-          console.log('Server Response: ', response.data);
-          setSubmitting(false);
+            // First, register the user
+            console.log('Sending registration request with values:', values);
+            const registrationResponse = await axios.post('http://localhost:5001/api/users/register', values);
+    
+            if ((registrationResponse.status === 200 || registrationResponse.status === 201) && registrationResponse.data.user) {
+              console.log('Registration successful for user:', registrationResponse.data.user);
+    
+                // Next, log the user in using the same credentials
+                console.log('Sending login request with values:', values);
+                const loginResponse = await axios.post('http://localhost:5001/api/users/login', values);
+                console.log('Login Response:', loginResponse.data);
+    
+                if (loginResponse.status === 200 && loginResponse.data.token) {
+                    const token = loginResponse.data.token;
+                    localStorage.setItem('userToken', token);
+                    setToken(token);  // Set token in context
+                    console.log('Token set in RegisterForm:', token);
+
+
+                    // Then, fetch the user data with the obtained token
+                    const config = { headers: { Authorization: `Bearer ${token}` } };
+                    const userResponse = await axios.get('http://localhost:5001/api/users/me', config);
+                    console.log('User Response:', userResponse.data);
+                    setUser(userResponse.data);  // Set user data in context
+    
+                    // Store user's ID in local storage
+                    const userId = userResponse.data._id;
+                    if (userId) {
+                        localStorage.setItem('userId', userId);
+                    }
+    
+                    setSubmitting(false);
+                } else {
+                    setErrors({ email: ' ', password: loginResponse.data.message || 'Invalid credentials after registration' });
+                    setSubmitting(false);
+                }
+            } else {
+                setErrors({ email: registrationResponse.data.message || 'Error during registration', password: ' ' });
+                setSubmitting(false);
+            }
         } catch (error) {
-          console.error('Registration Error: ', error);
-          setSubmitting(false);
+            console.error('Registration Error:', error);
+            setErrors({ email: 'Error during registration', password: ' ' });
+            setSubmitting(false);
         }
-      }}
+    }}
+    
     >
       {({ isSubmitting }) => (
         <FormContainer>
-         
- {registrationStatus && <Typography variant="body1" color="primary">{registrationStatus}</Typography>}
           <Form>
-            <Typography variant="h5" gutterBottom>
-              
-              Register
-            </Typography>
+            <Typography variant="h5" gutterBottom>Register</Typography>
+            {registrationStatus && <Typography variant="body1" color="primary">{registrationStatus}</Typography>}
             
             <Field name="username">
-              {({ field, meta }: { field: FieldInputProps<string>; meta: FieldMetaProps<string> }) => (
+              {({ field, meta }: FieldProps) => (
                 <TextField
                   {...field}
                   label="Username"
@@ -110,12 +121,11 @@ const [registrationStatus, setRegistrationStatus] = useState<string | null>(null
               )}
             </Field>
             <ErrorMessage name="username" component={ErrorText} />
-            
+
             <Field name="email">
-              {({ field, meta }: { field: FieldInputProps<string>; meta: FieldMetaProps<string> }) => (
+              {({ field, meta }: FieldProps) => (
                 <TextField
                   {...field}
-                  type="email"
                   label="Email"
                   variant="outlined"
                   fullWidth
@@ -125,8 +135,9 @@ const [registrationStatus, setRegistrationStatus] = useState<string | null>(null
               )}
             </Field>
             <ErrorMessage name="email" component={ErrorText} />
+
             <Field name="password">
-              {({ field, meta }: { field: FieldInputProps<string>; meta: FieldMetaProps<string> }) => (
+              {({ field, meta }: FieldProps) => (
                 <div>
                   <TextField
                     {...field}
@@ -140,6 +151,7 @@ const [registrationStatus, setRegistrationStatus] = useState<string | null>(null
                       field.onChange(e);
                       handlePasswordChange(e);
                     }}
+                    
                   />
                   <PasswordStrengthMeter>
                     <PasswordStrengthBar strength={passwordStrength} />
@@ -148,10 +160,8 @@ const [registrationStatus, setRegistrationStatus] = useState<string | null>(null
               )}
             </Field>
             <ErrorMessage name="password" component={ErrorText} />
-            
-            <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>
-              Register
-            </Button>
+
+            <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>Register</Button>
           </Form>
         </FormContainer>
       )}
@@ -160,3 +170,5 @@ const [registrationStatus, setRegistrationStatus] = useState<string | null>(null
 };
 
 export default RegisterForm;
+
+//TODO handle possible errors relating to the username. 
