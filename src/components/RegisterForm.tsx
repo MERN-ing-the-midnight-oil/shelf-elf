@@ -7,6 +7,28 @@ import axios from 'axios';
 import * as Yup from 'yup';
 import zxcvbn from 'zxcvbn';
 
+//images for dynamic password fun thing
+import weakImage from '../images/weak-image.png';
+import belowAverageImage from '../images/below-average-image.png';
+import averageImage from '../images/average-image.png';
+import strongImage from '../images/strong-image.png';
+import veryStrongImage from '../images/very-strong-image.png';
+const passwordImages = [
+  weakImage,
+  belowAverageImage,
+  averageImage,
+  strongImage,
+  veryStrongImage
+];
+
+const passwordCaptions = [
+  "If your password was a book it would be... trashy pulp fiction found in the mud.",
+  "If your password were a book it would be... a paperback novel with coffee stains.",
+  "If your password were a book it would be... a good read, but with some torn pages.",
+  "If your password were a book it would be... a rare classic in almost perfect condition.",
+  "If your password were a book it would be... the great American novel, first edition, signed by the author."
+];
+
 const validationSchema = Yup.object({
   username: Yup.string().required('Username is required'),
   email: Yup.string().required('We need your email address').email('Something is strange about that email address'),
@@ -54,60 +76,60 @@ const RegisterForm: React.FC = () => {
       validationSchema={validationSchema}
       onSubmit={async (values, { setSubmitting, setErrors }) => {
         try {
-            // First, register the user
-            console.log('Sending registration request with values:', values);
-            const registrationResponse = await axios.post('http://localhost:5001/api/users/register', values);
-    
-            if ((registrationResponse.status === 200 || registrationResponse.status === 201) && registrationResponse.data.user) {
-              console.log('Registration successful for user:', registrationResponse.data.user);
-    
-                // Next, log the user in using the same credentials
-                console.log('Sending login request with values:', values);
-                const loginResponse = await axios.post('http://localhost:5001/api/users/login', values);
-                console.log('Login Response:', loginResponse.data);
-    
-                if (loginResponse.status === 200 && loginResponse.data.token) {
-                    const token = loginResponse.data.token;
-                    localStorage.setItem('userToken', token);
-                    setToken(token);  // Set token in context
-                    console.log('Token set in RegisterForm:', token);
+          // First, register the user
+          console.log('Sending registration request with values:', values);
+          const registrationResponse = await axios.post('http://localhost:5001/api/users/register', values);
+
+          if ((registrationResponse.status === 200 || registrationResponse.status === 201) && registrationResponse.data.user) {
+            console.log('Registration successful for user:', registrationResponse.data.user);
+
+            // Next, log the user in using the same credentials
+            console.log('Sending login request with values:', values);
+            const loginResponse = await axios.post('http://localhost:5001/api/users/login', values);
+            console.log('Login Response:', loginResponse.data);
+
+            if (loginResponse.status === 200 && loginResponse.data.token) {
+              const token = loginResponse.data.token;
+              localStorage.setItem('userToken', token);
+              setToken(token);  // Set token in context
+              console.log('Token set in RegisterForm:', token);
 
 
-                    // Then, fetch the user data with the obtained token
-                    const config = { headers: { Authorization: `Bearer ${token}` } };
-                    const userResponse = await axios.get('http://localhost:5001/api/users/me', config);
-                    console.log('User Response:', userResponse.data);
-                    setUser(userResponse.data);  // Set user data in context
-    
-                    // Store user's ID in local storage
-                    const userId = userResponse.data._id;
-                    if (userId) {
-                        localStorage.setItem('userId', userId);
-                    }
-    
-                    setSubmitting(false);
-                } else {
-                    setErrors({ email: ' ', password: loginResponse.data.message || 'Invalid credentials after registration' });
-                    setSubmitting(false);
-                }
+              // Then, fetch the user data with the obtained token
+              const config = { headers: { Authorization: `Bearer ${token}` } };
+              const userResponse = await axios.get('http://localhost:5001/api/users/me', config);
+              console.log('User Response:', userResponse.data);
+              setUser(userResponse.data);  // Set user data in context
+
+              // Store user's ID in local storage
+              const userId = userResponse.data._id;
+              if (userId) {
+                localStorage.setItem('userId', userId);
+              }
+
+              setSubmitting(false);
             } else {
-                setErrors({ email: registrationResponse.data.message || 'Error during registration', password: ' ' });
-                setSubmitting(false);
+              setErrors({ email: ' ', password: loginResponse.data.message || 'Invalid credentials after registration' });
+              setSubmitting(false);
             }
-        } catch (error) {
-            console.error('Registration Error:', error);
-            setErrors({ email: 'Error during registration', password: ' ' });
+          } else {
+            setErrors({ email: registrationResponse.data.message || 'Error during registration', password: ' ' });
             setSubmitting(false);
+          }
+        } catch (error) {
+          console.error('Registration Error:', error);
+          setErrors({ email: 'Error during registration', password: ' ' });
+          setSubmitting(false);
         }
-    }}
-    
+      }}
+
     >
       {({ isSubmitting }) => (
         <FormContainer>
           <Form>
             <Typography variant="h5" gutterBottom>Register</Typography>
             {registrationStatus && <Typography variant="body1" color="primary">{registrationStatus}</Typography>}
-            
+
             <Field name="username">
               {({ field, meta }: FieldProps) => (
                 <TextField
@@ -151,10 +173,12 @@ const RegisterForm: React.FC = () => {
                       field.onChange(e);
                       handlePasswordChange(e);
                     }}
-                    
+
                   />
                   <PasswordStrengthMeter>
                     <PasswordStrengthBar strength={passwordStrength} />
+                    <img src={passwordImages[passwordStrength]} alt="Password strength" style={{ width: '300px', height: '300px' }} />
+                    <Typography variant="body2">{passwordCaptions[passwordStrength]}</Typography>
                   </PasswordStrengthMeter>
                 </div>
               )}
