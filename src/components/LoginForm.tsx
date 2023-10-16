@@ -1,6 +1,6 @@
 import React from 'react';
-import { useAuth } from '../context/AuthContext'; 
-import { Formik, Form, Field, FieldProps, ErrorMessage,  } from 'formik';
+import { useAuth } from '../context/AuthContext';
+import { Formik, Form, Field, FieldProps, ErrorMessage, } from 'formik';
 import { Typography, Button, TextField } from '@material-ui/core';
 import styled from 'styled-components';
 import axios from 'axios';
@@ -9,9 +9,9 @@ import * as Yup from 'yup';
 
 
 const validationSchema = Yup.object({
-    email: Yup.string().required('We need your email address').email('Something is strange about that email address'),
-    password: Yup.string().required('Password is required'),
-  });
+  email: Yup.string().required('We need your email address').email('Something is strange about that email address'),
+  password: Yup.string().required('Password is required'),
+});
 
 const FormContainer = styled.div`
   /* Add your specific styles here. For example: */
@@ -48,7 +48,7 @@ const LoginForm: React.FC = () => {
             const token = loginResponse.data.token;
             localStorage.setItem('userToken', token);
             setToken(token);  // Set token in context
-            
+
             // Then, fetch the user data with the obtained token
             const config = { headers: { Authorization: `Bearer ${token}` } };
             console.log('Fetch User Request Headers:', config.headers);
@@ -56,13 +56,13 @@ const LoginForm: React.FC = () => {
             const userResponse = await axios.get('http://localhost:5001/api/users/me', config);
             console.log('User Response: ', userResponse.data);
             setUser(userResponse.data);  // Set user data in context
-    
+
             // Store user's ID in local storage
             const userId = userResponse.data._id;
             if (userId) {
               localStorage.setItem('userId', userId);
             }
-            
+
             setSubmitting(false);
           } else {
             setErrors({ email: ' ', password: loginResponse.data.message || 'Invalid credentials' });
@@ -74,7 +74,7 @@ const LoginForm: React.FC = () => {
           setSubmitting(false);
         }
       }}
-    
+
     >
       {({ isSubmitting }) => (
         <FormContainer>
@@ -87,13 +87,17 @@ const LoginForm: React.FC = () => {
                   label="Email"
                   variant="outlined"
                   fullWidth
-                  helperText={form.errors.email && form.touched.email && form.errors.email}
+                  helperText={
+                    form.touched.email && typeof form.errors.email === 'string' ? form.errors.email : undefined
+                  }
+
+
                   error={form.touched.email && Boolean(form.errors.email)}
                 />
               )}
             </Field>
             <ErrorMessage name="email" component={ErrorText} />
-            
+
             <Field name="password">
               {({ field, form }: FieldProps) => (
                 <TextField
@@ -102,13 +106,15 @@ const LoginForm: React.FC = () => {
                   label="Password"
                   variant="outlined"
                   fullWidth
-                  helperText={form.errors.password && form.touched.password && form.errors.password}
+                  helperText={
+                    form.touched.password && typeof form.errors.password === 'string' ? form.errors.password : undefined
+                  }
                   error={form.touched.password && Boolean(form.errors.password)}
                 />
               )}
             </Field>
             <ErrorMessage name="password" component={ErrorText} />
-            
+
             <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>Login</Button>
           </Form>
         </FormContainer>

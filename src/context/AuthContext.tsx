@@ -20,10 +20,10 @@ interface AuthContextProps {
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 // AuthProvider component to wrap around parts of the app that need access to the auth context
-export const AuthProvider: React.FC = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null); // State to hold the auth token
   const [user, setUser] = useState<User | null>(null); // State to hold the user object
-  
+
   // Provide the auth context values (token, setToken, user, setUser) to children components
   return (
     <AuthContext.Provider value={{ token, setToken, user, setUser }}>
