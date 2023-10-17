@@ -5,6 +5,18 @@ import { Button, TextField, Container, Typography, CircularProgress } from '@mui
 
 import { styled } from '@mui/system';
 
+//creating a debouncer
+function debounce<F extends (...args: any[]) => any>(func: F, wait: number): (...funcArgs: Parameters<F>) => void {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  return (...args: Parameters<F>) => {
+    if (timeoutId !== null) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(() => func(...args), wait);
+  };
+}
+
+
 const BookSchema = Yup.object().shape({
   title: Yup.string()
     .min(2, 'Too Short!')
@@ -35,6 +47,9 @@ const LendForm: React.FC<LendFormProps> = ({ token, setRefetchCounter }) => {
         .catch(error => console.error(error));
     }
   };
+  //creating a debounced version of handleSearch
+  const debouncedHandleSearch = debounce(handleSearch, 300);
+
 
   const handleOwnBookClick = (book: any) => {
     console.log('Book data received:', book);
@@ -111,15 +126,19 @@ const LendForm: React.FC<LendFormProps> = ({ token, setRefetchCounter }) => {
               fullWidth
               margin="normal"
               name="title"
-              onChange={handleChange}
+              onChange={(e) => {
+                handleChange(e);
+                debouncedHandleSearch(e.target.value);
+              }}
               value={values.title}
               label="Book Title"
               variant="outlined"
+              placeholder="Start typing to search..."
             />
             <ErrorMessage name="title" component="div" />
-            <Button type="submit" disabled={isSubmitting} variant="contained" color="primary">
+            {/* <Button type="submit" disabled={isSubmitting} variant="contained" color="primary">
               Submit book title
-            </Button>
+            </Button> */}
             {isSubmitting && <CircularProgress />}
           </Form>
         )}
