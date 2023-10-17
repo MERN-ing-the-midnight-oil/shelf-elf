@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Formik, Form, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { Button, TextField, Typography, Container, CircularProgress } from '@mui/material';
+import { Button, TextField, Container, Typography, CircularProgress } from '@mui/material';
+
 import { styled } from '@mui/system';
 
 const BookSchema = Yup.object().shape({
@@ -22,7 +23,7 @@ interface LendFormProps {
 
 }
 
-const LendForm: React.FC<LendFormProps> = ({ token, setRefetchCounter  }) => {
+const LendForm: React.FC<LendFormProps> = ({ token, setRefetchCounter }) => {
   const [searchResults, setSearchResults] = useState([]);
   const apiKey = process.env.REACT_APP_API_KEY;
 
@@ -39,10 +40,10 @@ const LendForm: React.FC<LendFormProps> = ({ token, setRefetchCounter  }) => {
     console.log('Book data received:', book);
 
     if (!token) {
-        console.error('Token not found.');
-        return;
+      console.error('Token not found.');
+      return;
     }
-    
+
     const bookData = {
       title: book.volumeInfo.title,
       author: book.volumeInfo.authors && book.volumeInfo.authors.join(', '),
@@ -62,23 +63,23 @@ const LendForm: React.FC<LendFormProps> = ({ token, setRefetchCounter  }) => {
       },
       body: JSON.stringify(bookData)
     })
-    .then(response => {
-      if (!response.ok) {
-        return response.json().then(errData => {
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(errData => {
             console.error('Error from server:', errData);
             throw new Error('Network response was not ok');
-        });
-      }
-      return response.json();
-    })
-    .then(data => {
-      console.log('Book added to library:', data);
-      setRefetchCounter(prev => prev + 1);
-    })
-    .catch(error => {
-      console.error('Error during fetch operation: ', error);
-      
-    });
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Book added to library:', data);
+        setRefetchCounter(prev => prev + 1);
+      })
+      .catch(error => {
+        console.error('Error during fetch operation: ', error);
+
+      });
   };
 
   const renderSearchResults = searchResults.map((book: any) => (
