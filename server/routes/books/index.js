@@ -6,6 +6,7 @@ const { checkAuthentication } = require("../../../middlewares/authentication"); 
 
 // Offer a book for lending
 router.post("/add", checkAuthentication, async (req, res) => {
+	console.log("Received request to add book to lending library");
 	try {
 		// Extract the relevant book data from the request
 		const { title, description, author } = req.body;

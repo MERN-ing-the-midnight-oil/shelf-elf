@@ -14,7 +14,7 @@ interface MyLendingLibraryProps {
   refetchCounter: number;
 }
 
-const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCounter, refetchCounter  }) => {
+const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCounter, refetchCounter }) => {
   const [myBooks, setMyBooks] = useState<Book[]>([]);
 
 
@@ -26,7 +26,7 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
     }
 
     try {
-      const response = await fetch('http://localhost:5001/books/my-library', {
+      const response = await fetch('http://localhost:5001/api/books/my-library', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -49,7 +49,7 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
     }
 
     try {
-      const response = await fetch(`http://localhost:5001/books/delete-offer/${id}`, {
+      const response = await fetch(`http://localhost:5001/api/books/delete-offer/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -66,14 +66,14 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
       console.error('Failed to delete book:', error);
     }
   };
-  
+
   useEffect(() => {
     fetchBooksOwnedByUser();
   }, []); // Empty dependency array to run once on mount
   useEffect(() => {
     fetchBooksOwnedByUser();
   }, [refetchCounter]);
-  
+
   return (
     <div>
       {myBooks.length === 0 ? (
@@ -94,7 +94,7 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
       )}
     </div>
   );
-  
+
 };
 
 export default MyLendingLibrary;

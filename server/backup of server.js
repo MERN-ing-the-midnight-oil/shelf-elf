@@ -28,10 +28,10 @@ mongoose
 	.catch((err) => console.log(err));
 
 // Import and use routes
-const bookRoutes = require("./routes/books"); // Adjusted for simplicity
-const userRoutes = require("./routes/users"); // Adjusted for simplicity
+const bookRoutes = require("./routes/books/index"); // Assuming path is correct
+const userRoutes = require("./routes/users/index"); // Add this line, adjust path as needed
 
-app.use("/api/books", bookRoutes);
+app.use("/books", bookRoutes);
 app.use("/api/users", userRoutes); // Use the userRoutes with the "/api/users" endpoint
 
 // Default Route (for testing)

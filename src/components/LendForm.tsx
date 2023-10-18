@@ -70,7 +70,7 @@ const LendForm: React.FC<LendFormProps> = ({ token, setRefetchCounter }) => {
 
     console.log('Book data to send:', bookData);
 
-    fetch('http://localhost:5001/books/add', {
+    fetch('http://localhost:5001/api/books/add', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
