@@ -52,7 +52,6 @@ const LoginForm: React.FC = () => {
             // Then, fetch the user data with the obtained token
             const config = { headers: { Authorization: `Bearer ${token}` } };
             console.log('Fetch User Request Headers:', config.headers);
-            // ADJUST THIS PATH TO THE ENDPOINT THAT RETURNS THE AUTHENTICATED USER'S DATA
             const userResponse = await axios.get('http://localhost:5001/api/users/me', config);
             console.log('User Response: ', userResponse.data);
             setUser(userResponse.data);  // Set user data in context

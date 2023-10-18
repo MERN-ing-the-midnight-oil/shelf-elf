@@ -136,9 +136,7 @@ const LendForm: React.FC<LendFormProps> = ({ token, setRefetchCounter }) => {
               placeholder="Start typing to search..."
             />
             <ErrorMessage name="title" component="div" />
-            {/* <Button type="submit" disabled={isSubmitting} variant="contained" color="primary">
-              Submit book title
-            </Button> */}
+
             {isSubmitting && <CircularProgress />}
           </Form>
         )}

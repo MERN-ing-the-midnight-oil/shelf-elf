@@ -1,5 +1,4 @@
-import '../App.css'; // Import the App.css for styling, assuming it contains the styles for the header.
-
+import '../App.css'; // Import the App.css for styling
 function LandingHeader() {
     return (
         <header className="App-header">

@@ -5,7 +5,7 @@ interface Book {
   googleBooksId: string;
   title: string;
   author: string;
-  // Add other properties as needed
+
 }
 
 interface MyLendingLibraryProps {
