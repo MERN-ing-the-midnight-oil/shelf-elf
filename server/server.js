@@ -4,9 +4,19 @@ const cors = require("cors");
 const path = require("path");
 const app = express();
 
-// CORS options configuration
+const allowedOrigins = [
+	"http://localhost:3000",
+	"https://others-covers-0f4265de0975.herokuapp.com",
+];
+
 const corsOptions = {
-	origin: "http://localhost:3000", // specify the application's address
+	origin: function (origin, callback) {
+		if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+			callback(null, true);
+		} else {
+			callback(new Error("Not allowed by CORS"));
+		}
+	},
 	methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
 	credentials: true,
 	optionsSuccessStatus: 204,
