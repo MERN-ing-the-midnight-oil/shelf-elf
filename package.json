@@ -31,11 +31,14 @@
     "zxcvbn": "^4.4.2"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "node server/server.js",
+    "heroku-postbuild": "npm run build",
+    "dev": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
-  },
+}
+,
   "eslintConfig": {
     "extends": [
       "react-app",
