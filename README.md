@@ -1,4 +1,40 @@
-# Getting Started with Create React App
+# Other's Covers: A Peer-to-Peer Book Lending Library
+
+## Introduction:
+
+Welcome to Other's Covers. This platform is designed to help book enthusiasts share their collection with others, discover new reads, and manage their personal book collection. Users can log in, dynamically search for books via the Google Books API, and update a persitant and personalized library. Coming soon: the ability to search the libraries of other users, borrow e-books from users around the world, and find books that can be borrowed and returned by neighbors who live near your bicycle commute to work or on your regular dog-walking route around your neighborhood.
+
+---
+
+## Key Functionalities:
+
+1. **User Authentication**:
+
+   - **JWT & State Management**: The authentication system employs JWT tokens, stored both within the React state and in local storage. This ensures a consistent user experience, even across different sessions.
+
+2. **Dynamic Forms**:
+
+   - **Real-time Search with Debouncing**: As users key in their search, the app efficiently communicates with the Google Books API, delivering real-time results while efficiently managing API calls.
+   - **Interactive Registration**: The registration process is enhanced by a dynamic password field, optimizing both security and user experience.
+   - **Responsive Book Search Form**: As users provide input, the form actively presents corresponding book results, offering a fluid search experience.
+   - **Form State Tracking**: User inputs are meticulously tracked in real-time, ensuring a responsive and error-minimized user interface.
+
+3. **User Library Management**:
+
+   - **Personalized Curation**: Users can swiftly add chosen books to their library, making personal collection management a breeze.Additions to the library appear instantly using state.
+
+4. **Conditional Component Rendering**:
+   - **Adaptive UI**: Post authentication, users are greeted with tailored components such as the dashboard and "mylendinglibrary", refining the user interface to present only pertinent data.
+
+## Technical Highlights:
+
+1. **React Hooks**: Demonstrating adeptness in modern React paradigms, the app employs various hooks like `useState`, `useEffect`, and `useContext` to adeptly manage side-effects, state, and context.
+
+2. **Context API & State Management**: Global states, such as user's authentication status, are deftly handled using the Context API, exemplifying efficient state management and distribution throughout the app.
+
+3. **Dynamic Forms & Formik**: The amalgamation of dynamic forms with state tracking, supplemented by Formik, accentuates a comprehensive grasp of form management in React, enhancing user experience and data precision.
+
+4. **Custom Components**: Championing modular development, the application is constructed using custom components, which can be smoothly integrated across different app sections, embodying the essence of the DRY principle.
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
