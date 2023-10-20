@@ -43,7 +43,9 @@ const LoginForm: React.FC = () => {
         try {
           // First, the user logs in
           console.log('Sending login request with values: ', values);
-          const loginResponse = await axios.post('http://localhost:5001/api/users/login', values);
+          const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+
+          const loginResponse = await axios.post(`${API_URL}/api/users/login`, values);
           console.log('Login Response to : ', loginResponse.data);
           console.log('Login Request Headers:', loginResponse.config.headers);
           if (loginResponse.status === 200 && loginResponse.data.token) {
@@ -54,7 +56,9 @@ const LoginForm: React.FC = () => {
             // Then, fetch the user data with the obtained token
             const config = { headers: { Authorization: `Bearer ${token}` } };
             console.log('Fetch User Request Headers:', config.headers);
-            const userResponse = await axios.get('http://localhost:5001/api/users/me', config);
+            const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+
+            const userResponse = await axios.get(`${API_URL}/api/users/me`, config);
             console.log('User Response: ', userResponse.data);
             setUser(userResponse.data);  // Set user data in context
 

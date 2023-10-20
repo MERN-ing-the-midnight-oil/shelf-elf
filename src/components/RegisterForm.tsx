@@ -78,14 +78,17 @@ const RegisterForm: React.FC = () => {
         try {
           // First, register the user
           console.log('Sending registration request with values:', values);
-          const registrationResponse = await axios.post('http://localhost:5001/api/users/register', values);
+          const API_URL = process.env.REACT_APP_BACKEND_URL;
+
+          const registrationResponse = await axios.post(`${API_URL}/api/users/register`, values);
 
           if ((registrationResponse.status === 200 || registrationResponse.status === 201) && registrationResponse.data.user) {
             console.log('Registration successful for user:', registrationResponse.data.user);
 
             // Next, log the user in using the same credentials
             console.log('Sending login request with values:', values);
-            const loginResponse = await axios.post('http://localhost:5001/api/users/login', values);
+            const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+            const loginResponse = await axios.post(`${API_URL}/api/users/login`, values);
             console.log('Login Response:', loginResponse.data);
 
             if (loginResponse.status === 200 && loginResponse.data.token) {
@@ -97,7 +100,8 @@ const RegisterForm: React.FC = () => {
 
               // Then, fetch the user data with the obtained token
               const config = { headers: { Authorization: `Bearer ${token}` } };
-              const userResponse = await axios.get('http://localhost:5001/api/users/me', config);
+              const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+              const userResponse = await axios.get(`${API_URL}/api/users/me`, config);
               console.log('User Response:', userResponse.data);
               setUser(userResponse.data);  // Set user data in context
 

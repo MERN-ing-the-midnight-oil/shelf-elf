@@ -26,7 +26,8 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
     }
 
     try {
-      const response = await fetch('http://localhost:5001/api/books/my-library', {
+      const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+      const response = await fetch(`${API_URL}/api/books/my-library`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -49,7 +50,8 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
     }
 
     try {
-      const response = await fetch(`http://localhost:5001/api/books/delete-offer/${id}`, {
+      const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+      const response = await fetch(`${API_URL}/api/books/delete-offer/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

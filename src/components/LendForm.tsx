@@ -70,7 +70,8 @@ const LendForm: React.FC<LendFormProps> = ({ token, setRefetchCounter }) => {
 
     console.log('Book data to send:', bookData);
 
-    fetch('http://localhost:5001/api/books/add', {
+    const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+    fetch(`${API_URL}/api/books/add`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
