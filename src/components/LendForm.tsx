@@ -5,7 +5,7 @@ import { Button, TextField, Container, Typography, CircularProgress } from '@mui
 
 import { styled } from '@mui/system';
 
-//creating a debouncer
+//creating debouncer
 function debounce<F extends (...args: any[]) => any>(func: F, wait: number): (...funcArgs: Parameters<F>) => void {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
   return (...args: Parameters<F>) => {
