@@ -77,7 +77,7 @@ const RegisterForm: React.FC = () => {
       onSubmit={async (values, { setSubmitting, setErrors }) => {
         try {
           // First, register the user
-          console.log('Sending registration request with values:', values);
+          console.log('Sending registration request with the following values:', values);
           const API_URL = process.env.REACT_APP_BACKEND_URL;
 
           const registrationResponse = await axios.post(`${API_URL}/api/users/register`, values);
