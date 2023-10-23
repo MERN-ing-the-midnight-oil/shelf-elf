@@ -86,7 +86,7 @@ const RegisterForm: React.FC = () => {
             console.log('Registration successful for user:', registrationResponse.data.user);
 
             // Next, log the user in using the same credentials
-            console.log('Sending login request with values:', values);
+            console.log('Sending login request with the following values:', values);
             const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
             const loginResponse = await axios.post(`${API_URL}/api/users/login`, values);
             console.log('Login Response:', loginResponse.data);
