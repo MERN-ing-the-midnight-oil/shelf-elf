@@ -13,7 +13,7 @@ const AvailableBooks: React.FC = () => {
     const [books, setBooks] = useState<Book[]>([]);
 
     useEffect(() => {
-        console.log("Starting to fetch books offered by others...");
+        console.log("Starting the fetch for AvailableBooks...");
 
         // Fetch the books available from other users
         const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
@@ -25,7 +25,7 @@ const AvailableBooks: React.FC = () => {
             }
         })
             .then(res => {
-                console.log("AvailableBooks.tsx Received response from server. Status code:", res.status);
+                console.log("Client Received response from server. Status code:", res.status);
 
                 // If the response is not OK, throw an error to be caught in the catch block
                 if (!res.ok) {

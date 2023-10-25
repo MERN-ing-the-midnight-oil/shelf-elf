@@ -99,7 +99,7 @@ router.post("/borrow/:bookId", checkAuthentication, async (req, res) => {
 	}
 });
 // Display all books offered by other users
-router.get("/offeredByOthers", async (req, res) => {
+router.get("/offeredByOthers", checkAuthentication, async (req, res) => {
 	console.log("Fetching books offered by others...");
 	try {
 		console.log("Authenticated user ID:", req.user._id);
