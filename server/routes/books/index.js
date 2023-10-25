@@ -100,10 +100,14 @@ router.post("/borrow/:bookId", checkAuthentication, async (req, res) => {
 });
 // Display all books offered by other users
 router.get("/offeredByOthers", async (req, res) => {
+	console.log("Fetching books offered by others...");
 	try {
+		console.log("Authenticated user ID:", req.user._id);
 		const otherUsersBooks = await Book.find({ owner: { $ne: req.user._id } });
+		console.log("Found books:", otherUsersBooks);
 		res.status(200).json(otherUsersBooks);
 	} catch (error) {
+		console.error("Detailed error:", error); // log the actual error for debugging
 		res.status(500).json({ error: "Error fetching books from other users." });
 	}
 });

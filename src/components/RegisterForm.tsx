@@ -78,8 +78,8 @@ const RegisterForm: React.FC = () => {
         try {
           // First, register the user
           console.log('Sending registration request with the following registration values:', values);
-          const API_URL = process.env.REACT_APP_BACKEND_URL;
 
+          const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
           const registrationResponse = await axios.post(`${API_URL}/api/users/register`, values);
 
           if ((registrationResponse.status === 200 || registrationResponse.status === 201) && registrationResponse.data.user) {

@@ -4,6 +4,7 @@ import { Button, Typography } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import MyLendingLibrary from './MyLendingLibrary';
 import LendForm from './LendForm';
+import AvailableBooks from './AvailableBooks';
 
 const Dashboard: React.FC = () => {
   const { user, setToken, setUser } = useAuth(); // Get user and authentication functions
@@ -14,7 +15,7 @@ const Dashboard: React.FC = () => {
   const handleLogout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem('userToken'); 
+    localStorage.removeItem('userToken');
     console.log('User logged out');
   };
 
@@ -24,12 +25,14 @@ const Dashboard: React.FC = () => {
       <Typography variant="h4">
         Welcome, {user ? user.username : 'Guest'}!
       </Typography>
-      
+
       {/* Display user's books */}
       <MyLendingLibrary token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />
 
       {/* Form to lend books */}
       <LendForm token={token} setRefetchCounter={setRefetchCounter} />
+
+      <AvailableBooks />
 
       {/* Logout button */}
       <div style={{ margin: '20px 0' }}>
