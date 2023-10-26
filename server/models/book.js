@@ -37,6 +37,12 @@ const BookSchema = new mongoose.Schema(
 			ref: "User", // Reference to the User model
 			required: true,
 		},
+		requestedBy: [
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				ref: "User", // Reference to the User model
+			},
+		],
 		currentBorrower: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "User", // Reference to the User model

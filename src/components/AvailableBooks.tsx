@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, List, ListItem, Divider } from '@mui/material';
+import { Typography, List, ListItem, Divider, Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 
 interface Book {
     title: string;
@@ -11,6 +11,8 @@ interface Book {
 
 const AvailableBooks: React.FC = () => {
     const [books, setBooks] = useState<Book[]>([]);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [selectedBook, setSelectedBook] = useState<Book | null>(null);
 
     useEffect(() => {
         console.log("Starting the fetch for AvailableBooks...");
@@ -21,7 +23,7 @@ const AvailableBooks: React.FC = () => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('userToken')}` // Add the auth token
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
             }
         })
             .then(res => {
@@ -48,6 +50,16 @@ const AvailableBooks: React.FC = () => {
             });
     }, []);
 
+    const handleRequestClick = (book: Book) => {
+        setSelectedBook(book);
+        setIsDialogOpen(true);
+    };
+
+    const handleConfirmRequest = async () => {
+        console.log("Implement the PATCH request here using `selectedBook` details");
+        // After implementing the PATCH request, close the dialog:
+        setIsDialogOpen(false);
+    };
 
     return (
         <div>
@@ -59,11 +71,28 @@ const AvailableBooks: React.FC = () => {
                             <Typography variant="h6">{book.title}</Typography>
                             <Typography variant="subtitle1">by {book.author}</Typography>
                             {book.description && <Typography variant="body2">{book.description}</Typography>}
+                            <Button color="primary" onClick={() => handleRequestClick(book)}>Request</Button>
                         </ListItem>
                         <Divider />
                     </div>
                 ))}
             </List>
+            <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
+                <DialogTitle>Confirm Request</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Are you sure you want to request the book "{selectedBook?.title}"?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setIsDialogOpen(false)} color="primary">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleConfirmRequest} color="primary">
+                        Confirm
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 }
