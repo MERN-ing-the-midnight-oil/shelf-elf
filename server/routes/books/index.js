@@ -130,4 +130,31 @@ router.post("/return/:bookId", checkAuthentication, async (req, res) => {
 	}
 });
 
+// Request to borrow a book
+router.patch("/request/:bookId", checkAuthentication, async (req, res) => {
+	try {
+		// Fetch the book to be requested using its ID
+		const bookToRequest = await Book.findById(req.params.bookId);
+		if (!bookToRequest) {
+			return res.status(404).json({ error: "Book not found." });
+		}
+
+		// Check if the book is already requested by the user
+		if (bookToRequest.requestedBy.includes(req.user._id.toString())) {
+			return res
+				.status(400)
+				.json({ error: "You've already requested this book." });
+		}
+
+		// Add the user's ID to the `requestedBy` array and save the book
+		bookToRequest.requestedBy.push(req.user._id);
+		await bookToRequest.save();
+
+		res.status(200).json({ message: "Book requested successfully." });
+	} catch (error) {
+		console.error("Error when requesting the book:", error);
+		res.status(500).json({ error: "Error requesting the book." });
+	}
+});
+
 module.exports = router;

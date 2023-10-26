@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Typography, List, ListItem, Divider, Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 
 interface Book {
+    _id: string;
     title: string;
     author: string;
     description: string;
@@ -56,10 +57,49 @@ const AvailableBooks: React.FC = () => {
     };
 
     const handleConfirmRequest = async () => {
-        console.log("Implement the PATCH request here using `selectedBook` details");
-        // After implementing the PATCH request, close the dialog:
+        if (!selectedBook || !selectedBook._id) {
+            console.error("Selected book or its ID is missing");
+            return;
+        }
+
+        // Assuming you have the token available in your component's context or state
+        const token = localStorage.getItem('userToken');
+
+        // Define the API base URL
+        const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+
+        // Define the endpoint URL
+        const requestURL = `${API_URL}/api/books/request/${selectedBook._id}`;
+
+        try {
+            const response = await fetch(requestURL, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    requestedBy: "someone"  // This is a placeholder for now
+                })
+            });
+
+            const responseData = await response.json();
+
+            if (response.ok) {
+                console.log("Book requested successfully:", responseData);
+            } else {
+                console.error("Error requesting the book:", responseData.error);
+            }
+
+        } catch (error) {
+            console.error("An error occurred while making the PATCH request:", error);
+        }
+
+        // Close the dialog after making the request
         setIsDialogOpen(false);
     };
+
+
 
     return (
         <div>

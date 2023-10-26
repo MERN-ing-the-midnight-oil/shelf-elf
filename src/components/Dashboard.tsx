@@ -1,5 +1,5 @@
 // src/components/Dashboard.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button, Typography } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import MyLendingLibrary from './MyLendingLibrary';
