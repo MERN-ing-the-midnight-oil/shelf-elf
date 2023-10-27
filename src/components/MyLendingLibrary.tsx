@@ -5,8 +5,9 @@ interface Book {
   googleBooksId: string;
   title: string;
   author: string;
-
+  requestedBy: string[];  // This field is an array of user IDs.
 }
+
 
 interface MyLendingLibraryProps {
   token: string | null;
