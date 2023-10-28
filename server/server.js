@@ -33,7 +33,7 @@ const MONGODB_URI =
 mongoose
 	.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
 	.then(() => console.log("MongoDB Connected"))
-	.catch((err) => console.log(err));
+	.catch((err) => console.log("there is a problem with mongoose " + err));
 
 // Import and use routes
 const bookRoutes = require("./routes/books"); // Adjusted for simplicity

@@ -23,10 +23,7 @@ exports.checkAuthentication = async (req, res, next) => {
 			return res.status(401).json({ error: "Invalid token" });
 		}
 
-		req.user = user.toObject();
-		req.user._id = user._id;
-		req.user.username = user.username;
-
+		req.user = user;
 		next();
 	} catch (error) {
 		if (error.name === "JsonWebTokenError") {

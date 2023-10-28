@@ -89,9 +89,15 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
               <li key={book._id || book.googleBooksId}>
                 <h2>{book.title}</h2>
                 <p>{book.author}</p>
+                {book.requestedBy && book.requestedBy.length > 0 ? (
+                  <p>Requested By: {book.requestedBy.join(', ')}</p> // Display all user IDs joined by a comma.
+                ) : (
+                  <p>No current requests.</p>
+                )}
                 <button onClick={() => handleDeleteBook(book._id)}>Delete</button>
               </li>
             ))}
+            {/* The above code first checks if there are any user IDs in the requestedBy field. If there are, it displays them, separated by commas. If not, it simply displays a message stating that there are no current requests for that book. */}
           </ul>
         </>
       )}

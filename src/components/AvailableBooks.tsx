@@ -62,14 +62,18 @@ const AvailableBooks: React.FC = () => {
             return;
         }
 
+        console.log("Selected Book for Request:", selectedBook);
+
         // Assuming you have the token available in your component's context or state
         const token = localStorage.getItem('userToken');
+        console.log("User Token:", token);
 
         // Define the API base URL
         const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
 
         // Define the endpoint URL
         const requestURL = `${API_URL}/api/books/request/${selectedBook._id}`;
+        console.log("Requesting URL:", requestURL);
 
         try {
             const response = await fetch(requestURL, {
@@ -77,16 +81,17 @@ const AvailableBooks: React.FC = () => {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    requestedBy: "someone"  // This is a placeholder for now
-                })
+                }
             });
+
+            console.log("Full HTTP Response:", response);
 
             const responseData = await response.json();
 
             if (response.ok) {
                 console.log("Book requested successfully:", responseData);
+                // update state
+                // or re-fetch the book data here to reflect the changes.
             } else {
                 console.error("Error requesting the book:", responseData.error);
             }
@@ -98,6 +103,8 @@ const AvailableBooks: React.FC = () => {
         // Close the dialog after making the request
         setIsDialogOpen(false);
     };
+
+
 
 
 

@@ -130,27 +130,49 @@ router.post("/return/:bookId", checkAuthentication, async (req, res) => {
 	}
 });
 
-// Request to borrow a book
 router.patch("/request/:bookId", checkAuthentication, async (req, res) => {
 	try {
+		// Log the user object to verify its structure
+		console.log("Authenticated user object:", req.user);
+
 		// Fetch the book to be requested using its ID
 		const bookToRequest = await Book.findById(req.params.bookId);
 		if (!bookToRequest) {
+			console.log("Book not found with ID:", req.params.bookId);
 			return res.status(404).json({ error: "Book not found." });
 		}
 
+		// Log the current state of 'requestedBy' for this book
+		console.log("Current state of requestedBy:", bookToRequest.requestedBy);
+
 		// Check if the book is already requested by the user
-		if (bookToRequest.requestedBy.includes(req.user._id.toString())) {
+		const isAlreadyRequested = bookToRequest.requestedBy.some(
+			(request) => request.userId.toString() === req.user._id.toString()
+		);
+
+		if (isAlreadyRequested) {
+			console.log("User has already requested this book");
 			return res
 				.status(400)
 				.json({ error: "You've already requested this book." });
 		}
+		console.log(
+			"the username we're about to push to requested by is: " +
+				req.user.username
+		);
+		// Add the user's details to the `requestedBy` array and save the book
+		bookToRequest.requestedBy.push({
+			userId: req.user._id,
+			username: req.user.username, // Assuming the username is on the req.user object
+		});
 
-		// Add the user's ID to the `requestedBy` array and save the book
-		bookToRequest.requestedBy.push(req.user._id);
+		// Log the updated state of 'requestedBy' before saving
+		console.log("Updated state of requestedBy:", bookToRequest.requestedBy);
+
 		await bookToRequest.save();
+		console.log("Book saved successfully");
 
-		res.status(200).json({ message: "Book requested successfully." });
+		res.status(200).json({ message: "The Book was requested successfully." });
 	} catch (error) {
 		console.error("Error when requesting the book:", error);
 		res.status(500).json({ error: "Error requesting the book." });

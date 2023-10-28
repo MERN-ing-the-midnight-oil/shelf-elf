@@ -39,8 +39,16 @@ const BookSchema = new mongoose.Schema(
 		},
 		requestedBy: [
 			{
-				type: mongoose.Schema.Types.ObjectId,
-				ref: "User", // Reference to the User model
+				userId: {
+					type: mongoose.Schema.Types.ObjectId,
+					ref: "User",
+					required: true,
+				},
+				username: {
+					type: String,
+					required: true,
+				},
+				// TODO add user rating
 			},
 		],
 		currentBorrower: {
