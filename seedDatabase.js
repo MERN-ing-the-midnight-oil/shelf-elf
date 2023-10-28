@@ -1,123 +1,164 @@
-//to run seeds, close the server connection and run "node seedDatabes.js"
-
+require("dotenv").config();
 const mongoose = require("mongoose");
-const User = require("./server/models/user"); // Adjust path if needed
-const Book = require("./server/models/book"); // Adjust path if needed
+const bcrypt = require("bcrypt");
+const Book = require("./server/models/book.js");
+const User = require("./server/models/user.js");
+const MONGODB_URI =
+	process.env.MONGODB_URI || "mongodb://localhost:27017/others-covers-database";
 
-const { MONGODB_URI } = require("./server");
-// Connect to MongoDB
-mongoose.connect(MONGODB_URI, {
-	useNewUrlParser: true,
-	useUnifiedTopology: true,
-});
-
-// Ensure not to seed in production environment
-if (process.env.NODE_ENV === "production") {
-	console.error("Cannot seed database in production environment!");
-	process.exit(1);
-}
-
-// Helper functions for data generation
-function getRandomName() {
-	const firstNames = [
-		"John",
-		"Jane",
-		"Alex",
-		"Emily",
-		"Chris",
-		"Katie",
-		"Michael",
-		"Sarah",
-		"David",
-		"Linda",
-	];
-	const lastNames = [
-		"Smith",
-		"Johnson",
-		"Brown",
-		"Williams",
-		"Jones",
-		"Miller",
-		"Davis",
-		"Garcia",
-		"Rodriguez",
-		"Martinez",
-	];
-	``;
-	const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-	const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-
-	// Making sure user names are unique by giving them a unique middle name
-	const middleName = Date.now().toString(36);
-
-	return `${firstName} ${middleName} ${lastName}`;
-}
-
-function getRandomBookTitle() {
-	const adjectives = ["Red", "Mysterious", "Brave", "Lonely", "Silent", "Wild"];
-	const nouns = ["Moon", "Stars", "River", "Mountain", "Forest", "Dream"];
-	const subjects = [
-		"Journey",
-		"Tales",
-		"Stories",
-		"Adventures",
-		"Chronicles",
-		"Diary",
-	];
-	const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
-	const noun = nouns[Math.floor(Math.random() * nouns.length)];
-	const subject = subjects[Math.floor(Math.random() * subjects.length)];
-	return `The ${adjective} ${noun} - ${subject}`;
-}
-
-function getRandomAuthor() {
-	const authors = [
-		"J.K. Fake Rowling",
-		"George Fake Orwell",
-		"J.R.R. Fake Tolkien",
-		"Isaac Fake Asimov",
-		"Agatha Fake Christie",
-		"Jane Fake Austen",
-	];
-	return authors[Math.floor(Math.random() * authors.length)];
-}
-
-function getRandomBook(userId) {
-	return new Book({
-		title: getRandomBookTitle(),
-		author: getRandomAuthor(),
-		status: "available",
-		owner: userId,
-	});
-}
-
-function generateDummyUser() {
-	const user = new User({
-		username: getRandomName(),
-		email: `${getRandomName().split(" ").join("").toLowerCase()}@example.com`,
-		password: "password123",
-	});
-
-	for (let j = 0; j < 10; j++) {
-		const book = getRandomBook(user._id);
-		user.lendingLibrary.push(book);
+(async () => {
+	if (mongoose.connection.readyState === 0) {
+		// 0 means disconnected
+		await mongoose.connect(MONGODB_URI, {
+			useNewUrlParser: true,
+			useUnifiedTopology: true,
+		});
 	}
-	return user;
-}
+})();
 
-// Seed the database
+const userNames = [
+	"BrownBear1981",
+	"SalmonSlayer",
+	"GlacierGuider",
+	"RainforestRover",
+	"TotemCarver",
+	"MidnightSunSeeker",
+	"WhaleWatcher",
+	"IcebergInnovator",
+	"FjordFollower",
+	"RavenReveler",
+	"PineTreePioneer",
+	"MooseMarauder",
+	"TundraTraveler",
+	"SitkaSpruceSavant",
+	"EagleEyeEd",
+	"NorthernLightsLover",
+	"KetchikanClimber",
+	"MendenhallMystic",
+	"HalibutHero",
+	"BearberryBuddy",
+];
+
+const authors = [
+	"J.K. Bowling",
+	"Ernesto Hemmingway",
+	"George Orkwell",
+	"Jane Aired",
+	"Mark Twiddle",
+	"William Shakesbeard",
+	"Louisa May Allright",
+	"Charles Duckins",
+	"Stephen Kingpin",
+	"Virginia Wolf",
+	"Leo ToyStory",
+	"Franz Cafka",
+	"Fyodor DustyYevsky",
+	"Agatha Mystery",
+	"Jane Awesomesten",
+	"Homerun",
+	"James Joist",
+	"John Grin",
+	"Margaret Atwoot",
+	"Isaac Asimoof",
+];
+
+const generateFunnyTitle = (authorName) => {
+	const map = {
+		"J.K. Bowling": [
+			"Hairy Potter and the Philosophers Scone",
+			"Hairy Potter and the Chamber of Soaps",
+			"Hairy Potter and the Prisoner of Asda",
+		],
+		"Ernesto Hemmingway": [
+			"The Old Man and the C",
+			"For Whom the Taco Bell Tolls",
+			"A Farewell to Charms",
+		],
+		"George Orkwell": ["1983½", "Farm of the Animals", "Baking in Catalonia"],
+		"Jane Austentatious": [
+			"Sense and Cents",
+			"Proud and Prejudiced",
+			"Mansfield Parking Lot",
+		],
+		"Oscar Wily": [
+			"The Portrait of Dorian Grayish",
+			"The Canterville Goose",
+			"De Profundish",
+		],
+		"Mark Twinge": [
+			"Adventures of Fish Finn",
+			"A Connecticut Yankee in King Arthurs Short Court",
+			"Toms Sawyer",
+		],
+		"F. Scott Fitsinhere": [
+			"The Grape Gatsby",
+			"This Side of Purgatory",
+			"Tender is the Steak",
+		],
+		"William Shakyhands": [
+			"Much Ado About Muffins",
+			"Romeow and Julienne",
+			"The Tempest in a Teacup",
+		],
+		"Louisa May Not": ["Little Ladies", "Jos Men", "Eight Lads"],
+		"Stephen Queen": ["The Shunning", "Pet Cemetary Sale", "Cujos Cookies"],
+	};
+
+	return map[authorName]
+		? map[authorName][Math.floor(Math.random() * map[authorName].length)]
+		: "Unnamed Novel";
+};
+
 async function seedDatabase() {
-	try {
-		for (let i = 0; i < 50; i++) {
-			const user = generateDummyUser();
-			await user.save(); // This also saves all the books in the user's lendingLibrary
-		}
-		console.log("Database seeded!");
-	} catch (error) {
-		console.error("Error seeding database:", error);
-	} finally {
-		mongoose.connection.close();
+	// Clear out any existing data
+	await User.deleteMany({});
+	await Book.deleteMany({});
+
+	const passwordHash = await bcrypt.hash("BigBlueBus", 10);
+
+	const users = [];
+	for (const name of userNames) {
+		const user = new User({
+			username: name,
+			email: `${name.toLowerCase()}@example.com`,
+			password: passwordHash,
+		});
+		await user.save();
+		users.push(user);
 	}
+
+	for (const author of authors) {
+		for (let i = 0; i < 5; i++) {
+			const owner = users[Math.floor(Math.random() * users.length)];
+			const book = new Book({
+				title: generateFunnyTitle(author),
+				author,
+				description: "This is a humorous book description.",
+				imageUrl: "./src/images/placeholder.png",
+				status: "available",
+				owner: owner._id,
+				requestedBy: [
+					{
+						userId: users[Math.floor(Math.random() * users.length)]._id,
+						username: users[Math.floor(Math.random() * users.length)].username,
+					},
+					{
+						userId: users[Math.floor(Math.random() * users.length)]._id,
+						username: users[Math.floor(Math.random() * users.length)].username,
+					},
+				],
+			});
+			await book.save();
+			owner.lendingLibrary.push(book);
+			await owner.save();
+		}
+	}
+
+	console.log("Database seeded!");
+	mongoose.connection.close();
 }
 
-seedDatabase();
+seedDatabase().catch((error) => {
+	console.error("Error seeding the database:", error);
+	process.exit(1);
+});
