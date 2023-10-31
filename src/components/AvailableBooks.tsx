@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Typography, List, ListItem, Divider, Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 
+interface Owner {
+    _id: string;
+    username: string;
+}
 interface Book {
     _id: string;
     title: string;
     author: string;
     description: string;
     imageUrl?: string;
-    owner: string;
+    owner: Owner;
 }
 
 const AvailableBooks: React.FC = () => {
@@ -112,18 +116,21 @@ const AvailableBooks: React.FC = () => {
         <div>
             <Typography variant="h5">Books Available to Borrow:</Typography>
             <List>
-                {books.map((book, index) => (
+                {books.map((book, index) => (//maybe use _id instead of index as key prob
                     <div key={index}>
                         <ListItem>
                             <Typography variant="h6">{book.title}</Typography>
                             <Typography variant="subtitle1">by {book.author}</Typography>
                             {book.description && <Typography variant="body2">{book.description}</Typography>}
+                            {/* Display the owner's username */}
+                            <Typography variant="subtitle1">Offered by: {book.owner.username}</Typography>
                             <Button color="primary" onClick={() => handleRequestClick(book)}>Request</Button>
                         </ListItem>
                         <Divider />
                     </div>
                 ))}
             </List>
+
             <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
                 <DialogTitle>Confirm Request</DialogTitle>
                 <DialogContent>

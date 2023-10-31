@@ -98,12 +98,16 @@ router.post("/borrow/:bookId", checkAuthentication, async (req, res) => {
 		res.status(500).json({ error: "Error borrowing the book." });
 	}
 });
+
 // Display all books offered by other users
 router.get("/offeredByOthers", checkAuthentication, async (req, res) => {
 	console.log("Fetching books offered by others...");
 	try {
 		console.log("Authenticated user ID:", req.user._id);
-		const otherUsersBooks = await Book.find({ owner: { $ne: req.user._id } });
+		// Populate the 'owner' field with the 'username' from the User model
+		const otherUsersBooks = await Book.find({
+			owner: { $ne: req.user._id },
+		}).populate("owner", "username");
 		console.log("Found books:", otherUsersBooks);
 		res.status(200).json(otherUsersBooks);
 	} catch (error) {
