@@ -6,10 +6,6 @@ import styled from 'styled-components';
 import axios from 'axios';
 import * as Yup from 'yup';
 import { SelectChangeEvent } from '@mui/material/Select';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 const validationSchema = Yup.object({
   email: Yup.string().required('We need your email address').email('Something is strange about that email address'),
@@ -30,39 +26,32 @@ const ErrorText = styled.div`
   margin: 5px 0;
 `;
 
-
 const dummyUsers = [
-  "brownbear1981@example.com",
-  "salmonslayer@example.com",
-  "glacierguider@example.com",
-  "rainforestrover@example.com",
-  "totemcarver@example.com",
-  "midnightsunseeker@example.com",
-  "whalewatcher@example.com",
-  "iceberginnovator@example.com",
-  "fjordfollower@example.com",
-  "ravenreveler@example.com",
-  "pinetreepioneer@example.com",
-  "moosemarauder@example.com",
-  "tundratraveler@example.com",
-  "sitkasprucesavant@example.com",
-  "eagleeyeed@example.com",
-  "northernlightslover@example.com",
-  "ketchikanclimber@example.com",
-  "mendenhallmystic@example.com",
-  "halibuthero@example.com",
-  "bearberrybuddy@example.com",
+  "BrownBear1981@example.com",
+  "SalmonSlayer@example.com",
+  "GlacierGuider@example.com",
+  "RainforestRover@example.com",
+  "TotemCarver@example.com",
+  "MidnightSunSeeker@example.com",
+  "WhaleWatcher@example.com",
+  "IcebergInnovator@example.com",
+  "FjordFollower@example.com",
+  "RavenReveler@example.com",
+  "PineTreePioneer@example.com",
+  "MooseMarauder@example.com",
+  "TundraTraveler@example.com",
+  "SitkaSpruceSavant@example.com",
+  "EagleEyeEd@example.com",
+  "NorthernLightsLover@example.com",
+  "KetchikanClimber@example.com",
+  "MendenhallMystic@example.com",
+  "HalibutHero@example.com",
+  "BearberryBuddy@example.com",
 ];
-
 
 
 const LoginForm: React.FC = () => {
   const { setToken, setUser } = useAuth();
-  const [showPassword, setShowPassword] = React.useState(false);
-
-  const handlePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
 
   const Dropdown: React.FC = () => {
     const { setFieldValue } = useFormikContext();
@@ -79,7 +68,7 @@ const LoginForm: React.FC = () => {
       <FormControl fullWidth variant="outlined" style={{ marginBottom: '20px' }}>
         <InputLabel id="select-user-label">Select a user for testing purposes</InputLabel>
         <Select
-          labelId="select-user-label"
+          labelId="select-user-label"  // Connects the label with the select dropdown
           onChange={handleDropdownChange}
           defaultValue=""
         >
@@ -93,9 +82,9 @@ const LoginForm: React.FC = () => {
           ))}
         </Select>
       </FormControl>
+
     );
   };
-
 
   return (
     <Formik
@@ -103,30 +92,41 @@ const LoginForm: React.FC = () => {
       validationSchema={validationSchema}
       onSubmit={async (values, { setSubmitting, setErrors }) => {
         try {
+          // First, the user logs in
+          console.log('Sending login request with values: ', values);
           const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
-          const loginResponse = await axios.post(`${API_URL}/api/users/login`, values);
 
+          const loginResponse = await axios.post(`${API_URL}/api/users/login`, values);
+          console.log('Login Response to : ', loginResponse.data);
+          console.log('Login Request Headers:', loginResponse.config.headers);
           if (loginResponse.status === 200 && loginResponse.data.token) {
             const token = loginResponse.data.token;
             localStorage.setItem('userToken', token);
-            setToken(token);
+            setToken(token);  // Set token in context
 
+            // Then, fetch the user data with the obtained token
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            const userResponse = await axios.get(`${API_URL}/api/users/me`, config);
+            console.log('Fetch User Request Headers:', config.headers);
+            const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
 
+            const userResponse = await axios.get(`${API_URL}/api/users/me`, config);
+            console.log('User Response: ', userResponse.data);
             setUser(userResponse.data);  // Set user data in context
 
+            // Store user's ID in local storage
             const userId = userResponse.data._id;
             if (userId) {
               localStorage.setItem('userId', userId);
             }
 
+            setSubmitting(false);
           } else {
             setErrors({ email: ' ', password: loginResponse.data.message || 'Invalid credentials' });
+            setSubmitting(false);
           }
         } catch (error) {
+          console.error('Login Error: ', error);
           setErrors({ email: ' ', password: 'Invalid credentials or server error' });
-        } finally {
           setSubmitting(false);
         }
       }}
@@ -156,24 +156,12 @@ const LoginForm: React.FC = () => {
               {({ field, form }: FieldProps) => (
                 <TextField
                   {...field}
-                  type={showPassword ? "text" : "password"}
+                  type="password"
                   label="Password"
                   variant="outlined"
                   fullWidth
                   helperText={form.touched.password && typeof form.errors.password === 'string' ? form.errors.password : undefined}
                   error={form.touched.password && Boolean(form.errors.password)}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle password visibility"
-                          onClick={handlePasswordVisibility}
-                        >
-                          {showPassword ? <Visibility /> : <VisibilityOff />}
-                        </IconButton>
-                      </InputAdornment>
-                    )
-                  }}
                 />
               )}
             </Field>
@@ -185,6 +173,6 @@ const LoginForm: React.FC = () => {
       )}
     </Formik>
   );
-
 };
+
 export default LoginForm;
