@@ -118,11 +118,20 @@ async function seedDatabase() {
 		await user.save();
 		users.push(user);
 	}
-
 	let bookCounter = 0;
 	for (const user of users) {
 		for (let i = 0; i < 3; i++) {
+			// Check if bookCounter has exceeded the length of bookList
+			if (bookCounter >= bookList.length) {
+				console.error("Ran out of books to assign!");
+				break; // Exit the inner loop if we have no more books to assign
+			}
+
 			const bookInfo = bookList[bookCounter];
+			console.log("bookCounter:", bookCounter);
+			console.log("bookList length:", bookList.length);
+			console.log("Current user:", user.username);
+
 			const book = new Book({
 				title: bookInfo.title,
 				author: bookInfo.author,
@@ -144,7 +153,7 @@ async function seedDatabase() {
 			await book.save();
 			user.lendingLibrary.push(book);
 			await user.save();
-			bookCounter++;
+			bookCounter++; // Increment the counter
 		}
 	}
 
