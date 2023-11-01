@@ -7,7 +7,7 @@ import axios from 'axios';
 import * as Yup from 'yup';
 import zxcvbn from 'zxcvbn';
 
-//images for dynamic password fun thing
+//images for dynamic password 
 import weakImage from '../images/weak-image.png';
 import belowAverageImage from '../images/below-average-image.png';
 import averageImage from '../images/average-image.png';
@@ -61,13 +61,16 @@ const PasswordStrengthBar = styled.div<{ strength: number }>`
 `;
 
 const RegisterForm: React.FC = () => {
-  const [passwordStrength, setPasswordStrength] = useState(0);
-  const [registrationStatus, setRegistrationStatus] = useState<string | null>(null);
+  const [passwordStrength, setPasswordStrength] = useState<number | null>(null); const [registrationStatus, setRegistrationStatus] = useState<string | null>(null);
   const { setToken, setUser } = useAuth();
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    setPasswordStrength(zxcvbn(val).score);
+    if (val) {
+      setPasswordStrength(zxcvbn(val).score);
+    } else {
+      setPasswordStrength(null); // Reset the password strength when the field is cleared
+    }
   };
 
   return (
@@ -177,12 +180,17 @@ const RegisterForm: React.FC = () => {
                       field.onChange(e);
                       handlePasswordChange(e);
                     }}
-
                   />
                   <PasswordStrengthMeter>
-                    <PasswordStrengthBar strength={passwordStrength} />
-                    <img src={passwordImages[passwordStrength]} alt="Password strength" style={{ width: '300px', height: '300px' }} />
-                    <Typography variant="body2">{passwordCaptions[passwordStrength]}</Typography>
+                    {passwordStrength !== null ? (
+                      <>
+                        <PasswordStrengthBar strength={passwordStrength} />
+                        <img src={passwordImages[passwordStrength]} alt="Password strength" style={{ width: '300px', height: '300px' }} />
+                        <Typography variant="body2">{passwordCaptions[passwordStrength]}</Typography>
+                      </>
+                    ) : (
+                      <Typography variant="body2">Type in a Password to see its strength</Typography>
+                    )}
                   </PasswordStrengthMeter>
                 </div>
               )}
