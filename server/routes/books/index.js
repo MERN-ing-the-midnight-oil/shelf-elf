@@ -1,6 +1,8 @@
 // routes for handling book-related requests
 const express = require("express");
 const Book = require("../../models/book");
+const User = require("../../models/user");
+
 const router = express.Router();
 const { checkAuthentication } = require("../../../middlewares/authentication"); // Import the middleware
 
