@@ -20,7 +20,7 @@ const AvailableBooks: React.FC = () => {
     const [selectedBook, setSelectedBook] = useState<Book | null>(null);
 
     useEffect(() => {
-        console.log("Starting the fetch for AvailableBooks...");
+        // console.log("Starting the fetch for AvailableBooks...");
 
         // Fetch the books available from other users
         const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
@@ -32,7 +32,7 @@ const AvailableBooks: React.FC = () => {
             }
         })
             .then(res => {
-                console.log("Client Received response from server. Status code:", res.status);
+                // console.log("Client Received response from server. Status code:", res.status);
 
                 // If the response is not OK, throw an error to be caught in the catch block
                 if (!res.ok) {
@@ -47,7 +47,7 @@ const AvailableBooks: React.FC = () => {
 
 
             .then(data => {
-                console.log("Received book data:", data);
+                // console.log("Received book data:", data);
                 setBooks(data);
             })
             .catch(err => {
@@ -66,18 +66,18 @@ const AvailableBooks: React.FC = () => {
             return;
         }
 
-        console.log("Selected Book for Request:", selectedBook);
+        // console.log("Selected Book for Request:", selectedBook);
 
         // Assuming you have the token available in your component's context or state
         const token = localStorage.getItem('userToken');
-        console.log("User Token:", token);
+        // console.log("User Token:", token);
 
         // Define the API base URL
         const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
 
         // Define the endpoint URL
         const requestURL = `${API_URL}/api/books/request/${selectedBook._id}`;
-        console.log("Requesting URL:", requestURL);
+        // console.log("Requesting URL:", requestURL);
 
         try {
             const response = await fetch(requestURL, {
@@ -88,7 +88,7 @@ const AvailableBooks: React.FC = () => {
                 }
             });
 
-            console.log("Full HTTP Response:", response);
+            // console.log("Full HTTP Response:", response);
 
             const responseData = await response.json();
 

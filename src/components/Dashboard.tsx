@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import MyLendingLibrary from './MyLendingLibrary';
 import LendForm from './LendForm';
 import AvailableBooks from './AvailableBooks';
+import MyRequestedBooks from './MyRequestedBooks'; // Import the new component
 
 const Dashboard: React.FC = () => {
   const { user, setToken, setUser } = useAuth(); // Get user and authentication functions
@@ -25,7 +26,8 @@ const Dashboard: React.FC = () => {
       <Typography variant="h4">
         Welcome, {user ? user.username : 'Guest'}!
       </Typography>
-
+      {/* Display user's requested books */}
+      <MyRequestedBooks token={token} />
       {/* Display user's books */}
       <MyLendingLibrary token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />
 

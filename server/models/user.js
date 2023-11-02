@@ -14,10 +14,16 @@ const UserSchema = new mongoose.Schema({
 	},
 	password: {
 		type: String,
-		required: true, // Consider encrypting
+		required: true,
 	},
-	lendingLibrary: [Book.schema], // Embedding the Book schema
-	borrowedBooks: [Book.schema], // Array of borrowed books
+	lendingLibrary: [Book.schema],
+	borrowedBooks: [Book.schema],
+	requestedBooks: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Book",
+		},
+	],
 });
 
 module.exports = mongoose.model("User", UserSchema);

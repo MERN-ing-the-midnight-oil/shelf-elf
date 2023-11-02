@@ -104,5 +104,29 @@ router.get("/lending-library", async (req, res) => {
 		res.status(500).json({ error: "Failed to fetch lending library" });
 	}
 });
+//Display the logged in user's requested books
+router.get("/requested-books", checkAuthentication, async (req, res) => {
+	console.log("Requested Books Route Hit");
+	console.log("User from req.user:", req.user);
+
+	// Detailed logging
+	console.log("Headers:", req.headers);
+	console.log("Body:", req.body);
+	console.log("Params:", req.params);
+	console.log("Query:", req.query);
+
+	try {
+		// Assuming checkAuthentication middleware sets req.user
+		const user = await User.findById(req.user._id).populate("requestedBooks");
+
+		if (!user) {
+			return res.status(404).json({ error: "User not found." });
+		}
+		res.status(200).json(user.requestedBooks);
+	} catch (error) {
+		console.error("Failed to fetch requested books. Error:", error);
+		res.status(500).json({ error: "Failed to fetch requested books" });
+	}
+});
 
 module.exports = router;

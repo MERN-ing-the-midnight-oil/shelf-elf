@@ -22,6 +22,13 @@ const corsOptions = {
 	optionsSuccessStatus: 204,
 };
 
+// Log All Incoming Requests Middleware
+app.use((req, res, next) => {
+	console.log(`Incoming request: ${req.method} ${req.path}`);
+	console.log("Headers:", req.headers);
+	next();
+});
+
 // Middlewares
 app.use(cors(corsOptions)); // Apply CORS middleware
 app.use(express.json()); // For parsing application/json
@@ -37,12 +44,12 @@ mongoose
 
 // Import and use routes
 const bookRoutes = require("./routes/books"); // Adjusted for simplicity
-const userRoutes = require("./routes/users"); // Adjusted for simplicity
+const userRoutes = require("./routes/users");
 
 app.use("/api/books", bookRoutes);
-app.use("/api/users", userRoutes); // Use the userRoutes with the "/api/users" endpoint
+app.use("/api/users", userRoutes);
 
-//Deployment- serving the static files from express
+// Deployment - Serving the static files from express
 if (process.env.NODE_ENV === "production") {
 	app.use(express.static(path.join(__dirname, "../build")));
 

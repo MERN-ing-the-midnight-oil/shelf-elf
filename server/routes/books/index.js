@@ -52,7 +52,7 @@ router.delete(
 // Display the logged-in user's lending library
 router.get("/my-library", checkAuthentication, async (req, res) => {
 	// Log when route is accessed
-	console.log("Accessed /books/my-library route");
+	// console.log("Accessed /books/my-library route");
 
 	// Check if req.user exists
 	if (!req.user) {
@@ -62,13 +62,13 @@ router.get("/my-library", checkAuthentication, async (req, res) => {
 
 	try {
 		// Log the user details to check if the user info is being correctly retrieved
-		console.log("Logged-in User ID:", req.user._id);
+		// console.log("Logged-in User ID:", req.user._id);
 
 		// Find all books owned by the logged-in user
 		const myBooks = await Book.find({ owner: req.user._id });
 
 		// Log the found books
-		console.log("Fetched books:", myBooks);
+		// console.log("Fetched books:", myBooks);
 
 		res.status(200).json(myBooks);
 	} catch (error) {
@@ -108,7 +108,7 @@ router.get("/offeredByOthers", checkAuthentication, async (req, res) => {
 		const otherUsersBooks = await Book.find({
 			owner: { $ne: req.user._id },
 		}).populate("owner", "username");
-		console.log("Found books:", otherUsersBooks);
+		// console.log("Found books:", otherUsersBooks);
 		res.status(200).json(otherUsersBooks);
 	} catch (error) {
 		console.error("Detailed error:", error); // log the actual error for debugging
@@ -134,6 +134,7 @@ router.post("/return/:bookId", checkAuthentication, async (req, res) => {
 	}
 });
 
+//Request a book
 router.patch("/request/:bookId", checkAuthentication, async (req, res) => {
 	try {
 		// Log the user object to verify its structure
@@ -172,9 +173,13 @@ router.patch("/request/:bookId", checkAuthentication, async (req, res) => {
 
 		// Log the updated state of 'requestedBy' before saving
 		console.log("Updated state of requestedBy:", bookToRequest.requestedBy);
-
+		// Update the user's `requestedBooks` list
+		await User.findByIdAndUpdate(req.user._id, {
+			$push: { requestedBooks: bookToRequest._id },
+		});
+		//Save the updated book
 		await bookToRequest.save();
-		console.log("Book saved successfully");
+		console.log("Book and user updated successfully");
 
 		res.status(200).json({ message: "The Book was requested successfully." });
 	} catch (error) {

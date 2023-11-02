@@ -123,12 +123,9 @@ async function seedDatabase() {
 		for (let i = 0; i < 3; i++) {
 			if (bookCounter >= bookList.length) {
 				console.error("Ran out of books to assign!");
-				break;
 			}
 
 			const bookInfo = bookList[bookCounter];
-			const randomUser1 = users[Math.floor(Math.random() * users.length)];
-			const randomUser2 = users[Math.floor(Math.random() * users.length)];
 
 			const book = new Book({
 				title: bookInfo.title,
@@ -138,21 +135,19 @@ async function seedDatabase() {
 				status: "available",
 				owner: user._id,
 				requestedBy: [
-					{ userId: randomUser1._id, username: randomUser1.username },
-					{ userId: randomUser2._id, username: randomUser2.username },
+					{
+						userId: users[Math.floor(Math.random() * users.length)]._id,
+						username: users[Math.floor(Math.random() * users.length)].username,
+					},
+					{
+						userId: users[Math.floor(Math.random() * users.length)]._id,
+						username: users[Math.floor(Math.random() * users.length)].username,
+					},
 				],
 			});
 			await book.save();
 			user.lendingLibrary.push(book);
-
-			// Add the book to the requestedBooks of the random users
-			randomUser1.requestedBooks.push(book._id);
-			randomUser2.requestedBooks.push(book._id);
-
 			await user.save();
-			await randomUser1.save();
-			await randomUser2.save();
-
 			bookCounter++; // Increment the counter
 		}
 	}
