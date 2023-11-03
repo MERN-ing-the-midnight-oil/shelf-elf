@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import RegisterForm from './components/RegisterForm';
 import LoginForm from './components/LoginForm';
-import Dashboard from './components/Dashboard';
 import Header from './components/Header';
 import LendBooks from './components/LendBooks';
 import RequestBooks from './components/RequestBooks';
