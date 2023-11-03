@@ -1,40 +1,44 @@
 // src/components/Dashboard.tsx
-import React, { useState } from 'react';
-import { Button, Typography } from '@mui/material';
+import React from 'react';
+import { Button, Typography, Tabs, Tab } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
-import MyLendingLibrary from './MyLendingLibrary';
-import LendForm from './LendForm';
-import AvailableBooks from './AvailableBooks';
-import MyRequestedBooks from './MyRequestedBooks'; // Import the new component
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
   const { user, setToken, setUser } = useAuth(); // Get user and authentication functions
+  const navigate = useNavigate();
 
-  const token = localStorage.getItem('userToken'); // Retrieve the token from local storage
-  const [refetchCounter, setRefetchCounter] = useState(0);
   // Logout handler
   const handleLogout = () => {
     setToken(null);
     setUser(null);
     localStorage.removeItem('userToken');
     console.log('User logged out');
+    navigate('/'); // Navigate back to the home page after logout
+  };
+
+  // Tab navigation handler
+  const handleTabNavigation = (path: string) => {
+    navigate(path);
   };
 
   return (
     <div>
       {/* Display the user's name if available */}
-      <Typography variant="h4">
+      <Typography variant="h4" style={{ margin: '20px 0' }}>
         Welcome, {user ? user.username : 'Guest'}!
       </Typography>
-      {/* Display user's requested books */}
-      <MyRequestedBooks token={token} />
-      {/* Display user's books */}
-      <MyLendingLibrary token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />
 
-      {/* Form to lend books */}
-      <LendForm token={token} setRefetchCounter={setRefetchCounter} />
-
-      <AvailableBooks />
+      {/* Tabs for navigation */}
+      <Tabs
+        orientation="horizontal"
+        variant="scrollable"
+        scrollButtons="auto"
+        aria-label="Dashboard navigation tabs"
+      >
+        <Tab label="Manage offerings" onClick={() => handleTabNavigation('/lend-books')} />
+        <Tab label="Manage requests" onClick={() => handleTabNavigation('/request-books')} />
+      </Tabs>
 
       {/* Logout button */}
       <div style={{ margin: '20px 0' }}>
