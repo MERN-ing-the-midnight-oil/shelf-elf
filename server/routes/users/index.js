@@ -117,7 +117,14 @@ router.get("/requested-books", checkAuthentication, async (req, res) => {
 
 	try {
 		// Assuming checkAuthentication middleware sets req.user
-		const user = await User.findById(req.user._id).populate("requestedBooks");
+		const user = await User.findById(req.user._id).populate({
+			path: "requestedBooks",
+			populate: {
+				path: "owner",
+				select: "username",
+			},
+			select: "title author description imageUrl status owner", // Select the fields you want to include
+		});
 
 		if (!user) {
 			return res.status(404).json({ error: "User not found." });
