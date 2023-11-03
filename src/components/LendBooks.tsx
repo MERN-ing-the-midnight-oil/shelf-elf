@@ -8,8 +8,10 @@ const LendBooks: React.FC<{ token: string, setRefetchCounter: (value: React.SetS
         <div>
             {/* Display user's lending library */}
             <MyLendingLibrary token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />
-            {/* Form to add titles to the lending library */}
-            <LendForm token={token} setRefetchCounter={setRefetchCounter} />
+            {/* Form to add titles to the lending library, with a background */}
+            <div style={{ backgroundColor: '#f5f5f5', padding: '20px', borderRadius: '5px', margin: '20px 0' }}>
+                <LendForm token={token} setRefetchCounter={setRefetchCounter} />
+            </div>
         </div>
     );
 }

@@ -114,7 +114,7 @@ const AvailableBooks: React.FC = () => {
 
     return (
         <div>
-            <Typography variant="h5">Books Available to Borrow:</Typography>
+            <Typography variant="h5">Books that you can request to borrow from other users:</Typography>
             <List>
                 {books.map((book, index) => (//maybe use _id instead of index as key prob
                     <div key={index}>
