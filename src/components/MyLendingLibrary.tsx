@@ -85,7 +85,7 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
   return (
     <div>
       {myBooks.length === 0 ? (
-        <p>You don't have any books in your library yet.</p>
+        <p>You don't have any books in your offerings library yet.</p>
       ) : (
         <>
           <h1>You are offering to lend the following books:</h1>

@@ -111,7 +111,7 @@ const LendForm: React.FC<LendFormProps> = ({ token, setRefetchCounter }) => {
   return (
     <FormContainer>
       <Typography variant="h5" gutterBottom>
-        Add new titles to your lending library
+        Search the Google Books API here to find titles to add to your offerings library:
       </Typography>
       <Formik
         initialValues={{ title: '' }}
