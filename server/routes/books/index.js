@@ -7,6 +7,26 @@ const router = express.Router();
 const { checkAuthentication } = require("../../../middlewares/authentication"); // Import the middleware
 
 // Offer a book for lending
+// router.post("/add", checkAuthentication, async (req, res) => {
+// 	console.log("Received request to add book to lending library");
+// 	try {
+// 		// Extract the relevant book data from the request
+// 		const { title, description, author } = req.body;
+
+// 		const newBook = new Book({
+// 			title,
+// 			description,
+// 			author,
+// 			owner: req.user._id, // assuming req.user contains the authenticated user data
+// 		});
+
+// 		await newBook.save();
+// 		res.status(201).json(newBook);
+// 	} catch (error) {
+// 		console.error("Error when offering the book:", error); // Add this line
+// 		res.status(500).json({ error: "Error offering the book." });
+// 	}
+// });
 router.post("/add", checkAuthentication, async (req, res) => {
 	console.log("Received request to add book to lending library");
 	try {
@@ -20,10 +40,18 @@ router.post("/add", checkAuthentication, async (req, res) => {
 			owner: req.user._id, // assuming req.user contains the authenticated user data
 		});
 
+		// Save the new book
 		await newBook.save();
+
+		// Add the new book's ID to the user's lendingLibrary array
+		await User.updateOne(
+			{ _id: req.user._id },
+			{ $addToSet: { lendingLibrary: newBook } }
+		);
+
 		res.status(201).json(newBook);
 	} catch (error) {
-		console.error("Error when offering the book:", error); // Add this line
+		console.error("Error when offering the book:", error);
 		res.status(500).json({ error: "Error offering the book." });
 	}
 });
