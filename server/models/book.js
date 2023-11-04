@@ -29,7 +29,7 @@ const BookSchema = new mongoose.Schema(
 		googleBooksId: String,
 		status: {
 			type: String,
-			enum: ["available", "checked-out", "reserved"],
+			enum: ["available", "checked-out", "unavailable"],
 			default: "available",
 		},
 		owner: {

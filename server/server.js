@@ -58,11 +58,6 @@ if (process.env.NODE_ENV === "production") {
 	});
 }
 
-// Default Route (for testing)
-app.get("/", (req, res) => {
-	res.send("Hello, Others-Covers!");
-});
-
 // Server Listening
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {

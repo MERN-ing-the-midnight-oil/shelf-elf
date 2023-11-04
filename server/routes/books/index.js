@@ -189,5 +189,94 @@ router.patch("/request/:bookId", checkAuthentication, async (req, res) => {
 		res.status(500).json({ error: "Error requesting the book." });
 	}
 });
+// DELETE /api/books/:bookId
+//deletes a book from a users list of requests
+router.delete("/:bookId", checkAuthentication, async (req, res) => {
+	try {
+		// Log the user object to verify its structure
+		console.log("Authenticated user object:", req.user);
+
+		// Fetch the book to be unrequested using its ID
+		const bookToUnrequest = await Book.findById(req.params.bookId);
+		if (!bookToUnrequest) {
+			console.log("Book not found with ID:", req.params.bookId);
+			return res.status(404).json({ error: "Book not found." });
+		}
+
+		// Log the current state of 'requestedBy' for this book
+		console.log("Current state of requestedBy:", bookToUnrequest.requestedBy);
+
+		// Check if the book is actually requested by the user
+		const isRequested = bookToUnrequest.requestedBy.some(
+			(request) => request.userId.toString() === req.user._id.toString()
+		);
+
+		if (!isRequested) {
+			console.log("User has not requested this book");
+			return res
+				.status(400)
+				.json({ error: "You haven't requested this book." });
+		}
+
+		// Remove the user's details from the `requestedBy` array
+		bookToUnrequest.requestedBy = bookToUnrequest.requestedBy.filter(
+			(request) => request.userId.toString() !== req.user._id.toString()
+		);
+
+		// Log the updated state of 'requestedBy' before saving
+		console.log("Updated state of requestedBy:", bookToUnrequest.requestedBy);
+
+		// Update the user's `requestedBooks` list
+		await User.findByIdAndUpdate(req.user._id, {
+			$pull: { requestedBooks: bookToUnrequest._id },
+		});
+
+		// Save the updated book
+		await bookToUnrequest.save();
+		console.log("Book and user updated successfully");
+
+		res.status(200).json({ message: "The Book was unrequested successfully." });
+	} catch (error) {
+		console.error("Error when unrequesting the book:", error);
+		res.status(500).json({ error: "Error unrequesting the book." });
+	}
+});
+
+// Mark a book as unavailable
+router.patch("/unavailable/:bookId", checkAuthentication, async (req, res) => {
+	try {
+		// Fetch the book to be marked as unavailable using its ID
+		const bookToUpdate = await Book.findById(req.params.bookId);
+		if (!bookToUpdate) {
+			console.log("Book not found with ID:", req.params.bookId);
+			return res.status(404).json({ error: "Book not found." });
+		}
+
+		// Check if the book is already marked as unavailable
+		if (bookToUpdate.status === "unavailable") {
+			console.log("Book is already marked as unavailable");
+			return res
+				.status(400)
+				.json({ error: "Book is already marked as unavailable." });
+		}
+
+		// Update the book's status to 'unavailable'
+		bookToUpdate.status = "unavailable";
+
+		// Save the updated book
+		await bookToUpdate.save();
+		console.log("Book marked as unavailable successfully");
+
+		// Optionally, notify users who requested this book that it's now unavailable
+		// This would require additional logic to find those users and update their view
+
+		res
+			.status(200)
+			.json({ message: "Book marked as unavailable successfully." });
+	} catch (error) {
+		console.error("Error when updating the book status:", error);
+		res.status(500).json({ error: "Error updating the book status." });
+	}
+});
 
 module.exports = router;

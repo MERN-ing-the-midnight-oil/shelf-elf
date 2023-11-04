@@ -1,7 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Paper } from '@mui/material';
-
 
 interface Request {
   userID: string;
@@ -25,6 +22,7 @@ interface MyLendingLibraryProps {
 
 const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCounter, refetchCounter }) => {
   const [myBooks, setMyBooks] = useState<Book[]>([]);
+
 
 
   const fetchBooksOwnedByUser = async () => {
@@ -51,8 +49,7 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
     }
   };
 
-
-  const handleMarkAsUnavailable = async (id: string) => {
+  const handleDeleteBook = async (id: string) => {
     if (!token) {
       console.error('Token not provided.');
       return;
@@ -60,8 +57,8 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
 
     try {
       const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
-      const response = await fetch(`${API_URL}/api/books/unavailable/${id}`, {
-        method: 'PATCH',
+      const response = await fetch(`${API_URL}/api/books/delete-offer/${id}`, {
+        method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -69,14 +66,14 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
       if (response.ok) {
         // Re-fetch books to update the UI
         setRefetchCounter(prev => prev + 1);  // Increment the counter
+
       } else {
-        console.error('Failed to mark book as unavailable');
+        console.error('Failed to delete book');
       }
     } catch (error) {
-      console.error('Failed to mark book as unavailable:', error);
+      console.error('Failed to delete book:', error);
     }
   };
-
 
   useEffect(() => {
     fetchBooksOwnedByUser();
@@ -92,40 +89,26 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
       ) : (
         <>
           <h1>You are offering to lend the following books:</h1>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Title</TableCell>
-                  <TableCell>Author</TableCell>
-                  <TableCell>Requested By</TableCell>
-                  <TableCell align="right">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {myBooks.map((book) => (
-                  <TableRow key={book._id || book.googleBooksId}>
-                    <TableCell>{book.title}</TableCell>
-                    <TableCell>{book.author}</TableCell>
-                    <TableCell>
-                      {book.requestedBy && book.requestedBy.length > 0
-                        ? book.requestedBy.map((request) => request.username).join(', ')
-                        : 'No current requests.'}
-                    </TableCell>
-                    <TableCell align="right">
-                      <IconButton onClick={() => handleMarkAsUnavailable(book._id)} color="error">
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <ul>
+            {myBooks.map((book) => (
+              <li key={book._id || book.googleBooksId}>
+                <h2>{book.title}</h2>
+                <p>{book.author}</p>
+                {book.requestedBy && book.requestedBy.length > 0 ? (
+                  <p>Requested By: {book.requestedBy.map(request => request.username).join(', ')}</p> // Display all usernames joined by a comma.
+                ) : (
+                  <p>No current requests.</p>
+                )}
+                <button onClick={() => handleDeleteBook(book._id)}>Delete</button>
+              </li>
+            ))}
+          </ul>
         </>
       )}
     </div>
   );
+
+
 };
 
 export default MyLendingLibrary;
