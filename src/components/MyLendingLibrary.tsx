@@ -1,6 +1,9 @@
+//Displays the books offered by a single user
+
 import React, { useEffect, useState } from 'react';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Paper } from '@mui/material';
+//import DeleteIcon from '@mui/icons-material/Delete';
+import NotInterestedIcon from '@mui/icons-material/NotInterested';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Paper, Tooltip } from '@mui/material';
 
 
 interface Request {
@@ -14,6 +17,7 @@ interface Book {
   title: string;
   author: string;
   requestedBy: Request[];  // This field is an array of user IDs.
+  status: string;  // Add this line
 }
 
 
@@ -99,12 +103,13 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
                   <TableCell>Title</TableCell>
                   <TableCell>Author</TableCell>
                   <TableCell>Requested By</TableCell>
+                  <TableCell>Status</TableCell> {/* Add this column */}
                   <TableCell align="right">Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {myBooks.map((book) => (
-                  <TableRow key={book._id || book.googleBooksId}>
+                  <TableRow key={book._id || book.googleBooksId} style={{ backgroundColor: book.status === 'unavailable' ? '#f0f0f0' : '' }}> {/* Grey out unavailable books */}
                     <TableCell>{book.title}</TableCell>
                     <TableCell>{book.author}</TableCell>
                     <TableCell>
@@ -112,10 +117,19 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
                         ? book.requestedBy.map((request) => request.username).join(', ')
                         : 'No current requests.'}
                     </TableCell>
+                    <TableCell>{book.status}</TableCell> {/* Display book status */}
                     <TableCell align="right">
-                      <IconButton onClick={() => handleMarkAsUnavailable(book._id)} color="error">
-                        <DeleteIcon />
-                      </IconButton>
+                      {book.status !== 'unavailable' && ( // Only show action if book is not unavailable
+                        <Tooltip title="Mark as unavailable">
+                          <IconButton onClick={() => {
+                            if (window.confirm('Are you sure you want to mark this book as unavailable?')) {
+                              handleMarkAsUnavailable(book._id);
+                            }
+                          }} color="error">
+                            <NotInterestedIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -129,3 +143,4 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
 };
 
 export default MyLendingLibrary;
+
