@@ -1,8 +1,8 @@
 //Displays the books offered by a single user
 
 import React, { useEffect, useState } from 'react';
-//import DeleteIcon from '@mui/icons-material/Delete';
-import NotInterestedIcon from '@mui/icons-material/NotInterested';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import BlockIcon from '@mui/icons-material/Block';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Paper, Tooltip } from '@mui/material';
 
 
@@ -29,7 +29,6 @@ interface MyLendingLibraryProps {
 
 const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCounter, refetchCounter }) => {
   const [myBooks, setMyBooks] = useState<Book[]>([]);
-
 
   const fetchBooksOwnedByUser = async () => {
     if (!token) {
@@ -81,6 +80,33 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
     }
   };
 
+  const handleDeleteForever = async (id: string) => {
+    if (!token) {
+      console.error('Token not provided.');
+      return;
+    }
+
+    try {
+      const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+      const response = await fetch(`${API_URL}/api/books/delete-offer/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        // Re-fetch books to update the UI
+        setRefetchCounter(prev => prev + 1);
+      } else {
+        console.error('Failed to delete book permanently');
+      }
+    } catch (error) {
+      console.error('Failed to delete book permanently:', error);
+    }
+  };
+
+
+
 
   useEffect(() => {
     fetchBooksOwnedByUser();
@@ -103,13 +129,13 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
                   <TableCell>Title</TableCell>
                   <TableCell>Author</TableCell>
                   <TableCell>Requested By</TableCell>
-                  <TableCell>Status</TableCell> {/* Add this column */}
+                  <TableCell>Status</TableCell>
                   <TableCell align="right">Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {myBooks.map((book) => (
-                  <TableRow key={book._id || book.googleBooksId} style={{ backgroundColor: book.status === 'unavailable' ? '#f0f0f0' : '' }}> {/* Grey out unavailable books */}
+                  <TableRow key={book._id || book.googleBooksId} style={{ backgroundColor: book.status === 'unavailable' ? '#e0e0e0' : '' }}>
                     <TableCell>{book.title}</TableCell>
                     <TableCell>{book.author}</TableCell>
                     <TableCell>
@@ -117,23 +143,25 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
                         ? book.requestedBy.map((request) => request.username).join(', ')
                         : 'No current requests.'}
                     </TableCell>
-                    <TableCell>{book.status}</TableCell> {/* Display book status */}
+                    <TableCell>{book.status}</TableCell> {/* Display the book status here */}
                     <TableCell align="right">
-                      {book.status !== 'unavailable' && ( // Only show action if book is not unavailable
-                        <Tooltip title="Mark as unavailable">
-                          <IconButton onClick={() => {
-                            if (window.confirm('Are you sure you want to mark this book as unavailable?')) {
-                              handleMarkAsUnavailable(book._id);
-                            }
-                          }} color="error">
-                            <NotInterestedIcon />
+                      <Tooltip title="Mark as Unavailable">
+                        <span>
+                          <IconButton onClick={() => handleMarkAsUnavailable(book._id)} color="warning" disabled={book.status === 'unavailable'}>
+                            <BlockIcon />
                           </IconButton>
-                        </Tooltip>
-                      )}
+                        </span>
+                      </Tooltip>
+                      <Tooltip title="Delete Forever">
+                        <IconButton onClick={() => handleDeleteForever(book._id)} color="error">
+                          <DeleteForeverIcon />
+                        </IconButton>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
+
             </Table>
           </TableContainer>
         </>
@@ -143,4 +171,3 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
 };
 
 export default MyLendingLibrary;
-
