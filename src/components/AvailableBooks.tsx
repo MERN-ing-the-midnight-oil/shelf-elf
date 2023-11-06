@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, List, ListItem, Divider, Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+import { Typography, Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 
 interface Owner {
     _id: string;
@@ -111,25 +111,41 @@ const AvailableBooks: React.FC = () => {
 
 
 
-
     return (
         <div>
             <Typography variant="h5">Books that you can request to borrow from other users:</Typography>
-            <List>
-                {books.map((book, index) => (//maybe use _id instead of index as key prob
-                    <div key={index}>
-                        <ListItem>
-                            <Typography variant="h6">{book.title}</Typography>
-                            <Typography variant="subtitle1">by {book.author}</Typography>
-                            {book.description && <Typography variant="body2">{book.description}</Typography>}
-                            {/* Display the owner's username */}
-                            <Typography variant="subtitle1">Offered by: {book.owner.username}</Typography>
-                            <Button color="primary" onClick={() => handleRequestClick(book)}>Request</Button>
-                        </ListItem>
-                        <Divider />
-                    </div>
-                ))}
-            </List>
+            <TableContainer component={Paper}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Title</TableCell>
+                            <TableCell>Author</TableCell>
+                            <TableCell>Description</TableCell>
+                            <TableCell>Offered by</TableCell>
+                            <TableCell align="right">Action</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {books.map((book) => (
+                            <TableRow key={book._id}>
+                                <TableCell>{book.title}</TableCell>
+                                <TableCell>{book.author}</TableCell>
+                                <TableCell>{book.description}</TableCell>
+                                <TableCell>{book.owner.username}</TableCell>
+                                <TableCell align="right">
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={() => handleRequestClick(book)}
+                                    >
+                                        Request
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
 
             <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
                 <DialogTitle>Confirm Request</DialogTitle>
@@ -142,13 +158,14 @@ const AvailableBooks: React.FC = () => {
                     <Button onClick={() => setIsDialogOpen(false)} color="primary">
                         Cancel
                     </Button>
-                    <Button onClick={handleConfirmRequest} color="primary">
+                    <Button onClick={handleConfirmRequest} color="primary" autoFocus>
                         Confirm
                     </Button>
                 </DialogActions>
             </Dialog>
         </div>
     );
+
 }
 
 export default AvailableBooks;

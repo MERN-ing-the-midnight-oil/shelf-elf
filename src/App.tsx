@@ -35,11 +35,10 @@ function App() {
         <NavigateToBooks /> {/* Use the NavigateToBooks component here */}
         {!token ? (
           <>
-            <LandingHeader />
-            <img src={process.env.PUBLIC_URL + '/libraries.png'} alt="Library" style={{ width: '90%', margin: '1rem 0' }} />
-            <RegisterForm />
-            <hr style={{ margin: '2rem 0' }} />
+            <LandingHeader /> {/* Make sure to adjust the styling of LandingHeader to reduce whitespace */}
             <LoginForm />
+            <hr style={{ margin: '2rem 0' }} />
+            <RegisterForm />
           </>
         ) : (
           <Routes>
