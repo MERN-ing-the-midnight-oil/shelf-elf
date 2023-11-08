@@ -2,6 +2,7 @@
 import React from 'react';
 import MyLendingLibrary from './MyLendingLibrary';
 import LendForm from './LendForm';
+import LendFormManual from './LendFormManual';
 
 const LendBooks: React.FC<{ token: string, setRefetchCounter: (value: React.SetStateAction<number>) => void, refetchCounter: number }> = ({ token, setRefetchCounter, refetchCounter }) => {
     return (
@@ -11,6 +12,10 @@ const LendBooks: React.FC<{ token: string, setRefetchCounter: (value: React.SetS
             {/* Form to add titles to the lending library, with a background */}
             <div style={{ backgroundColor: '#f5f5f5', padding: '20px', borderRadius: '5px', margin: '20px 0' }}>
                 <LendForm token={token} setRefetchCounter={setRefetchCounter} />
+            </div>
+            {/* Manual Entry Form */}
+            <div style={{ backgroundColor: '#e8e8e8', padding: '20px', borderRadius: '5px', margin: '20px 0' }}>
+                <LendFormManual token={token} setRefetchCounter={setRefetchCounter} />
             </div>
         </div>
     );

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Formik, Form, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Button, TextField, Container, Typography, CircularProgress } from '@mui/material';
-
 import { styled } from '@mui/system';
 
 //creating debouncer
@@ -111,7 +110,7 @@ const LendForm: React.FC<LendFormProps> = ({ token, setRefetchCounter }) => {
   return (
     <FormContainer>
       <Typography variant="h5" gutterBottom>
-        Search the Google Books API here to find titles to add to your offerings library:
+        Add offerings by searching the Google Books API:
       </Typography>
       <Formik
         initialValues={{ title: '' }}

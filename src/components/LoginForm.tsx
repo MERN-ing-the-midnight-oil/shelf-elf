@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Formik, Form, Field, FieldProps, ErrorMessage, useFormikContext } from 'formik';
 import { Typography, Button, TextField, FormControl, Select, MenuItem, InputLabel } from '@mui/material';
@@ -60,6 +60,16 @@ const LoginForm: React.FC = () => {
   const { setToken, setUser } = useAuth();
   const [showPassword, setShowPassword] = React.useState(false);
 
+  // Ref to keep track of whether the component is mounted
+  const isMounted = useRef(true);
+
+  // Set the mounted ref to false when the component unmounts
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   const handlePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -74,6 +84,9 @@ const LoginForm: React.FC = () => {
         setFieldValue("password", "BigBlueBus");
       }
     };
+
+
+
 
     return (
       <FormControl fullWidth variant="outlined" style={{ marginBottom: '20px' }}>
@@ -106,30 +119,39 @@ const LoginForm: React.FC = () => {
           const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
           const loginResponse = await axios.post(`${API_URL}/api/users/login`, values);
 
-          if (loginResponse.status === 200 && loginResponse.data.token) {
-            const token = loginResponse.data.token;
-            localStorage.setItem('userToken', token);
-            setToken(token);
+          // Check if the component is still mounted before updating the state
+          if (isMounted.current) {
+            if (loginResponse.status === 200 && loginResponse.data.token) {
+              const token = loginResponse.data.token;
+              localStorage.setItem('userToken', token);
+              setToken(token);
 
-            const config = { headers: { Authorization: `Bearer ${token}` } };
-            const userResponse = await axios.get(`${API_URL}/api/users/me`, config);
+              const config = { headers: { Authorization: `Bearer ${token}` } };
+              const userResponse = await axios.get(`${API_URL}/api/users/me`, config);
 
-            setUser(userResponse.data);  // Set user data in context
+              setUser(userResponse.data);  // Set user data in context
 
-            const userId = userResponse.data._id;
-            if (userId) {
-              localStorage.setItem('userId', userId);
+              const userId = userResponse.data._id;
+              if (userId) {
+                localStorage.setItem('userId', userId);
+              }
+            } else {
+              setErrors({ email: ' ', password: loginResponse.data.message || 'Invalid credentials' });
             }
-
-          } else {
-            setErrors({ email: ' ', password: loginResponse.data.message || 'Invalid credentials' });
           }
         } catch (error) {
-          setErrors({ email: ' ', password: 'Invalid credentials or server error' });
+          // Check if the component is still mounted before setting errors
+          if (isMounted.current) {
+            setErrors({ email: ' ', password: 'Invalid credentials or server error' });
+          }
         } finally {
-          setSubmitting(false);
+          // Check if the component is still mounted before setting submitting to false
+          if (isMounted.current) {
+            setSubmitting(false);
+          }
         }
       }}
+
     >
       {({ isSubmitting }) => (
         <FormContainer>
@@ -187,4 +209,5 @@ const LoginForm: React.FC = () => {
   );
 
 };
+
 export default LoginForm;
