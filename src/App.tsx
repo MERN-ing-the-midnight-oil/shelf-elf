@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import RegisterForm from './components/RegisterForm';
 import LoginForm from './components/LoginForm';
 import Header from './components/Header';
@@ -7,22 +7,6 @@ import LendBooks from './components/LendBooks';
 import RequestBooks from './components/RequestBooks';
 import LandingHeader from './components/LandingHeader';
 import { useAuth } from './context/AuthContext';
-import { useEffect } from 'react';
-
-const NavigateToBooks = () => {
-  const navigate = useNavigate();
-  const { token } = useAuth();
-  const [initialRedirectDone, setInitialRedirectDone] = useState(false);
-
-  useEffect(() => {
-    // If the user is logged in (has a token) and we haven't done the initial redirect, navigate to '/lend-books'
-    if (token && !initialRedirectDone) {
-      navigate('/lend-books');
-      setInitialRedirectDone(true); // Prevent further redirects after the initial one
-    }
-  }, [token, navigate, initialRedirectDone]);
-  return null; // This component doesn't render anything
-};
 
 function App() {
   const { token } = useAuth();
@@ -32,21 +16,21 @@ function App() {
     <Router>
       <div className="App">
         <Header />
-        <NavigateToBooks /> {/* Use the NavigateToBooks component here */}
-        {!token ? (
-          <>
-            <LandingHeader /> {/* Make sure to adjust the styling of LandingHeader to reduce whitespace */}
-            <LoginForm />
-            <hr style={{ margin: '2rem 0' }} />
-            <RegisterForm />
-          </>
-        ) : (
+        {token ? (
           <Routes>
+            {/* Routes for logged-in users */}
             <Route path="/lend-books" element={<LendBooks token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />} />
             <Route path="/request-books" element={<RequestBooks token={token} />} />
-            {/* Redirect all other paths to '/lend-books' */}
-            <Route path="*" element={<LendBooks token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />} />
+            {/* Redirect any other path to "/lend-books" */}
+            <Route path="*" element={<Navigate replace to="/lend-books" />} />
           </Routes>
+        ) : (
+          <>
+            {/* Routes for non-logged-in users */}
+            <LandingHeader />
+            <LoginForm />
+            <RegisterForm />
+          </>
         )}
       </div>
     </Router>
