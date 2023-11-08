@@ -42,7 +42,42 @@ const authors = generateAuthors(10); // Generate 10 random authors
 
 const LendFormManual: React.FC<LendFormManualProps> = ({ token, setRefetchCounter }) => {
 
+	// Define the function to post data to the backend
+	const addBookToLibrary = (bookData: any, setSubmitting: (isSubmitting: boolean) => void) => {
+		if (!token) {
+			console.error('Token not found.');
+			return;
+		}
 
+		const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+		fetch(`${API_URL}/api/books/add`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${token}`,
+			},
+			body: JSON.stringify(bookData),
+		})
+			.then(response => {
+				if (!response.ok) {
+					return response.json().then(errData => {
+						console.error('Error from server:', errData);
+						throw new Error('Network response was not ok');
+					});
+				}
+				return response.json();
+			})
+			.then(data => {
+				console.log('Book added to library:', data);
+				setRefetchCounter(prev => prev + 1);
+			})
+			.catch(error => {
+				console.error('Error during fetch operation: ', error);
+			})
+			.finally(() => {
+				setSubmitting(false);
+			});
+	};
 	return (
 		<FormContainer>
 			<Typography variant="h5" gutterBottom>
@@ -59,7 +94,7 @@ const LendFormManual: React.FC<LendFormManualProps> = ({ token, setRefetchCounte
 				onSubmit={(values, { setSubmitting }) => {
 					console.log(values);
 					// Here you could call an API to add the book
-
+					addBookToLibrary(values, setSubmitting);
 					// After submission, you might want to refetch data
 					setRefetchCounter(prev => prev + 1);
 
