@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import {
+    Typography,
+    Button,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions,
+} from '@mui/material';
+
+import AvailableTable from './AvailableTable';
+
 
 interface Owner {
     _id: string;
@@ -109,43 +120,11 @@ const AvailableBooks: React.FC = () => {
     };
 
 
-
-
     return (
         <div>
             <Typography variant="h5">Books that you can request to borrow from other users:</Typography>
-            <TableContainer component={Paper}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Title</TableCell>
-                            <TableCell>Author</TableCell>
-                            <TableCell>Description</TableCell>
-                            <TableCell>Offered by</TableCell>
-                            <TableCell align="right">Action</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {books.map((book) => (
-                            <TableRow key={book._id}>
-                                <TableCell>{book.title}</TableCell>
-                                <TableCell>{book.author}</TableCell>
-                                <TableCell>{book.description}</TableCell>
-                                <TableCell>{book.owner.username}</TableCell>
-                                <TableCell align="right">
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={() => handleRequestClick(book)}
-                                    >
-                                        Request
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+            <AvailableTable books={books} onRequestClick={handleRequestClick} />
+
 
             <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
                 <DialogTitle>Confirm Request</DialogTitle>
