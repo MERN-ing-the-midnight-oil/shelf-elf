@@ -1,7 +1,8 @@
-import React from 'react';
-import { useTable, Column, CellProps, Row } from 'react-table';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from '@mui/material';
+//this component uses react-table version 7
 
+import React from 'react';
+import { useTable, useSortBy } from 'react-table';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from '@mui/material';
 
 interface Book {
   _id: string;
@@ -19,27 +20,22 @@ interface AvailableTableProps {
   onRequestClick: (book: Book) => void;
 }
 
-interface TableProps {
-  columns: Column<Book>[];
-  data: Book[];
-  // ... any other props
-}
 
 const AvailableTable: React.FC<AvailableTableProps> = ({ books, onRequestClick }) => {
-  // Define columns for Tanstack Table
-  const columns: Column<Book>[] = React.useMemo(
+  // Define columns for react-table 
+  const columns = React.useMemo(
     () => [
       {
         Header: 'Title',
-        accessor: 'title',
+        accessor: 'title' as const,
       },
       {
         Header: 'Author',
-        accessor: 'author',
+        accessor: 'author' as const,
       },
       {
         Header: 'Description',
-        accessor: 'description',
+        accessor: 'description' as const,
         Cell: ({ value }: { value: string }) => (value ? value.substr(0, 100) + '...' : ''),
       },
       {
@@ -64,37 +60,46 @@ const AvailableTable: React.FC<AvailableTableProps> = ({ books, onRequestClick }
     [onRequestClick]
   );
 
+
   const {
     getTableProps,
     getTableBodyProps,
     headerGroups,
     rows,
     prepareRow,
-  } = useTable({
-    columns,
-    data: books,
-  });
+  } = useTable(
+    { columns, data: books },
+    useSortBy // Adding sorting functionality
+  );
 
   return (
     <TableContainer component={Paper}>
       <Table {...getTableProps()}>
         <TableHead>
-          {headerGroups.map((headerGroup) => (
+          {headerGroups.map(headerGroup => (
             <TableRow {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => (
-                <TableCell {...column.getHeaderProps()}>
+              {headerGroup.headers.map(column => (
+                <TableCell {...(column as any).getHeaderProps((column as any).getSortByToggleProps())}>
                   {column.render('Header')}
+                  {/* Add a sort direction indicator */}
+                  <span>
+                    {(column as any).isSorted
+                      ? (column as any).isSortedDesc
+                        ? ' 🔽'
+                        : ' 🔼'
+                      : ''}
+                  </span>
                 </TableCell>
               ))}
             </TableRow>
           ))}
         </TableHead>
         <TableBody {...getTableBodyProps()}>
-          {rows.map((row) => {
+          {rows.map(row => {
             prepareRow(row);
             return (
               <TableRow {...row.getRowProps()}>
-                {row.cells.map((cell) => (
+                {row.cells.map(cell => (
                   <TableCell {...cell.getCellProps()}>
                     {cell.render('Cell')}
                   </TableCell>
