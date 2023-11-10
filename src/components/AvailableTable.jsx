@@ -62,9 +62,12 @@ const AvailableTable = ({ books, onRequestClick }) => {
     initialState: { sortBy: [{ id: 'owner.username', desc: false }] } // Default sort by 'Offered by'
   }, useSortBy);
   
-  const headerStyle = {
-    cursor: 'pointer',
-  };
+  // const headerStyle = {
+  //   cursor: 'pointer',
+  //   fontWeight: 'bold',  // Makes the text bold
+  //   fontSize: '3rem'  // Adjusts the font size, increase the value for larger text
+  // };
+  
   
   
   // Render the UI for your table
@@ -78,7 +81,11 @@ const AvailableTable = ({ books, onRequestClick }) => {
         <Tooltip title="Click to sort" arrow>
           <TableCell 
             {...column.getHeaderProps(column.getSortByToggleProps())} 
-            style={{ cursor: 'pointer' }} // Make sure to define headerStyle or use inline style
+            style={{ 
+              cursor: 'pointer', 
+              fontWeight: 'bold',  // Makes the text bold
+              fontSize: '1.1rem'  // Adjusts the font size
+            }}
           >
             {column.render('Header')}
             <span>
