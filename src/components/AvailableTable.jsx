@@ -1,8 +1,8 @@
 import React from 'react';
-import { useTable, useSortBy } from 'react-table';
+import { useTable, useSortBy, useFilters } from 'react-table';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Tooltip } from '@mui/material';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import { blue, red } from '@material-ui/core/colors';
+
 
 
 const TruncatableText = ({ text }) => {
@@ -36,68 +36,86 @@ const TruncatableText = ({ text }) => {
 };
 
 
+const DefaultColumnFilter = ({ column: { filterValue, setFilter } }) => {
+  return (
+    <input
+      value={filterValue || ''}
+      onChange={e => setFilter(e.target.value || undefined)}
+      placeholder={`Search...`}
+    />
+  );
+};
+
 
 
 const AvailableTable = ({ books, onRequestClick }) => {
+    // Simulated state for testing the filter
+    const [testFilterValue, setTestFilterValue] = React.useState('');
   // Define columns
   const columns = React.useMemo(
     () => [
-      { Header: 'Title', accessor: 'title' },
-      { Header: 'Author', accessor: 'author' },
+      { Header: 'Title', accessor: 'title', Filter: DefaultColumnFilter },
+      { Header: 'Author', accessor: 'author', Filter: DefaultColumnFilter },
       {
         Header: 'Description',
         accessor: 'description',
-        Cell: ({ value }) => <TruncatableText text={value} />
+        Cell: ({ value }) => <TruncatableText text={value} />,
+        // Assuming no sorting or filtering for 'Description'
       },
-      { Header: 'Offered by', accessor: 'owner.username' },
-      // Action column not included here; we will handle it separately
+      { Header: 'Offered by', accessor: 'owner.username', Filter: DefaultColumnFilter },
+      // ... other columns
     ],
     []
   );
+  
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow,
+  } = useTable(
+    {
+      columns,
+      data: books,
+    },
+    useFilters, // for filtering
+    useSortBy   // for sorting
+  );
+  
 
-  // Use the useTable Hook
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({
-    columns,
-    data: books,
-    initialState: { sortBy: [{ id: 'owner.username', desc: false }] } // Default sort by 'Offered by'
-  }, useSortBy);
+  const renderFilter = (column) => {
+    // Only render the filter UI if the column has a filter component defined
+    if (column.canFilter && column.Filter) {
+      try {
+        return column.render('Filter');
+      } catch (error) {
+        console.error("Error rendering filter UI:", error);
+      }
+    }
+    // Return null if no filter is defined for the column
+    return null;
+  };
   
-  // const headerStyle = {
-  //   cursor: 'pointer',
-  //   fontWeight: 'bold',  // Makes the text bold
-  //   fontSize: '3rem'  // Adjusts the font size, increase the value for larger text
-  // };
   
   
-  
-  // Render the UI for your table
   return (
     <TableContainer component={Paper}>
       <Table {...getTableProps()}>
-      <TableHead>
-  {headerGroups.map(headerGroup => (
-    <TableRow {...headerGroup.getHeaderGroupProps()}>
-      {headerGroup.headers.map(column => (
-        <Tooltip title="Click to sort" arrow>
-          <TableCell 
-            {...column.getHeaderProps(column.getSortByToggleProps())} 
-            style={{ 
-              cursor: 'pointer', 
-              fontWeight: 'bold',  // Makes the text bold
-              fontSize: '1.1rem'  // Adjusts the font size
-            }}
-          >
-            {column.render('Header')}
-            <span>
-              {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
-            </span>
-          </TableCell>
-        </Tooltip>
-      ))}
-      <TableCell>Action</TableCell>
-    </TableRow>
-  ))}
-</TableHead>
+        <TableHead>
+          {headerGroups.map(headerGroup => (
+            <TableRow {...headerGroup.getHeaderGroupProps()}>
+              {headerGroup.headers.map(column => (
+                <TableCell {...column.getHeaderProps()}>
+                  {column.render('Header')}
+                  {/* Use the function to render filter UI */}
+                  {renderFilter(column)}
+                </TableCell>
+              ))}
+              <TableCell>Action</TableCell>
+            </TableRow>
+          ))}
+        </TableHead>
         <TableBody {...getTableBodyProps()}>
           {rows.map(row => {
             prepareRow(row);
@@ -124,6 +142,10 @@ const AvailableTable = ({ books, onRequestClick }) => {
       </Table>
     </TableContainer>
   );
+  
+  
+  
+  
 };
 
 export default AvailableTable;
