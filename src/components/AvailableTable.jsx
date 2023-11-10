@@ -1,6 +1,42 @@
 import React from 'react';
 import { useTable, useSortBy } from 'react-table';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Tooltip } from '@mui/material';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import { blue, red } from '@material-ui/core/colors';
+
+
+const TruncatableText = ({ text }) => {
+  const [isTruncated, setIsTruncated] = React.useState(true);
+  const wordLimit = 15;
+
+  const toggleTruncation = () => {
+    setIsTruncated(!isTruncated);
+  };
+
+  const renderText = () => {
+    if (typeof text === 'string') {
+      if (isTruncated) {
+        return (
+          <>
+            {text.split(' ').slice(0, wordLimit).join(' ')}
+            <MoreHorizIcon style={{ color: 'blue', verticalAlign: 'middle' }} />
+          </>
+        );
+      }
+      return text;
+    }
+    return ''; // Or a placeholder text
+  };
+
+  return (
+    <div onClick={toggleTruncation} style={{ cursor: 'pointer' }}>
+      {renderText()}
+    </div>
+  );
+};
+
+
+
 
 const AvailableTable = ({ books, onRequestClick }) => {
   // Define columns
@@ -8,7 +44,11 @@ const AvailableTable = ({ books, onRequestClick }) => {
     () => [
       { Header: 'Title', accessor: 'title' },
       { Header: 'Author', accessor: 'author' },
-      { Header: 'Description', accessor: 'description' },
+      {
+        Header: 'Description',
+        accessor: 'description',
+        Cell: ({ value }) => <TruncatableText text={value} />
+      },
       { Header: 'Offered by', accessor: 'owner.username' },
       // Action column not included here; we will handle it separately
     ],
@@ -24,8 +64,8 @@ const AvailableTable = ({ books, onRequestClick }) => {
   
   const headerStyle = {
     cursor: 'pointer',
-    // Add any additional styles you want for the header
   };
+  
   
   // Render the UI for your table
   return (
