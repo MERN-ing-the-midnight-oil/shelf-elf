@@ -19,6 +19,7 @@ const AvailableTable = ({ books, onRequestClick }) => {
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({
     columns,
     data: books,
+    initialState: { sortBy: [{ id: 'owner.username', desc: false }] } // Default sort by 'Offered by'
   }, useSortBy);
   
 
@@ -44,7 +45,6 @@ const AvailableTable = ({ books, onRequestClick }) => {
         <TableBody {...getTableBodyProps()}>
           {rows.map(row => {
             prepareRow(row);
-            console.log(row.original); // This will log the data of each row
             return (
               <TableRow {...row.getRowProps()}>
                 {row.cells.map(cell => (
