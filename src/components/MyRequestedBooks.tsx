@@ -5,6 +5,13 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
+
+interface MyRequestedBooksProps {
+    token: string | null;
+    setRefetchCounter: React.Dispatch<React.SetStateAction<number>>;
+    refetchCounter: number;
+}
+
 interface Book {
     _id: string;
     title: string;
@@ -24,7 +31,8 @@ interface User {
     requestedBooks: Book[];
 }
 
-const MyRequestedBooks: React.FC<{ token: string | null }> = ({ token }) => {
+const MyRequestedBooks: React.FC<MyRequestedBooksProps> = ({ token, setRefetchCounter, refetchCounter }) => {
+
     const { user } = useAuth() as { user: User | null }; // Assert the type 
     const [requestedBooks, setRequestedBooks] = useState<Book[]>([]);
 
@@ -50,7 +58,8 @@ const MyRequestedBooks: React.FC<{ token: string | null }> = ({ token }) => {
         };
 
         fetchRequestedBooks();
-    }, [user, token]); // Depend on user and token
+    }, [refetchCounter, token]); // Depend on user and token
+
 
     const getDescriptionPreview = (description: string) => {
         // Get the first 100 characters or the full description if it's shorter

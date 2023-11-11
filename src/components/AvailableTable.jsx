@@ -125,17 +125,22 @@ const {
         <TableHead>
           {headerGroups.map(headerGroup => (
             <TableRow {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map(column => (
-  <TableCell {...column.getHeaderProps(column.getSortByToggleProps())}className="tableHeader">
-    {column.render('Header')}
-    {/* Add a sort direction indicator */}
-    <span style={{ opacity: column.isSorted ? 1 : 0.3 }}>
-  {column.isSortedDesc ? ' 🔽' : ' 🔼'}
-</span>
-    {/* Render filter UI */}
-    {renderFilter(column)}
+             {headerGroup.headers.map(column => (
+  <TableCell {...column.getHeaderProps(column.getSortByToggleProps())} className="tableHeader">
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <span>{column.render('Header')}</span>
+      <span style={{ opacity: column.isSorted ? 1 : 0.3 }}>
+        {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
+      </span>
+    </div>
+    {column.canFilter && (
+      <div style={{ paddingTop: '5px' }}> {/* Adjust padding as needed */}
+        {renderFilter(column)}
+      </div>
+    )}
   </TableCell>
 ))}
+
 
               <TableCell>Action</TableCell>
             </TableRow>

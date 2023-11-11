@@ -1,3 +1,4 @@
+//AvailableBooks.tsx
 import React, { useEffect, useState } from 'react';
 import {
     Typography,
@@ -11,6 +12,9 @@ import {
 
 import AvailableTable from './AvailableTable';
 
+interface AvailableBooksProps {
+    setRefetchCounter: React.Dispatch<React.SetStateAction<number>>;
+}
 
 interface Owner {
     _id: string;
@@ -25,11 +29,12 @@ interface Book {
     owner: Owner;
 }
 
-const AvailableBooks: React.FC = () => {
+const AvailableBooks: React.FC<AvailableBooksProps> = ({ setRefetchCounter }) => {
     const [books, setBooks] = useState<Book[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedBook, setSelectedBook] = useState<Book | null>(null);
-
+    const [requestedBooks, setRequestedBooks] = useState<Book[]>([]); // New state for tracking requested books
+    // ...other states and useEffect
     useEffect(() => {
         // console.log("Starting the fetch for AvailableBooks...");
 
@@ -65,30 +70,19 @@ const AvailableBooks: React.FC = () => {
                 console.error('Error fetching available books:', err);
             });
     }, []);
-
     const handleRequestClick = (book: Book) => {
         setSelectedBook(book);
         setIsDialogOpen(true);
     };
-
     const handleConfirmRequest = async () => {
         if (!selectedBook || !selectedBook._id) {
             console.error("Selected book or its ID is missing");
             return;
         }
 
-        // console.log("Selected Book for Request:", selectedBook);
 
-        // Assuming you have the token available in your component's context or state
         const token = localStorage.getItem('userToken');
-        // console.log("User Token:", token);
-
-        // Define the API base URL
-        const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
-
-        // Define the endpoint URL
-        const requestURL = `${API_URL}/api/books/request/${selectedBook._id}`;
-        // console.log("Requesting URL:", requestURL);
+        const requestURL = `${process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001'}/api/books/request/${selectedBook._id}`;
 
         try {
             const response = await fetch(requestURL, {
@@ -99,25 +93,23 @@ const AvailableBooks: React.FC = () => {
                 }
             });
 
-            // console.log("Full HTTP Response:", response);
-
-            const responseData = await response.json();
-
             if (response.ok) {
-                console.log("Book requested successfully:", responseData);
-                // update state
-                // or re-fetch the book data here to reflect the changes.
+                console.log("Book requested successfully");
+                // Trigger refetch in MyRequestedBooks
+                setRefetchCounter(prev => prev + 1);
             } else {
-                console.error("Error requesting the book:", responseData.error);
+                // If the request failed, revert the optimistic update
+                setRequestedBooks(prevBooks => prevBooks.filter(book => book._id !== selectedBook._id));
+                console.error("Error requesting the book:", await response.json());
             }
-
         } catch (error) {
             console.error("An error occurred while making the PATCH request:", error);
+            // Revert optimistic update
+            setRequestedBooks(prevBooks => prevBooks.filter(book => book._id !== selectedBook._id));
         }
-
-        // Close the dialog after making the request
         setIsDialogOpen(false);
     };
+
 
 
     return (
