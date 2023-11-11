@@ -52,37 +52,56 @@ const AvailableTable = ({ books, onRequestClick }) => {
     // Simulated state for testing the filter
     const [testFilterValue, setTestFilterValue] = React.useState('');
   // Define columns
-  const columns = React.useMemo(
-    () => [
-      { Header: 'Title', accessor: 'title', Filter: DefaultColumnFilter },
-      { Header: 'Author', accessor: 'author', Filter: DefaultColumnFilter },
-      {
-        Header: 'Description',
-        accessor: 'description',
-        Cell: ({ value }) => <TruncatableText text={value} />,
-        // Assuming no sorting or filtering for 'Description'
-      },
-      { Header: 'Offered by', accessor: 'owner.username', Filter: DefaultColumnFilter },
-      // ... other columns
-    ],
-    []
-  );
-  
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-  } = useTable(
+const columns = React.useMemo(
+  () => [
     {
-      columns,
-      data: books,
+      Header: 'Title',
+      accessor: 'title',
+      Filter: DefaultColumnFilter,
+      // Enable sorting for this column
+      disableSortBy: false,
     },
-    useFilters, // for filtering
-    useSortBy   // for sorting
-  );
-  
+    {
+      Header: 'Author',
+      accessor: 'author',
+      Filter: DefaultColumnFilter,
+      // Enable sorting for this column
+      disableSortBy: false,
+    },
+    {
+      Header: 'Description',
+      accessor: 'description',
+      Cell: ({ value }) => <TruncatableText text={value} />,
+      // Disable sorting for 'Description'
+      disableSortBy: true,
+    },
+    {
+      Header: 'Offered by',
+      accessor: 'owner.username',
+      Filter: DefaultColumnFilter,
+      // Enable sorting for this column
+      disableSortBy: false,
+    },
+    // ... other columns
+  ],
+  []
+);
+
+const {
+  getTableProps,
+  getTableBodyProps,
+  headerGroups,
+  rows,
+  prepareRow,
+} = useTable(
+  {
+    columns,
+    data: books,
+  },
+  useFilters, // for filtering
+  useSortBy   // for sorting
+);
+
 
   const renderFilter = (column) => {
     // Only render the filter UI if the column has a filter component defined
@@ -106,12 +125,17 @@ const AvailableTable = ({ books, onRequestClick }) => {
           {headerGroups.map(headerGroup => (
             <TableRow {...headerGroup.getHeaderGroupProps()}>
               {headerGroup.headers.map(column => (
-                <TableCell {...column.getHeaderProps()}>
-                  {column.render('Header')}
-                  {/* Use the function to render filter UI */}
-                  {renderFilter(column)}
-                </TableCell>
-              ))}
+  <TableCell {...column.getHeaderProps(column.getSortByToggleProps())}>
+    {column.render('Header')}
+    {/* Add a sort direction indicator */}
+    <span>
+      {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
+    </span>
+    {/* Render filter UI */}
+    {renderFilter(column)}
+  </TableCell>
+))}
+
               <TableCell>Action</TableCell>
             </TableRow>
           ))}
