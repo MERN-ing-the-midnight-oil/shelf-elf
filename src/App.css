@@ -36,3 +36,12 @@
     transform: rotate(360deg);
   }
 }
+
+
+
+.tableHeader, .MuiTableCell-root.tableHeader {
+  font-weight: bold;
+  font-size: 1.2em;
+  padding-bottom: 10px;
+
+}

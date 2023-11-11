@@ -2,6 +2,7 @@ import React from 'react';
 import { useTable, useSortBy, useFilters } from 'react-table';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Tooltip } from '@mui/material';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import '../App.css'; // Adjust the path based on your project structure
 
 
 
@@ -125,7 +126,7 @@ const {
           {headerGroups.map(headerGroup => (
             <TableRow {...headerGroup.getHeaderGroupProps()}>
               {headerGroup.headers.map(column => (
-  <TableCell {...column.getHeaderProps(column.getSortByToggleProps())}>
+  <TableCell {...column.getHeaderProps(column.getSortByToggleProps())}className="tableHeader">
     {column.render('Header')}
     {/* Add a sort direction indicator */}
     <span>
