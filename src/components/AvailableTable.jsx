@@ -2,7 +2,7 @@ import React from 'react';
 import { useTable, useSortBy, useFilters } from 'react-table';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Tooltip } from '@mui/material';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import '../App.css'; // Adjust the path based on your project structure
+import '../App.css'; 
 
 
 
@@ -129,9 +129,9 @@ const {
   <TableCell {...column.getHeaderProps(column.getSortByToggleProps())}className="tableHeader">
     {column.render('Header')}
     {/* Add a sort direction indicator */}
-    <span>
-      {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
-    </span>
+    <span style={{ opacity: column.isSorted ? 1 : 0.3 }}>
+  {column.isSortedDesc ? ' 🔽' : ' 🔼'}
+</span>
     {/* Render filter UI */}
     {renderFilter(column)}
   </TableCell>
