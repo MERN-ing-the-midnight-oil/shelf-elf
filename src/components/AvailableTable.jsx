@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTable, useSortBy, useFilters } from 'react-table';
+import { useTable, useSortBy, useFilters, usePagination } from 'react-table';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Tooltip } from '@mui/material';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import '../App.css'; 
@@ -92,16 +92,28 @@ const {
   getTableProps,
   getTableBodyProps,
   headerGroups,
-  rows,
   prepareRow,
+  page, 
+  canPreviousPage,
+  canNextPage,
+  pageOptions,
+  pageCount,
+  gotoPage,
+  nextPage,
+  previousPage,
+  setPageSize,
+  state: { pageIndex, pageSize },
 } = useTable(
   {
     columns,
     data: books,
+    initialState: { pageIndex: 0 }, // Set page index to 0 (first page)
   },
-  useFilters, // for filtering
-  useSortBy   // for sorting
+  useFilters, 
+  useSortBy,   
+  usePagination 
 );
+
 
 
   const renderFilter = (column) => {
@@ -120,6 +132,7 @@ const {
   
   
   return (
+    <>
     <TableContainer component={Paper}>
       <Table {...getTableProps()}>
         <TableHead>
@@ -147,7 +160,7 @@ const {
           ))}
         </TableHead>
         <TableBody {...getTableBodyProps()}>
-          {rows.map(row => {
+          {page.map(row => {
             prepareRow(row);
             return (
               <TableRow {...row.getRowProps()}>
@@ -171,6 +184,51 @@ const {
         </TableBody>
       </Table>
     </TableContainer>
+    <div className="pagination">
+    <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
+      {'<<'}
+    </button>{' '}
+    <button onClick={() => previousPage()} disabled={!canPreviousPage}>
+      {'<'}
+    </button>{' '}
+    <button onClick={() => nextPage()} disabled={!canNextPage}>
+      {'>'}
+    </button>{' '}
+    <button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
+      {'>>'}
+    </button>{' '}
+    <span>
+      Page{' '}
+      <strong>
+        {pageIndex + 1} of {pageOptions.length}
+      </strong>{' '}
+    </span>
+    <span>
+      | Go to page:{' '}
+      <input
+        type="number"
+        defaultValue={pageIndex + 1}
+        onChange={e => {
+          const page = e.target.value ? Number(e.target.value) - 1 : 0;
+          gotoPage(page);
+        }}
+        style={{ width: '50px' }}
+      />
+    </span>{' '}
+    <select
+      value={pageSize}
+      onChange={e => {
+        setPageSize(Number(e.target.value));
+      }}
+    >
+      {[10, 20, 30, 40, 50].map(pageSize => (
+        <option key={pageSize} value={pageSize}>
+          Show {pageSize}
+        </option>
+      ))}
+    </select>
+  </div>
+</>  
   );
   
   
