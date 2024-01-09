@@ -32,7 +32,10 @@ const passwordCaptions = [
 const validationSchema = Yup.object({
   username: Yup.string().required('Username is required'),
   email: Yup.string().required('We need your email address').email('Something is strange about that email address'),
-  password: Yup.string().required('Password is required')
+  password: Yup.string().required('Password is required'),
+  street1: Yup.string().required('Nearest cross street is required'),
+  street2: Yup.string().required('Nearest cross street is required'),
+  zipCode: Yup.string().required('Zip code is required').matches(/^[0-9]{5}$/, 'Invalid zip code')
 });
 
 const FormContainer = styled.div`
@@ -75,7 +78,7 @@ const RegisterForm: React.FC = () => {
 
   return (
     <Formik
-      initialValues={{ username: '', email: '', password: '' }}
+      initialValues={{ username: '', email: '', password: '', street1: '', street2: '', zipCode: '' }}
       validationSchema={validationSchema}
       onSubmit={async (values, { setSubmitting, setErrors }) => {
         try {
@@ -136,6 +139,47 @@ const RegisterForm: React.FC = () => {
           <Form>
             <Typography variant="h5" gutterBottom>Register</Typography>
             {registrationStatus && <Typography variant="body1" color="primary">{registrationStatus}</Typography>}
+            <Field name="zipCode">
+              {({ field, meta }: FieldProps) => (
+                <TextField
+                  {...field}
+                  label="Zip Code"
+                  variant="outlined"
+                  fullWidth
+                  error={meta.touched && !!meta.error}
+                  helperText={meta.touched && meta.error}
+                />
+              )}
+            </Field>
+            <ErrorMessage name="zipCode" component={ErrorText} />
+            <Field name="street1">
+              {({ field, meta }: FieldProps) => (
+                <TextField
+                  {...field}
+                  label="Your street"
+                  variant="outlined"
+                  fullWidth
+                  error={meta.touched && !!meta.error}
+                  helperText={meta.touched && meta.error}
+                />
+              )}
+            </Field>
+            <ErrorMessage name="street1" component={ErrorText} />
+
+            <Field name="street2">
+              {({ field, meta }: FieldProps) => (
+                <TextField
+                  {...field}
+                  label="Your nearest cross street"
+                  variant="outlined"
+                  fullWidth
+                  error={meta.touched && !!meta.error}
+                  helperText={meta.touched && meta.error}
+                />
+              )}
+            </Field>
+            <ErrorMessage name="street2" component={ErrorText} />
+
 
             <Field name="username">
               {({ field, meta }: FieldProps) => (

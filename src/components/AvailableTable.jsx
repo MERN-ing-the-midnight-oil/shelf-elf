@@ -47,6 +47,10 @@ const DefaultColumnFilter = ({ column: { filterValue, setFilter } }) => {
   );
 };
 
+const generateGoogleMapsLink = (street1, street2, zipCode) => {
+  const query = encodeURIComponent(`${street1} and ${street2}, ${zipCode}`);
+  return `https://www.google.com/maps/search/?api=1&query=${query}`;
+};
 
 
 const AvailableTable = ({ books, onRequestClick }) => {
@@ -83,7 +87,19 @@ const columns = React.useMemo(
       // Enable sorting for this column
       disableSortBy: false,
     },
-    // ... other columns
+    {
+      Header: 'Location',
+      accessor: row => `${row.owner.street1} & ${row.owner.street2}, ${row.owner.zipCode}`,
+      disableSortBy: true,
+      Cell: ({ row }) => (
+          <a href={generateGoogleMapsLink(row.original.owner.street1, row.original.owner.street2, row.original.owner.zipCode)} 
+             target="_blank" 
+             rel="noopener noreferrer">
+              {`${row.original.owner.street1} & ${row.original.owner.street2}, ${row.original.owner.zipCode}`}
+          </a>
+      ),
+  },
+    
   ],
   []
 );

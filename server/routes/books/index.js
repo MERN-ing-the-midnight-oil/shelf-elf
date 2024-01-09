@@ -113,10 +113,10 @@ router.get("/offeredByOthers", checkAuthentication, async (req, res) => {
 	console.log("Fetching books offered by others...");
 	try {
 		console.log("Authenticated user ID:", req.user._id);
-		// Populate the 'owner' field with the 'username' from the User model
+		// Populate the 'owner' field with the 'username', 'street1', 'street2', and 'zipCode' from the User model
 		const otherUsersBooks = await Book.find({
 			owner: { $ne: req.user._id },
-		}).populate("owner", "username");
+		}).populate("owner", "username street1 street2 zipCode");
 		// console.log("Found books:", otherUsersBooks);
 		res.status(200).json(otherUsersBooks);
 	} catch (error) {

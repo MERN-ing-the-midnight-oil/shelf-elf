@@ -1,5 +1,7 @@
 # Other's Covers: A Peer-to-Peer Book Lending Library
 
+## The Live Site: https://others-covers-0f4265de0975.herokuapp.com/
+
 ## Introduction:
 
 Welcome to Other's Covers. This platform is designed to help book enthusiasts share their collection with others, discover new reads, and manage their personal book collection. Users can log in, dynamically search for books via the Google Books API, and update a persitant and personalized library. Coming soon: the ability to search the libraries of other users, borrow e-books from users around the world, and find books that can be borrowed and returned by neighbors who live near your bicycle commute to work or on your regular dog-walking route around your neighborhood.

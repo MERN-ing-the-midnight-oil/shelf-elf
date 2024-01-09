@@ -16,6 +16,19 @@ const UserSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
+	street1: {
+		type: String,
+		required: true,
+	},
+	street2: {
+		type: String,
+		required: true,
+	},
+	zipCode: {
+		type: String,
+		required: true,
+		match: [/^[0-9]{5}$/, "Invalid zip code"],
+	},
 	lendingLibrary: [Book.schema],
 	borrowedBooks: [Book.schema],
 	requestedBooks: [
