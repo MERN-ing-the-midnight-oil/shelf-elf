@@ -185,7 +185,7 @@ const RegisterForm: React.FC = () => {
               {({ field, meta }: FieldProps) => (
                 <TextField
                   {...field}
-                  label="Username"
+                  label="Screen Name (viewable by others)"
                   variant="outlined"
                   fullWidth
                   error={meta.touched && !!meta.error}
@@ -199,7 +199,7 @@ const RegisterForm: React.FC = () => {
               {({ field, meta }: FieldProps) => (
                 <TextField
                   {...field}
-                  label="Email"
+                  label="Email (we won't email you)"
                   variant="outlined"
                   fullWidth
                   error={meta.touched && !!meta.error}
@@ -251,4 +251,3 @@ const RegisterForm: React.FC = () => {
 
 export default RegisterForm;
 
-//TODO handle possible errors relating to the username. 
