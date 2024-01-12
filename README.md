@@ -1,6 +1,8 @@
-# Other's Covers: A Peer-to-Peer Book Lending Library
+# Bellingham Buy Nothing Books is basically a clone of Other's Covers: A Peer-to-Peer Book Lending Library
 
-## The Live Site: https://others-covers-0f4265de0975.herokuapp.com/
+## Other's Covers, the demo app that allows you to explore using existing users: https://others-covers-0f4265de0975.herokuapp.com/
+
+## Bellingham Buy Nothing Books, a real, active website where only Bellingham Residents should post book titles to borrow. (Feel free to make a fake account , but please don't post any books):https://bellingham-buy-nothing-books-9fe5de7a4a15.herokuapp.com/
 
 ## Introduction:
 
