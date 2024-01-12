@@ -6,7 +6,7 @@ const app = express();
 
 const allowedOrigins = [
 	"http://localhost:3000",
-	"https://others-covers-0f4265de0975.herokuapp.com",
+	"https://bellingham-buy-nothing-books-9fe5de7a4a15.herokuapp.com",
 ];
 
 const corsOptions = {
