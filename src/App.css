@@ -2,16 +2,7 @@
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
 
 .App-header {
   background-color: #282c34;
@@ -44,11 +35,10 @@
   padding-bottom: 10px;
 }
 
-/* New styles added */
 .App-header h1,
 .App-header h2,
 .App-header h3 {
-  margin-bottom: 1rem;
+  margin: 0 1rem 3rem;
 }
 
 .App-header img {
