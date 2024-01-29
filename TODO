@@ -1,4 +1,17 @@
-Keep user logged on during refresh
+Development in a Separate Branch: Work in a separate branch of your code repository. This ensures that the main branch remains stable and functional while you develop the new features.
+
+Create Community Model: Design and implement the Community model in your database. This model should include necessary fields like name, description, members list, admin, etc. Initially, this new model will exist independently and won't impact existing functionality.
+
+Update User Model: Add a reference to the Community model in your User model. This could be an array of community IDs, indicating the communities a user is part of. Ensure that these changes are backward compatible. For example, existing users who don't belong to any community should still be able to use the app as before.
+
+Test the Models Independently: Test the Community and updated User models independently to ensure they work as expected. Use unit tests to verify the functionality of these models without integrating them into the existing system.
+
+Gradual Integration: Gradually integrate these models into your existing system. Start by implementing backend routes and functions that interact with these models but don't expose these changes on the frontend yet.
+
+Extensive Testing: Before integrating these changes into the main application, perform extensive testing. This includes both automated tests and manual testing scenarios.
+
+Frontend Integration: Once you're confident in the backend changes, start updating the frontend. Add UI components and features to manage communities while ensuring that the existing user flow remains unaffected.
+
 Show book covers , not just titles
 Allow searching by Genres
 Don't require an email address
