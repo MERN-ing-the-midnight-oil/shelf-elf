@@ -37,6 +37,12 @@ const UserSchema = new mongoose.Schema({
 			ref: "Book",
 		},
 	],
+	communities: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Community",
+		},
+	],
 });
 
 module.exports = mongoose.model("User", UserSchema);

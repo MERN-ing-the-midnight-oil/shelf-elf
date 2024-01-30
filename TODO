@@ -1,4 +1,5 @@
 Development in a Separate Branch: Work in a separate branch of your code repository. This ensures that the main branch remains stable and functional while you develop the new features.
+DONE. working on "community" branch
 
 Create Community Model: Design and implement the Community model in your database. This model should include necessary fields like name, description, members list, admin, etc. Initially, this new model will exist independently and won't impact existing functionality.
 
@@ -11,6 +12,8 @@ Gradual Integration: Gradually integrate these models into your existing system.
 Extensive Testing: Before integrating these changes into the main application, perform extensive testing. This includes both automated tests and manual testing scenarios.
 
 Frontend Integration: Once you're confident in the backend changes, start updating the frontend. Add UI components and features to manage communities while ensuring that the existing user flow remains unaffected.
+
+MERGE THE NEW BRANCH TO MAIN
 
 Show book covers , not just titles
 Allow searching by Genres
