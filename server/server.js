@@ -45,9 +45,11 @@ mongoose
 // Import and use routes
 const bookRoutes = require("./routes/books"); // Adjusted for simplicity
 const userRoutes = require("./routes/users");
+const communityRoutes = require("./routes/communities/");
 
 app.use("/api/books", bookRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/communities", communityRoutes);
 
 // Deployment - Serving the static files from express
 if (process.env.NODE_ENV === "production") {
