@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Community = require("../models/community"); // Assuming the Community model is in the 'models' folder
+const Community = require("../../models/community");
 
 // POST route to create a new community
 router.post("/create", async (req, res) => {
@@ -13,12 +13,10 @@ router.post("/create", async (req, res) => {
 		});
 
 		await newCommunity.save();
-		res
-			.status(201)
-			.json({
-				message: "Community created successfully",
-				community: newCommunity,
-			});
+		res.status(201).json({
+			message: "Community created successfully",
+			community: newCommunity,
+		});
 	} catch (error) {
 		console.error("Error creating community:", error);
 		res.status(500).send("Internal Server Error");

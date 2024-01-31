@@ -25,7 +25,6 @@ const Header: React.FC = () => {
         setValue(newValue);
     };
 
-    // If there's no user, return null to render nothing
     if (!user) {
         return null;
     }
@@ -34,7 +33,6 @@ const Header: React.FC = () => {
         <AppBar position="static">
             <Toolbar>
                 <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
-                    {/* Welcome message */}
                     <Typography variant="h6" color="inherit" sx={{ marginRight: '20px' }}>
                         Welcome, {user.username}!
                     </Typography>
@@ -66,8 +64,20 @@ const Header: React.FC = () => {
                                 }
                             }}
                         />
+                        <Tab
+                            label="Manage Communities"
+                            value="/manage-communities"
+                            component={Link}
+                            to="/manage-communities"
+                            sx={{
+                                backgroundColor: value === '/manage-communities' ? 'primary.dark' : 'primary.main',
+                                color: 'white',
+                                '&.Mui-selected': {
+                                    color: 'white'
+                                }
+                            }}
+                        />
                     </Tabs>
-
 
                     <Button color="inherit" onClick={handleLogout} sx={{ marginLeft: 'auto' }}>
                         Logout
