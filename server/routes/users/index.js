@@ -106,6 +106,24 @@ router.post("/login", async (req, res) => {
 	}
 });
 
+// GET route to fetch communities associated with the logged-in user
+router.get("/my-communities", checkAuthentication, async (req, res) => {
+	console.log("router received request at /my-communities");
+	try {
+		// Assuming checkAuthentication middleware sets req.user
+		const user = await User.findById(req.user._id).populate("communities");
+		if (!user) {
+			return res.status(404).json({ error: "User not found." });
+		}
+		console.log("User communities fetched:", user.communities);
+		// Respond with the communities
+		res.status(200).json(user.communities);
+	} catch (error) {
+		console.error("Error in the /my-communities route:", error);
+		res.status(500).json({ error: "Failed to fetch communities" });
+	}
+});
+
 //Display the logged in users lending library
 router.get("/lending-library", async (req, res) => {
 	try {

@@ -43,7 +43,7 @@ mongoose
 	.catch((err) => console.log("there is a problem with mongoose " + err));
 
 // Import and use routes
-const bookRoutes = require("./routes/books"); // Adjusted for simplicity
+const bookRoutes = require("./routes/books");
 const userRoutes = require("./routes/users");
 const communityRoutes = require("./routes/communities/");
 

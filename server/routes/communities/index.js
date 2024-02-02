@@ -1,24 +1,30 @@
 const express = require("express");
 const router = express.Router();
 const Community = require("../../models/community");
+const User = require("../../models/user");
+const { checkAuthentication } = require("../../../middlewares/authentication");
 
-// POST route to create a new community
-router.post("/create", async (req, res) => {
-	console.log("Creating new community with name:", req.body.name);
+// POST route to create a new community and become a member of the newly created community
+router.post("/create", checkAuthentication, async (req, res) => {
+	console.log("Inside /api/communities/create route handler");
 	try {
-		const newCommunity = new Community({
-			name: req.body.name,
-			description: req.body.description,
-			members: [req.body.creatorId], // Assuming creator's ID is sent in request
+		const { name, description } = req.body;
+		// Create the new community
+		const newCommunity = new Community({ name, description });
+		await newCommunity.save();
+
+		// Add the community to the user's list of communities
+		req.user.communities.push(newCommunity._id);
+		await User.findByIdAndUpdate(req.user._id, {
+			$push: { communities: newCommunity._id },
 		});
 
-		await newCommunity.save();
 		res.status(201).json({
 			message: "Community created successfully",
 			community: newCommunity,
 		});
 	} catch (error) {
-		console.error("Error creating community:", error);
+		console.error(error);
 		res.status(500).send("Internal Server Error");
 	}
 });

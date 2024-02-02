@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../server/models/user"); // Adjust the path as needed
 
 exports.checkAuthentication = async (req, res, next) => {
+	console.log("checkAuthentication middleware called");
 	try {
 		if (!req.headers.authorization) {
 			return res.status(401).json({ error: "Authorization header missing" });
