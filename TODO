@@ -1,17 +1,18 @@
-Development in a Separate Branch: Work in a separate branch of your code repository. This ensures that the main branch remains stable and functional while you develop the new features.
-DONE. working on "community" branch
+Community Joining Functionality:
+Users can join a community by entering its exact name. This feature emphasizes ease of use while providing a basic security level.
+Implement rate-limiting on the community join endpoint to prevent abuse.
 
-Create Community Model: Design and implement the Community model in your database. This model should include necessary fields like name, description, members list, admin, etc. Initially, this new model will exist independently and won't impact existing functionality.
+Admin Functionality to Remove Users:
+Implement a feature where community admins can remove users from their community. This could be a simple option in the community management interface.
+Community Name Sharing Mechanism:
 
-Update User Model: Add a reference to the Community model in your User model. This could be an array of community IDs, indicating the communities a user is part of. Ensure that these changes are backward compatible. For example, existing users who don't belong to any community should still be able to use the app as before.
+Encourage community creators to share the name of the community with potential members through secure channels.
 
-Test the Models Independently: Test the Community and updated User models independently to ensure they work as expected. Use unit tests to verify the functionality of these models without integrating them into the existing system.
+Logging and Monitoring:
+Implement logging for join requests and monitor for unusual activity, like a single user trying to join numerous communities in a short period.
 
-Gradual Integration: Gradually integrate these models into your existing system. Start by implementing backend routes and functions that interact with these models but don't expose these changes on the frontend yet.
-
-Extensive Testing: Before integrating these changes into the main application, perform extensive testing. This includes both automated tests and manual testing scenarios.
-
-Frontend Integration: Once you're confident in the backend changes, start updating the frontend. Add UI components and features to manage communities while ensuring that the existing user flow remains unaffected.
+Future Feature - Invitation Links:
+Plan for a future feature where users can invite others to a community via a shareable link. This feature would further streamline the process of joining a community.
 
 MERGE THE NEW BRANCH TO MAIN
 

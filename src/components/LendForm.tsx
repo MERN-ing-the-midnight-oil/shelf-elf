@@ -38,6 +38,10 @@ const LendForm: React.FC<LendFormProps> = ({ token, setRefetchCounter }) => {
   const [searchResults, setSearchResults] = useState([]);
   const apiKey = process.env.REACT_APP_API_KEY;
 
+  //state to track selected books from search
+  const [offeredBooks, setOfferedBooks] = useState<Set<string>>(new Set());
+
+
   const handleSearch = (value: string) => {
     if (value) {
       fetch(`https://www.googleapis.com/books/v1/volumes?q=${value}&key=${apiKey}`)
@@ -90,10 +94,11 @@ const LendForm: React.FC<LendFormProps> = ({ token, setRefetchCounter }) => {
       .then(data => {
         console.log('Book added to library:', data);
         setRefetchCounter(prev => prev + 1);
+        // Add the book's ID to the offeredBooks set
+        setOfferedBooks(prevBooks => new Set(prevBooks.add(book.id)));
       })
       .catch(error => {
         console.error('Error during fetch operation: ', error);
-
       });
   };
 
@@ -103,9 +108,14 @@ const LendForm: React.FC<LendFormProps> = ({ token, setRefetchCounter }) => {
       {book.volumeInfo.imageLinks && book.volumeInfo.imageLinks.thumbnail && (
         <img src={book.volumeInfo.imageLinks.thumbnail} alt={book.volumeInfo.title} />
       )}
-      <button onClick={() => handleOwnBookClick(book)}>Offer to lend</button>
+      {offeredBooks.has(book.id) ? (
+        <span>YOU HAVE ADDED THIS TITLE TO YOUR OFFERINGS</span>
+      ) : (
+        <button onClick={() => handleOwnBookClick(book)}>Offer to lend</button>
+      )}
     </div>
   ));
+
 
   return (
     <FormContainer>

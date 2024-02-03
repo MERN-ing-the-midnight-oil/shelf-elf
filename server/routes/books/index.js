@@ -125,6 +125,34 @@ router.get("/offeredByOthers", checkAuthentication, async (req, res) => {
 	}
 });
 
+// Route to get books offered in a specific community
+router.get(
+	"/offeredInCommunity/:communityId",
+	checkAuthentication,
+	async (req, res) => {
+		try {
+			const communityId = req.params.communityId;
+			// Find users who are part of the community
+			const usersInCommunity = await User.find({
+				communities: communityId,
+			}).select("_id");
+			const userIds = usersInCommunity.map((user) => user._id);
+
+			// Find books offered by these users
+			const books = await Book.find({ owner: { $in: userIds } }).populate(
+				"owner",
+				"username"
+			);
+			res.status(200).json(books);
+		} catch (error) {
+			console.error("Error fetching books for community:", error);
+			res
+				.status(500)
+				.json({ error: "Failed to fetch books for the community" });
+		}
+	}
+);
+
 // Return a borrowed book
 router.post("/return/:bookId", checkAuthentication, async (req, res) => {
 	try {

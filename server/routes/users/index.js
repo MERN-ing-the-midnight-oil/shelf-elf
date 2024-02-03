@@ -8,6 +8,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const { checkAuthentication } = require("../../../middlewares/authentication");
+
 router.get("/me", checkAuthentication, async (req, res) => {
 	try {
 		// Assuming that the checkAuthentication middleware sets req.user
@@ -95,7 +96,7 @@ router.post("/login", async (req, res) => {
 		const token = jwt.sign(
 			{ userId: user._id, username: user.username },
 			"mysecretkey", //  store secret key in environment variables
-			{ expiresIn: "1h" }
+			{ expiresIn: "365d" }
 		);
 
 		// Send token back as a response

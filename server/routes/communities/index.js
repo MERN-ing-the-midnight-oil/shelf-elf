@@ -42,24 +42,34 @@ router.get("/list", async (req, res) => {
 });
 
 // POST route for a user to join a community
-router.post("/join", async (req, res) => {
+router.post("/join", checkAuthentication, async (req, res) => {
 	console.log(
 		"User",
-		req.body.userId,
+		req.user._id,
 		"requesting to join community",
 		req.body.communityId
 	);
+
 	try {
+		// Update the Community document to include the user
 		const community = await Community.findById(req.body.communityId);
-		if (!community.members.includes(req.body.userId)) {
-			community.members.push(req.body.userId);
+		if (!community.members.includes(req.user._id)) {
+			community.members.push(req.user._id);
 			await community.save();
-			res.status(200).json({ message: "Joined community successfully" });
 		} else {
-			res
+			return res
 				.status(400)
 				.json({ message: "User already a member of this community" });
 		}
+
+		// Update the User document to include the community
+		const user = await User.findById(req.user._id);
+		if (!user.communities.includes(req.body.communityId)) {
+			user.communities.push(req.body.communityId);
+			await user.save();
+		}
+
+		res.status(200).json({ message: "Joined community successfully" });
 	} catch (error) {
 		console.error("Error joining community:", error);
 		res.status(500).send("Internal Server Error");
