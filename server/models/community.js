@@ -16,6 +16,10 @@ const CommunitySchema = new mongoose.Schema({
 			ref: "User",
 		},
 	],
+	passcode: {
+		type: String,
+		required: true,
+	},
 });
 
 module.exports = mongoose.model("Community", CommunitySchema);

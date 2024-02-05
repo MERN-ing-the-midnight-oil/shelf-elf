@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { TextField, Button, Typography, Container } from '@mui/material';
+import { styled } from '@mui/system';
+
+const FormContainer = styled(Container)({
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+});
 
 interface CommunityFormProps {
     token: string;
@@ -8,7 +16,8 @@ interface CommunityFormProps {
 
 const CommunityForm: React.FC<CommunityFormProps> = ({ token, setRefetchCounter }) => {
     const [communityName, setCommunityName] = useState('');
-    const [communityDescription, setCommunityDescription] = useState(''); // Added state variable for community description
+    const [communityDescription, setCommunityDescription] = useState('');
+    const [communityPasscode, setCommunityPasscode] = useState('');
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -20,6 +29,7 @@ const CommunityForm: React.FC<CommunityFormProps> = ({ token, setRefetchCounter 
             const communityData = {
                 name: communityName,
                 description: communityDescription,
+                passcode: communityPasscode,
             };
             const response = await axios.post(`${API_URL}/api/communities/create`, communityData, { headers });
             console.log(response.data);
@@ -31,27 +41,45 @@ const CommunityForm: React.FC<CommunityFormProps> = ({ token, setRefetchCounter 
         }
     }
 
-
     return (
-        <form onSubmit={handleSubmit}>
-            <label htmlFor="communityName">Community Name:</label>
-            <input
-                type="text"
-                id="communityName"
-                value={communityName}
-                onChange={(e) => setCommunityName(e.target.value)}
-            />
+        <FormContainer>
 
-            <label htmlFor="communityDescription">Community Description:</label>
-            <input
-                type="text"
-                id="communityDescription"
-                value={communityDescription}
-                onChange={(e) => setCommunityDescription(e.target.value)}
-            />
-
-            <button type="submit">Create Community</button>
-        </form>
+            <form onSubmit={handleSubmit}>
+                <TextField
+                    fullWidth
+                    margin="normal"
+                    name="communityName"
+                    value={communityName}
+                    onChange={(e) => setCommunityName(e.target.value)}
+                    label="Community Name"
+                    variant="outlined"
+                />
+                <TextField
+                    fullWidth
+                    margin="normal"
+                    name="communityDescription"
+                    value={communityDescription}
+                    onChange={(e) => setCommunityDescription(e.target.value)}
+                    label="Community Description"
+                    variant="outlined"
+                    multiline
+                    rows={4}
+                />
+                <TextField
+                    fullWidth
+                    margin="normal"
+                    name="communityPasscode"
+                    value={communityPasscode}
+                    onChange={(e) => setCommunityPasscode(e.target.value)}
+                    label="Community Passcode (Share it with new members!)"
+                    variant="outlined"
+                    type="password"
+                />
+                <Button type="submit" variant="contained" color="primary">
+                    Create Community
+                </Button>
+            </form>
+        </FormContainer>
     );
 }
 

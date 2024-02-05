@@ -8,9 +8,9 @@ const { checkAuthentication } = require("../../../middlewares/authentication");
 router.post("/create", checkAuthentication, async (req, res) => {
 	console.log("Inside /api/communities/create route handler");
 	try {
-		const { name, description } = req.body;
-		// Create the new community
-		const newCommunity = new Community({ name, description });
+		const { name, description, passcode } = req.body;
+		// Create the new community with the passcode
+		const newCommunity = new Community({ name, description, passcode });
 		await newCommunity.save();
 
 		// Add the community to the user's list of communities
@@ -51,16 +51,27 @@ router.post("/join", checkAuthentication, async (req, res) => {
 	);
 
 	try {
-		// Update the Community document to include the user
+		// Fetch the Community document
 		const community = await Community.findById(req.body.communityId);
-		if (!community.members.includes(req.user._id)) {
-			community.members.push(req.user._id);
-			await community.save();
-		} else {
+		if (!community) {
+			return res.status(404).json({ message: "Community not found" });
+		}
+
+		// Check if the passcode matches
+		if (community.passcode !== req.body.passcode) {
+			return res.status(401).json({ message: "Invalid passcode" });
+		}
+
+		// Check if user is already a member of the community
+		if (community.members.includes(req.user._id)) {
 			return res
 				.status(400)
 				.json({ message: "User already a member of this community" });
 		}
+
+		// Add user to the community's member list
+		community.members.push(req.user._id);
+		await community.save();
 
 		// Update the User document to include the community
 		const user = await User.findById(req.user._id);
@@ -77,11 +88,11 @@ router.post("/join", checkAuthentication, async (req, res) => {
 });
 
 // GET route to list all communities a user belongs to
-router.get("/user-communities/:userId", async (req, res) => {
-	console.log("Fetching communities for user:", req.params.userId);
+router.get("/user-communities", checkAuthentication, async (req, res) => {
 	try {
+		const userId = req.user._id; // Assuming your checkAuthentication middleware sets req.user
 		const userCommunities = await Community.find({
-			members: req.params.userId,
+			members: userId,
 		});
 		res.status(200).json(userCommunities);
 	} catch (error) {

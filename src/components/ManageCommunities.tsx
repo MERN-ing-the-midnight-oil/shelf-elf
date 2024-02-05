@@ -17,25 +17,64 @@ interface ManageCommunitiesProps {
 
 const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, setRefetchCounter, refetchCounter }) => {
     const [communities, setCommunities] = useState<Community[]>([]);
+    const [userCommunities, setUserCommunities] = useState<Community[]>([]);
+    const [joinPasscodes, setJoinPasscodes] = useState<{ [key: string]: string }>({});
 
     useEffect(() => {
-        const fetchCommunities = async () => {
-            const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
-            if (token) {
-                try {
-                    const response = await axios.get(`${API_URL}/api/users/my-communities`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                    });
-                    setCommunities(response.data);
-                } catch (error) {
-                    console.error('Error fetching communities:', error);
-                }
+        const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+
+        // Fetch all communities
+        const fetchAllCommunities = async () => {
+            try {
+                const response = await axios.get(`${API_URL}/api/communities/list`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setCommunities(response.data);
+            } catch (error) {
+                console.error('Error fetching communities:', error);
             }
         };
 
+        // Fetch user's communities
+        const fetchUserCommunities = async () => {
+            try {
+                const response = await axios.get(`${API_URL}/api/communities/user-communities`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setUserCommunities(response.data);
+            } catch (error) {
+                console.error('Error fetching user communities:', error);
+            }
+        };
 
-        fetchCommunities();
-    }, [token, refetchCounter]); // Refetch when token or refetchCounter changes
+        fetchAllCommunities();
+        fetchUserCommunities();
+    }, [token, refetchCounter]);
+
+
+    const handleJoinCommunity = async (communityId: string) => {
+        try {
+            const passcode = joinPasscodes[communityId];
+            const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+            const response = await axios.post(`${API_URL}/api/communities/join`, {
+                communityId,
+                passcode,
+            }, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            console.log(response.data);
+            setRefetchCounter(prev => prev + 1); // Update refetchCounter to trigger a re-fetch
+            // Handle success (e.g., update UI to reflect the new community membership)
+        } catch (error) {
+            console.error('Error joining community:', error);
+            // Handle error (e.g., show error message)
+        }
+    };
+
+
+    const updatePasscode = (communityId: string, passcode: string) => {
+        setJoinPasscodes(prev => ({ ...prev, [communityId]: passcode }));
+    };
 
     return (
         <div>
@@ -43,19 +82,31 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, setRefetch
             <CommunityForm token={token} setRefetchCounter={setRefetchCounter} />
 
             <h2>Your Communities</h2>
-            {communities.length > 0 ? (
+            {userCommunities.length > 0 ? (
                 <ul>
-                    {communities.map((community) => (
-                        <li key={community._id}>
-                            {community.name} - {community.description}
-                        </li>
+                    {userCommunities.map((community) => (
+                        <li key={community._id}>{community.name} - {community.description}</li>
                     ))}
                 </ul>
             ) : (
                 <p>You are not part of any communities yet.</p>
             )}
+
+            <h2>Browse All Communities</h2>
+            {communities.map(community => (
+                <div key={community._id}>
+                    <p>{community.name} - {community.description}</p>
+                    <input
+                        type="password"
+                        placeholder="Enter passcode"
+                        value={joinPasscodes[community._id] || ''}
+                        onChange={(e) => updatePasscode(community._id, e.target.value)}
+                    />
+                    <button onClick={() => handleJoinCommunity(community._id)}>Join Community</button>
+                </div>
+            ))}
         </div>
     );
-}
+};
 
 export default ManageCommunities;
