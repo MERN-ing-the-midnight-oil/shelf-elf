@@ -51,7 +51,7 @@ const CommunityForm: React.FC<CommunityFormProps> = ({ token, setRefetchCounter 
                     name="communityName"
                     value={communityName}
                     onChange={(e) => setCommunityName(e.target.value)}
-                    label="Community Name"
+                    label="Name your Get-together"
                     variant="outlined"
                 />
                 <TextField
@@ -60,7 +60,7 @@ const CommunityForm: React.FC<CommunityFormProps> = ({ token, setRefetchCounter 
                     name="communityDescription"
                     value={communityDescription}
                     onChange={(e) => setCommunityDescription(e.target.value)}
-                    label="Community Description"
+                    label="Who are you? (e.g. Springfield Dungeons and Dragons) Where and when do you meet? (e.g. 'John's house, about once per month') "
                     variant="outlined"
                     multiline
                     rows={4}
@@ -71,12 +71,12 @@ const CommunityForm: React.FC<CommunityFormProps> = ({ token, setRefetchCounter 
                     name="communityPasscode"
                     value={communityPasscode}
                     onChange={(e) => setCommunityPasscode(e.target.value)}
-                    label="Community Passcode (Share it with new members!)"
+                    label="Passcode to join (choose a simple passcode and Share it with the right people)"
                     variant="outlined"
                     type="password"
                 />
                 <Button type="submit" variant="contained" color="primary">
-                    Create Community
+                    Create Get-together
                 </Button>
             </form>
         </FormContainer>

@@ -78,10 +78,10 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, setRefetch
 
     return (
         <div>
-            <h1>Manage Communities</h1>
+            <h1>Manage Get-togethers</h1>
             <CommunityForm token={token} setRefetchCounter={setRefetchCounter} />
 
-            <h2>Your Communities</h2>
+            <h2>Your Get-togethers</h2>
             {userCommunities.length > 0 ? (
                 <ul>
                     {userCommunities.map((community) => (
@@ -92,7 +92,7 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, setRefetch
                 <p>You are not part of any communities yet.</p>
             )}
 
-            <h2>Browse All Communities</h2>
+            <h2>Find and join an existing Get-together if you have a passcode</h2>
             {communities.map(community => (
                 <div key={community._id}>
                     <p>{community.name} - {community.description}</p>
@@ -102,7 +102,7 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, setRefetch
                         value={joinPasscodes[community._id] || ''}
                         onChange={(e) => updatePasscode(community._id, e.target.value)}
                     />
-                    <button onClick={() => handleJoinCommunity(community._id)}>Join Community</button>
+                    <button onClick={() => handleJoinCommunity(community._id)}>Join</button>
                 </div>
             ))}
         </div>

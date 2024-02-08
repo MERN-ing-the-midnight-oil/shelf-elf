@@ -16,12 +16,11 @@ router.get("/me", checkAuthentication, async (req, res) => {
 			return res.status(401).json({ error: "Not authenticated" });
 		}
 
-		// You might not want to send back all user data; select only what's needed
+		// Adjust the response to include only the necessary user fields
 		const userData = {
 			username: req.user.username,
-			email: req.user.email,
 			_id: req.user._id,
-			// ... (other necessary user fields)
+			// Add any other user fields that you might need in the frontend
 		};
 
 		res.json(userData);

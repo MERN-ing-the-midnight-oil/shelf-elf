@@ -65,7 +65,7 @@ const Header: React.FC = () => {
                             }}
                         />
                         <Tab
-                            label="Manage Communities"
+                            label="Get-togethers"
                             value="/manage-communities"
                             component={Link}
                             to="/manage-communities"
