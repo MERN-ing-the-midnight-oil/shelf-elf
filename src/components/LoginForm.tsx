@@ -11,9 +11,10 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 const validationSchema = Yup.object({
-  email: Yup.string().required('We need your email address').email('Something is strange about that email address'),
+  username: Yup.string().required('Username is required'),
   password: Yup.string().required('Password is required'),
 });
+
 
 const FormContainer = styled.div`
   padding: 20px;
@@ -49,12 +50,16 @@ const LoginForm: React.FC = () => {
 
   return (
     <Formik
-      initialValues={{ email: '', password: '' }}
+      initialValues={{ username: '', password: '' }}
+
       validationSchema={validationSchema}
       onSubmit={async (values, { setSubmitting, setErrors }) => {
         try {
-          const API_URL = process.env.REACT_APP_BACKEND_URL || '';
-          const loginResponse = await axios.post(`${API_URL}/api/users/login`, values);
+          const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+          const loginResponse = await axios.post(`${API_URL}/api/users/login`, {
+            username: values.username,
+            password: values.password
+          });
 
           // Check if the component is still mounted before updating the state
           if (isMounted.current) {
@@ -73,13 +78,13 @@ const LoginForm: React.FC = () => {
                 localStorage.setItem('userId', userId);
               }
             } else {
-              setErrors({ email: ' ', password: loginResponse.data.message || 'Invalid credentials' });
+              setErrors({ username: ' ', password: loginResponse.data.message || 'Invalid credentials' });
             }
           }
         } catch (error) {
           // Check if the component is still mounted before setting errors
           if (isMounted.current) {
-            setErrors({ email: ' ', password: 'Invalid credentials or server error' });
+            setErrors({ username: ' ', password: 'Invalid credentials or server error' });
           }
         } finally {
           // Check if the component is still mounted before setting submitting to false
@@ -95,19 +100,20 @@ const LoginForm: React.FC = () => {
           <Form>
             <Typography variant="h5" gutterBottom>Login</Typography>
 
-            <Field name="email">
+
+            <Field name="username">
               {({ field, form }: FieldProps) => (
                 <TextField
                   {...field}
-                  label="Email"
+                  label="Username"
                   variant="outlined"
                   fullWidth
-                  helperText={form.touched.email && typeof form.errors.email === 'string' ? form.errors.email : undefined}
-                  error={form.touched.email && Boolean(form.errors.email)}
+                  helperText={form.touched.username && typeof form.errors.username === 'string' ? form.errors.username : undefined}
+                  error={form.touched.username && Boolean(form.errors.username)}
                 />
               )}
             </Field>
-            <ErrorMessage name="email" component={ErrorText} />
+            <ErrorMessage name="username" component={ErrorText} />
 
             <Field name="password">
               {({ field, form }: FieldProps) => (

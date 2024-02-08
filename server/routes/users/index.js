@@ -33,31 +33,30 @@ router.get("/me", checkAuthentication, async (req, res) => {
 
 // POST route to create a new user
 router.post("/register", async (req, res) => {
-	console.log("Received a create a new user POST request on /");
+	console.log("Received a create a new user POST request on /register");
 	try {
-		const { username, email, password, street1, street2, zipCode } = req.body;
+		const { username, password } = req.body;
 
 		// Basic validation
-		if (!username || !email || !password || !street1 || !street2 || !zipCode) {
-			return res.status(400).json({ error: "All fields are required" });
-		}
-		if (!validator.isEmail(email)) {
-			return res.status(400).json({ error: "Invalid email format" });
+		if (!username || !password) {
+			return res
+				.status(400)
+				.json({ error: "Username and password are required" });
 		}
 
-		// Additional validation for street1, street2, and zipCode can be added here if needed
+		// Check if the username already exists
+		const existingUser = await User.findOne({ username });
+		if (existingUser) {
+			return res.status(400).json({ error: "Username already exists" });
+		}
 
 		// Encrypt the password
 		const hashedPassword = await bcrypt.hash(password, 10);
 
-		// Create a new user with all fields
+		// Create a new user with username and password
 		const newUser = new User({
 			username,
-			email,
 			password: hashedPassword,
-			street1,
-			street2,
-			zipCode,
 		});
 		await newUser.save();
 		res
@@ -68,28 +67,29 @@ router.post("/register", async (req, res) => {
 		res.status(500).send("Internal Server Error"); // Respond with a generic error message
 	}
 });
-
 // LOGIN route
 router.post("/login", async (req, res) => {
 	try {
-		// Destructure email and password from the request body
-		const { email, password } = req.body;
+		// Destructure username and password from the request body
+		const { username, password } = req.body;
 
-		// Check if email and password are provided
-		if (!email || !password) {
-			return res.status(400).json({ error: "Email and password are required" });
+		// Check if username and password are provided
+		if (!username || !password) {
+			return res
+				.status(400)
+				.json({ error: "Username and password are required" });
 		}
 
-		// Find user by email
-		const user = await User.findOne({ email });
+		// Find user by username
+		const user = await User.findOne({ username });
 		if (!user) {
-			return res.status(400).json({ error: "Invalid email or password" });
+			return res.status(400).json({ error: "Invalid username or password" });
 		}
 
 		// Compare the provided password with the hashed password in the database
 		const isMatch = await bcrypt.compare(password, user.password);
 		if (!isMatch) {
-			return res.status(400).json({ error: "Invalid email or password" });
+			return res.status(400).json({ error: "Invalid username or password" });
 		}
 
 		// User is authenticated, generate a token

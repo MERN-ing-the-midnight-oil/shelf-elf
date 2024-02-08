@@ -7,28 +7,11 @@ const UserSchema = new mongoose.Schema({
 		required: true,
 		unique: true,
 	},
-	email: {
-		type: String,
-		required: true,
-		unique: true,
-	},
 	password: {
 		type: String,
 		required: true,
 	},
-	street1: {
-		type: String,
-		required: true,
-	},
-	street2: {
-		type: String,
-		required: true,
-	},
-	zipCode: {
-		type: String,
-		required: true,
-		match: [/^[0-9]{5}$/, "Invalid zip code"],
-	},
+	// Ensure other fields like email, street1, street2, and zipCode are removed if not needed
 	lendingLibrary: [Book.schema],
 	borrowedBooks: [Book.schema],
 	requestedBooks: [
