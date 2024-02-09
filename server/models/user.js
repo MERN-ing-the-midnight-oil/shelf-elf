@@ -11,7 +11,6 @@ const UserSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
-	// Ensure other fields like email, street1, street2, and zipCode are removed if not needed
 	lendingLibrary: [Book.schema],
 	borrowedBooks: [Book.schema],
 	requestedBooks: [

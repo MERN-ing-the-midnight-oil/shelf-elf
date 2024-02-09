@@ -108,20 +108,38 @@ router.post("/borrow/:bookId", checkAuthentication, async (req, res) => {
 	}
 });
 
-// Display all books offered by other users
-router.get("/offeredByOthers", checkAuthentication, async (req, res) => {
-	console.log("Fetching books offered by others...");
+// Route to get books from all communities the user is a part of
+router.get("/booksFromMyCommunities", checkAuthentication, async (req, res) => {
+	console.log("Books from my communities Route Hit");
 	try {
-		console.log("Authenticated user ID:", req.user._id);
-		// Populate the 'owner' field with the 'username', 'street1', 'street2', and 'zipCode' from the User model
-		const otherUsersBooks = await Book.find({
-			owner: { $ne: req.user._id },
-		}).populate("owner", "username street1 street2 zipCode");
-		// console.log("Found books:", otherUsersBooks);
-		res.status(200).json(otherUsersBooks);
+		// Find communities the user belongs to
+		const userCommunities = await User.findById(req.user._id)
+			.select("communities")
+			.populate("communities");
+
+		// Collect all user IDs from these communities
+		let userIds = [];
+		for (let community of userCommunities.communities) {
+			const usersInCommunity = await User.find({
+				communities: community._id,
+			}).select("_id");
+			userIds = [...userIds, ...usersInCommunity.map((user) => user._id)];
+		}
+
+		// Remove duplicates from userIds array
+		userIds = [...new Set(userIds)];
+
+		// Find books offered by these users, excluding the current user's books
+		const books = await Book.find({
+			owner: { $in: userIds, $ne: req.user._id },
+		}).populate("owner", "username");
+
+		res.status(200).json(books);
 	} catch (error) {
-		console.error("Detailed error:", error); // log the actual error for debugging
-		res.status(500).json({ error: "Error fetching books from other users." });
+		console.error("Error fetching books from user communities:", error);
+		res
+			.status(500)
+			.json({ error: "Failed to fetch books from user communities" });
 	}
 });
 

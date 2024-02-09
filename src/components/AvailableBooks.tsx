@@ -22,50 +22,28 @@ interface Book {
     owner: Owner;
 }
 
-interface Community {
-    _id: string;
-    name: string;
-    description: string;
-}
-
 const AvailableBooks: React.FC<AvailableBooksProps> = ({ setRefetchCounter }) => {
-    const [communities, setCommunities] = useState<Community[]>([]);
-    const [booksInCommunities, setBooksInCommunities] = useState<Map<string, Book[]>>(new Map());
+    const [books, setBooks] = useState<Book[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedBook, setSelectedBook] = useState<Book | null>(null);
     const [requestedBooks, setRequestedBooks] = useState<Book[]>([]);
 
     useEffect(() => {
-        const fetchUserCommunities = async () => {
+        const fetchBooksFromAllCommunities = async () => {
             try {
+                const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
                 const token = localStorage.getItem('userToken');
-                const response = await axios.get('/api/users/my-communities', {
+                const response = await axios.get(`${API_URL}/api/books/booksfromMyCommunities`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                setCommunities(response.data);
+                setBooks(response.data);
             } catch (error) {
-                console.error('Error fetching communities:', error);
+                console.error('Error fetching books from communities:', error);
             }
         };
-        fetchUserCommunities();
-    }, []);
 
-    useEffect(() => {
-        communities.forEach(community => {
-            const fetchBooksForCommunity = async () => {
-                try {
-                    const token = localStorage.getItem('userToken');
-                    const response = await axios.get(`/api/books/offeredInCommunity/${community._id}`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                    });
-                    setBooksInCommunities(prev => new Map(prev.set(community._id, response.data)));
-                } catch (error) {
-                    console.error(`Error fetching books for community ${community.name}:`, error);
-                }
-            };
-            fetchBooksForCommunity();
-        });
-    }, [communities]);
+        fetchBooksFromAllCommunities();
+    }, []);
 
 
 
@@ -114,19 +92,13 @@ const AvailableBooks: React.FC<AvailableBooksProps> = ({ setRefetchCounter }) =>
 
 
 
-
     return (
         <div>
             <Typography variant="h5">Books available in your communities:</Typography>
-            {communities.map(community => (
-                <div key={community._id}>
-                    <Typography variant="h6">{community.name}</Typography>
-                    <AvailableTable
-                        books={booksInCommunities.get(community._id) || []}
-                        onRequestClick={handleRequestClick}
-                    />
-                </div>
-            ))}
+            <AvailableTable
+                books={books}
+                onRequestClick={handleRequestClick}
+            />
 
             <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
                 <DialogTitle>Confirm Request</DialogTitle>
@@ -146,6 +118,7 @@ const AvailableBooks: React.FC<AvailableBooksProps> = ({ setRefetchCounter }) =>
             </Dialog>
         </div>
     );
+
 
 }
 
