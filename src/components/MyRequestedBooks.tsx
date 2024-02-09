@@ -93,7 +93,6 @@ const MyRequestedBooks: React.FC<MyRequestedBooksProps> = ({ token, setRefetchCo
                             <TableCell>Description</TableCell>
                             <TableCell>Status</TableCell>
                             <TableCell>Offered By</TableCell>
-                            <TableCell>Location</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -109,11 +108,7 @@ const MyRequestedBooks: React.FC<MyRequestedBooksProps> = ({ token, setRefetchCo
                                 <TableCell>{getDescriptionPreview(book.description)}</TableCell>
                                 <TableCell>{book.status}</TableCell>
                                 <TableCell>{book.owner.username}</TableCell>
-                                <TableCell>
-                                    <a href={generateGoogleMapsLink(book.owner.street1, book.owner.street2, book.owner.zipCode)} target="_blank" rel="noopener noreferrer">
-                                        {`${book.owner.street1} & ${book.owner.street2}, ${book.owner.zipCode}`}
-                                    </a>
-                                </TableCell>
+
                                 <TableCell>
                                     <IconButton onClick={() => handleDelete(book._id)} color="error">
                                         <DeleteIcon />
