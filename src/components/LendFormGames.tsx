@@ -1,52 +1,56 @@
 import React, { useState } from 'react';
 
+// Define an interface for the component props
 interface LendFormGamesProps {
     token: string;
 }
 
 const LendFormGames: React.FC<LendFormGamesProps> = ({ token }) => {
-    const [title, setTitle] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [games, setGames] = useState<any[]>([]); // Temporary use of 'any' type for game objects
 
-    const handleSearch = (searchTitle: string) => {
-        if (!searchTitle) return;
-        const formattedTitle = searchTitle.toLowerCase().replace(/[\W_]+/g, ""); // Normalize input
-        const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
-        fetch(`${API_URL}/api/games/search?title=${formattedTitle}`, {
+    const handleSearch = async (title: string) => {
+        const requestOptions = {
             method: 'GET',
             headers: {
+                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
             },
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Search results:', data);
-                // For now, just log the first closely matching game
-                if (data.length > 0) {
-                    const game = data.find((game: any) => game.title.toLowerCase().replace(/[\W_]+/g, "") === formattedTitle);
-                    if (game) {
-                        console.log('Close match found:', game);
-                    } else {
-                        console.log('No close matches found');
-                    }
-                } else {
-                    console.log('No matches found');
-                }
-            })
-            .catch(error => console.error('Error searching games:', error));
+        };
+
+        try {
+            const response = await fetch(`http://localhost:5001/api/games/search?title=${title}`, requestOptions);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            setGames(data); // Assuming the API returns an array of game objects.
+        } catch (error) {
+            console.error('Error searching games:', error);
+        }
+    };
+
+    const handleBlur = () => {
+        handleSearch(searchTerm);
     };
 
     return (
         <div>
             <input
                 type="text"
-                value={title}
-                onChange={(e) => {
-                    setTitle(e.target.value);
-                }}
-                placeholder="Search for a game title..."
-                onBlur={() => handleSearch(title)} // Trigger search when user exits the input field
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onBlur={handleBlur}
+                placeholder="Search for a game title"
             />
+            <div>
+                {games.map((game) => (
+                    <div key={game._id} style={{ marginBottom: '10px' }}>
+                        <span>{game.title}</span>
+                        <button onClick={() => console.log(`Offer to lend ${game.title}`)}>Offer to Lend</button>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };
