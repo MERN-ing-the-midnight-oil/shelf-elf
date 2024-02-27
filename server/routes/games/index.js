@@ -1,18 +1,32 @@
-// Import necessary modules
 const express = require("express");
-const Game = require("../../models/game"); // Ensure you have a Game model similar to the Book model
+const Game = require("../../models/game");
 
 const router = express.Router();
 
-// Route to get the first ten games from the database
-router.get("/top-ten", async (req, res) => {
+// Search for games
+router.get("/search", async (req, res) => {
+	// Extract search query from URL query parameters
+	const { title } = req.query;
+
+	if (!title) {
+		return res.status(400).json({ message: "No search term provided" });
+	}
+
 	try {
-		// Fetch the first ten games from the database
-		const games = await Game.find({}).limit(10);
-		res.status(200).json(games);
+		// Use a regex for case-insensitive and partial match search
+		const searchRegex = new RegExp(title, "i");
+		const games = await Game.find({ title: searchRegex });
+
+		if (games.length > 0) {
+			res.json(games);
+		} else {
+			res
+				.status(404)
+				.json({ message: "No games found matching the search criteria" });
+		}
 	} catch (error) {
-		console.error("Failed to fetch games:", error);
-		res.status(500).json({ error: "Error fetching games." });
+		console.error("Error searching for games:", error);
+		res.status(500).json({ message: "Error searching for games" });
 	}
 });
 
