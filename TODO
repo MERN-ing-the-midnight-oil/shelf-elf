@@ -1,4 +1,4 @@
-Rename "Community" and "gettogether" as "coffee hour" or , possibly, "meetup"
+Rename "Community" and "gettogether" as "coffee hour" or , possibly, "meetup", or "club"
 Impliment a Chat / microphone combo for listing your games and books that will let the user just talk about the books they own and will generate their library.
 
 Community Joining Functionality:
@@ -7,16 +7,14 @@ Implement rate-limiting on the community join endpoint to prevent abuse.
 
 Admin Functionality to Remove Users:
 Implement a feature where community admins can remove users from their community. This could be a simple option in the community management interface.
-Community Name Sharing Mechanism:
-
-Encourage community creators to share the name of the community with potential members through secure channels.
 
 Logging and Monitoring:
 Implement logging for join requests and monitor for unusual activity, like a single user trying to join numerous communities in a short period.
 
 Future Feature - Invitation Links:
-Plan for a future feature where users can invite others to a community via a shareable link. This feature would further streamline the process of joining a community.
+Plan for a future feature where users can invite others to a community via a shareable link. This feature would further streamline the process of joining a community. Give all users the ability to share the link , maybe via a QR code.
 
+Adding Games.
 Parse the CSV File: You'll need to parse the CSV file to convert it into a format that can be used to populate your database. Node.js has several libraries for parsing CSV files, such as csv-parser or papaparse.
 
 Populate the Database: Once you've parsed the CSV data, you can use it to populate your MongoDB database with game data. This could be done as a one-time script if the data doesn't change frequently, or as part of your application logic if the data needs regular updates.

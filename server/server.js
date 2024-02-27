@@ -46,10 +46,12 @@ mongoose
 const bookRoutes = require("./routes/books");
 const userRoutes = require("./routes/users");
 const communityRoutes = require("./routes/communities/");
+const gameRoutes = require("./routes/games"); // Update the path as per your directory structure
 
 app.use("/api/books", bookRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/communities", communityRoutes);
+app.use("/api/games", gameRoutes);
 
 // Deployment - Serving the static files from express
 if (process.env.NODE_ENV === "production") {

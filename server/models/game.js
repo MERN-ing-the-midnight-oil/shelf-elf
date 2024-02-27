@@ -1,21 +1,26 @@
 const mongoose = require("mongoose");
 
-const GameSchema = new mongoose.Schema({
+const gameSchema = new mongoose.Schema({
 	title: {
 		type: String,
 		required: true,
 	},
 	bggRating: {
-		// Board Game Geek Rating
 		type: Number,
-		required: false,
+		required: true,
 	},
 	bggId: {
-		// Board Game Geek ID
-		type: String,
-		required: false,
+		type: Number,
+		required: true,
+		unique: true,
 	},
-	// Add any other relevant fields here
+	bggLink: {
+		// Changed from bggUrl to bggLink
+		type: String,
+		required: true,
+	},
 });
 
-module.exports = mongoose.model("Game", GameSchema);
+const Game = mongoose.model("Game", gameSchema);
+
+module.exports = Game;
