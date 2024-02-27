@@ -1,24 +1,20 @@
+// Import necessary modules
 const express = require("express");
-const router = express.Router();
-// const { scrapeGameImages } = require('../../utils/scrapeGameImages');
-const Game = require("../../models/Game"); // Adjust the path as necessary
-// const { checkAuthentication } = require('../../../middlewares/authentication');
+const Game = require("../../models/game"); // Ensure you have a Game model similar to the Book model
 
-// Route to get the first 10 games from the database
-router.get("/first10", async (req, res) => {
+const router = express.Router();
+
+// Route to get the first ten games from the database
+router.get("/top-ten", async (req, res) => {
 	try {
+		// Fetch the first ten games from the database
 		const games = await Game.find({}).limit(10);
-		res.json(games);
+		res.status(200).json(games);
 	} catch (error) {
-		console.error("Error fetching games:", error);
-		res.status(500).json({ error: "Internal Server Error" });
+		console.error("Failed to fetch games:", error);
+		res.status(500).json({ error: "Error fetching games." });
 	}
 });
 
-// Commented out code for future implementation
-// router.post('/some-route', async (req, res) => {
-//     // Code for future implementation
-//     // const image = await scrapeGameImages(someParameter);
-// });
-
+// Export the router
 module.exports = router;
