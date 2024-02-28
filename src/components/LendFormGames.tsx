@@ -7,7 +7,7 @@ interface LendFormGamesProps {
 
 const LendFormGames: React.FC<LendFormGamesProps> = ({ token }) => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [games, setGames] = useState<any[]>([]); // Temporary use of 'any' type for game objects
+    const [games, setGames] = useState<any[]>([]);
 
     const handleSearch = async (title: string) => {
         const requestOptions = {
@@ -24,9 +24,31 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token }) => {
                 throw new Error('Network response was not ok');
             }
             const data = await response.json();
-            setGames(data); // Assuming the API returns an array of game objects.
+            setGames(data);
         } catch (error) {
             console.error('Error searching games:', error);
+        }
+    };
+
+    const offerToLend = async (game: any) => {
+        const requestOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ game }),
+        };
+
+        try {
+            const response = await fetch('http://localhost:5001/api/games/lend', requestOptions);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const updatedGames = await response.json();
+            console.log('Updated lendingLibraryGames:', updatedGames);
+        } catch (error) {
+            console.error('Error offering game to lend:', error);
         }
     };
 
@@ -47,7 +69,7 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token }) => {
                 {games.map((game) => (
                     <div key={game._id} style={{ marginBottom: '10px' }}>
                         <span>{game.title}</span>
-                        <button onClick={() => console.log(`Offer to lend ${game.title}`)}>Offer to Lend</button>
+                        <button onClick={() => offerToLend(game)}>Offer to Lend</button>
                     </div>
                 ))}
             </div>

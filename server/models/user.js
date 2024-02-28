@@ -25,6 +25,12 @@ const UserSchema = new mongoose.Schema({
 			ref: "Community",
 		},
 	],
+	lendingLibraryGames: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Game",
+		},
+	],
 });
 
 module.exports = mongoose.model("User", UserSchema);
