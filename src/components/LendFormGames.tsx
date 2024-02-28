@@ -39,9 +39,9 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token }) => {
             },
             body: JSON.stringify({ game }),
         };
-
         try {
-            const response = await fetch('http://localhost:5001/api/games/lend', requestOptions);
+            const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+            const response = await fetch(`${API_URL}/api/games/lend`, requestOptions);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }

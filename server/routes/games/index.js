@@ -33,31 +33,34 @@ router.get("/search", async (req, res) => {
 	}
 });
 
-//add a game to the user's library
+// Add a game to the user's library
 // POST /api/games/lend
-// Requires auth middleware to ensure user is logged in
 router.post("/lend", checkAuthentication, async (req, res) => {
+	console.log("Attempting to add game to user's lending library");
 	try {
-		const userId = req.user.id; // Assuming your auth middleware adds the user ID to the request
-		const { game } = req.body; // The game object to add to lendingLibraryGames
+		const userId = req.user._id; // Make sure your auth middleware adds the user object to req
+		const { game } = req.body; // The game object to add
+
+		console.log(`User ID: ${userId}`, `Game to lend: ${game.title}`);
 
 		// Find the user and update their lendingLibraryGames
 		const user = await User.findByIdAndUpdate(
 			userId,
 			{ $push: { lendingLibraryGames: game } },
-			{ new: true } // Return the updated document
+			{ new: true } // Option to return the updated document
 		);
 
 		if (!user) {
-			return res.status(404).json({ msg: "User not found" });
+			console.log("User not found with ID:", userId);
+			return res.status(404).json({ message: "User not found" });
 		}
 
-		res.json(user.lendingLibraryGames); // Or just send a success message
+		console.log("Game added to lending library:", game.title);
+		res.json(user.lendingLibraryGames); // Send the updated list of games as a response
 	} catch (error) {
-		console.error(error.message);
-		res.status(500).send("Server error");
+		console.error("Error adding game to lending library:", error);
+		res.status(500).json({ message: "Server error" });
 	}
 });
-
 // Export the router
 module.exports = router;
