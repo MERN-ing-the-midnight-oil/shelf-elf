@@ -1,12 +1,11 @@
 const express = require("express");
 const Game = require("../../models/game");
-const auth = require("../../../middlewares/authentication");
+const { checkAuthentication } = require("../../../middlewares/authentication");
 const User = require("../../models/user"); // Your User model
 const router = express.Router();
 
 // Search for games
 router.get("/search", async (req, res) => {
-	// Extract search query from URL query parameters
 	const { title } = req.query;
 
 	if (!title) {
@@ -14,9 +13,12 @@ router.get("/search", async (req, res) => {
 	}
 
 	try {
-		// Use a regex for case-insensitive and partial match search
-		const searchRegex = new RegExp(title, "i");
-		const games = await Game.find({ title: searchRegex });
+		// Create a regex pattern to search for any of the words, ensuring they stand as separate words using word boundaries (\b)
+		const words = title.trim().split(/\s+/);
+		const searchRegexPattern = words.map((word) => `\\b${word}\\b`).join("|");
+		const searchRegex = new RegExp(searchRegexPattern, "i");
+
+		const games = await Game.find({ title: { $regex: searchRegex } });
 
 		if (games.length > 0) {
 			res.json(games);
@@ -30,10 +32,11 @@ router.get("/search", async (req, res) => {
 		res.status(500).json({ message: "Error searching for games" });
 	}
 });
+
 //add a game to the user's library
 // POST /api/games/lend
 // Requires auth middleware to ensure user is logged in
-router.post("/lend", auth, async (req, res) => {
+router.post("/lend", checkAuthentication, async (req, res) => {
 	try {
 		const userId = req.user.id; // Assuming your auth middleware adds the user ID to the request
 		const { game } = req.body; // The game object to add to lendingLibraryGames
