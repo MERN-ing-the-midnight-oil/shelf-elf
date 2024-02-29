@@ -120,7 +120,7 @@ const LendForm: React.FC<LendFormProps> = ({ token, setRefetchCounter }) => {
   return (
     <FormContainer>
       <Typography variant="h5" gutterBottom>
-        Add offerings by searching the Google Books API:
+        Add book titles to your books lending shelf:
       </Typography>
       <Formik
         initialValues={{ title: '' }}

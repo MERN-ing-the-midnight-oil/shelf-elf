@@ -1,88 +1,97 @@
 import React, { useState } from 'react';
+import { TextField, Button, Typography, CircularProgress, Container } from '@mui/material';
+import { styled } from '@mui/system';
 
-// Define an interface for the component props
 interface LendFormGamesProps {
     token: string;
 }
 
+const ContainerStyled = styled(Container)({
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginTop: 20,
+});
+
+const GameItem = styled('div')({
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    margin: '10px 0',
+});
+
 const LendFormGames: React.FC<LendFormGamesProps> = ({ token }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [games, setGames] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleSearch = async (title: string) => {
-        const requestOptions = {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        };
-
+        setIsLoading(true);
         try {
-            const response = await fetch(`http://localhost:5001/api/games/search?title=${title}`, requestOptions);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
+            const response = await fetch(`http://localhost:5001/api/games/search?title=${title}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (!response.ok) throw new Error('Network response was not ok');
+
             const data = await response.json();
             setGames(data);
         } catch (error) {
             console.error('Error searching games:', error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const offerToLend = async (game: any) => {
-        const requestOptions = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ game }),
-        };
-
         try {
             const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
-            const response = await fetch(`${API_URL}/api/games/lend`, requestOptions);
+            const response = await fetch(`${API_URL}/api/games/lend`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ gameId: game._id }),
+            });
 
-            if (response.ok) {
-                const updatedGames = await response.json();
-                console.log('Updated lendingLibraryGames:', updatedGames);
-            } else if (response.status === 400) {
-                // The server responded with a "Bad Request" status, indicating the game is already added
-                const errorMessage = await response.json();
-                console.error('Error offering game to lend:', errorMessage.message);
-                alert(errorMessage.message); // Display an alert with the server-provided message
-            } else {
-                throw new Error('Network response was not ok');
-            }
+            if (!response.ok) throw new Error('Network response was not ok');
+            const updatedGames = await response.json();
+            console.log('Updated lendingLibraryGames:', updatedGames);
         } catch (error) {
             console.error('Error offering game to lend:', error);
         }
     };
 
-
-    const handleBlur = () => {
-        handleSearch(searchTerm);
-    };
-
     return (
-        <div>
-            <input
-                type="text"
+        <ContainerStyled maxWidth="sm">
+            <Typography variant="h5" gutterBottom>
+                Add board game titles to your games lending shelf:
+            </Typography>
+            <TextField
+                fullWidth
+                label="Game Title"
+                variant="outlined"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                onBlur={handleBlur}
-                placeholder="Search for a game title"
+                onBlur={() => handleSearch(searchTerm)}
+                placeholder="Type a game title"
+                margin="normal"
             />
-            <div>
-                {games.map((game) => (
-                    <div key={game._id} style={{ marginBottom: '10px' }}>
-                        <span>{game.title}</span>
-                        <button onClick={() => offerToLend(game)}>Offer to Lend</button>
-                    </div>
-                ))}
-            </div>
-        </div>
+            {isLoading && <CircularProgress />}
+            {games.map((game) => (
+                <GameItem key={game._id}>
+                    <Typography>{game.title}</Typography>
+                    <Button variant="contained" color="primary" onClick={() => offerToLend(game)}>
+                        Offer to Lend
+                    </Button>
+                </GameItem>
+            ))}
+        </ContainerStyled>
     );
 };
 
