@@ -12,11 +12,13 @@ const LendBooks: React.FC<{ token: string, setRefetchCounter: (value: React.SetS
             <div style={{ backgroundColor: '#f5f5f5', padding: '20px', borderRadius: '5px', margin: '20px 0' }}>
                 <LendForm token={token} setRefetchCounter={setRefetchCounter} />
             </div>
-
             {/* Display user's book lending library */}
             <MyLendingLibrary token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />
             {/* Form to add game titles to the lending library */}
-            <LendFormGames token={token} />
+            <div style={{ backgroundColor: '#f5f5f5', padding: '20px', borderRadius: '5px', margin: '20px 0' }}>
+                <LendFormGames token={token} />
+            </div>
+
             {/* Display user's game lending library */}
             <MyLendingLibraryGames token={token} refetchCounter={refetchCounter} />
         </div>
