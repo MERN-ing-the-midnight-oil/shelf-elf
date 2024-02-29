@@ -39,18 +39,27 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token }) => {
             },
             body: JSON.stringify({ game }),
         };
+
         try {
             const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
             const response = await fetch(`${API_URL}/api/games/lend`, requestOptions);
-            if (!response.ok) {
+
+            if (response.ok) {
+                const updatedGames = await response.json();
+                console.log('Updated lendingLibraryGames:', updatedGames);
+            } else if (response.status === 400) {
+                // The server responded with a "Bad Request" status, indicating the game is already added
+                const errorMessage = await response.json();
+                console.error('Error offering game to lend:', errorMessage.message);
+                alert(errorMessage.message); // Display an alert with the server-provided message
+            } else {
                 throw new Error('Network response was not ok');
             }
-            const updatedGames = await response.json();
-            console.log('Updated lendingLibraryGames:', updatedGames);
         } catch (error) {
             console.error('Error offering game to lend:', error);
         }
     };
+
 
     const handleBlur = () => {
         handleSearch(searchTerm);

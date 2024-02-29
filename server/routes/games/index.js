@@ -35,31 +35,57 @@ router.get("/search", async (req, res) => {
 
 // Add a game to the user's library
 // POST /api/games/lend
+
 router.post("/lend", checkAuthentication, async (req, res) => {
-	console.log("Attempting to add game to user's lending library");
+	console.log("Received game to lend:", req.body.game); // Log the received game
+	const userId = req.user._id;
+	const gameId = req.body.game._id; // Assuming sending the game ID in the request
+
+	if (!mongoose.Types.ObjectId.isValid(gameId)) {
+		return res.status(400).json({ message: "Invalid game ID" });
+	}
+
 	try {
-		const userId = req.user._id; // Make sure your auth middleware adds the user object to req
-		const { game } = req.body; // The game object to add
+		// Check if the game exists
+		const gameExists = await Game.findById(gameId);
+		if (!gameExists) {
+			return res.status(404).json({ message: "Game not found" });
+		}
 
-		console.log(`User ID: ${userId}`, `Game to lend: ${game.title}`);
-
-		// Find the user and update their lendingLibraryGames
+		// Add the game to the user's lending library, ensuring no duplicates
 		const user = await User.findByIdAndUpdate(
 			userId,
-			{ $push: { lendingLibraryGames: game } },
-			{ new: true } // Option to return the updated document
+			{ $addToSet: { lendingLibraryGames: gameId } },
+			{ new: true, populate: "lendingLibraryGames" } // Populate to return the updated list of games
 		);
 
 		if (!user) {
-			console.log("User not found with ID:", userId);
 			return res.status(404).json({ message: "User not found" });
 		}
 
-		console.log("Game added to lending library:", game.title);
-		res.json(user.lendingLibraryGames); // Send the updated list of games as a response
+		console.log("Game added to lending library:", req.body.game.title);
+		res.json(user.lendingLibraryGames);
 	} catch (error) {
 		console.error("Error adding game to lending library:", error);
 		res.status(500).json({ message: "Server error" });
+	}
+});
+
+// Route to get the logged-in user's games library
+router.get("/my-library-games", checkAuthentication, async (req, res) => {
+	try {
+		const userId = req.user._id; // Assuming your auth middleware sets req.user
+
+		// Find the user and populate their lendingLibraryGames
+		const user = await User.findById(userId).populate("lendingLibraryGames");
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		res.json(user.lendingLibraryGames);
+	} catch (error) {
+		console.error("Error fetching user's games library:", error);
+		res.status(500).json({ message: "Error fetching user's games library" });
 	}
 });
 // Export the router
