@@ -35,35 +35,32 @@ router.get("/search", async (req, res) => {
 
 // Add a game to the user's library
 // POST /api/games/lend
-
 router.post("/lend", checkAuthentication, async (req, res) => {
-	console.log("Received game to lend:", req.body.game); // Log the received game
-	const userId = req.user._id;
-	const gameId = req.body.game._id; // Assuming sending the game ID in the request
-
-	if (!mongoose.Types.ObjectId.isValid(gameId)) {
-		return res.status(400).json({ message: "Invalid game ID" });
+	if (!req.body.gameId) {
+		return res
+			.status(400)
+			.json({ message: "Game ID is missing from the request" });
 	}
+	const gameId = req.body.gameId;
+	const userId = req.user._id;
 
 	try {
-		// Check if the game exists
-		const gameExists = await Game.findById(gameId);
-		if (!gameExists) {
-			return res.status(404).json({ message: "Game not found" });
-		}
-
-		// Add the game to the user's lending library, ensuring no duplicates
-		const user = await User.findByIdAndUpdate(
-			userId,
-			{ $addToSet: { lendingLibraryGames: gameId } },
-			{ new: true, populate: "lendingLibraryGames" } // Populate to return the updated list of games
-		);
-
+		// Check if the game is already in the lending library
+		const user = await User.findById(userId);
 		if (!user) {
 			return res.status(404).json({ message: "User not found" });
 		}
 
-		console.log("Game added to lending library:", req.body.game.title);
+		const isAlreadyAdded = user.lendingLibraryGames.includes(gameId);
+		if (isAlreadyAdded) {
+			return res
+				.status(400)
+				.json({ message: "Game already added to lending library" });
+		}
+
+		user.lendingLibraryGames.push(gameId);
+		await user.save();
+
 		res.json(user.lendingLibraryGames);
 	} catch (error) {
 		console.error("Error adding game to lending library:", error);

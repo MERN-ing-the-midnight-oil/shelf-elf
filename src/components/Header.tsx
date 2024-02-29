@@ -38,34 +38,10 @@ const Header: React.FC = () => {
                     </Typography>
 
                     <Tabs value={value} onChange={handleChange} aria-label="Navigation Tabs">
+
+
                         <Tab
-                            label="Manage Requests"
-                            value="/request-books"
-                            component={Link}
-                            to="/request-books"
-                            sx={{
-                                backgroundColor: value === '/request-books' ? 'primary.dark' : 'primary.main',
-                                color: 'white',
-                                '&.Mui-selected': {
-                                    color: 'white'
-                                }
-                            }}
-                        />
-                        <Tab
-                            label="Manage Offerings"
-                            value="/lend-books"
-                            component={Link}
-                            to="/lend-books"
-                            sx={{
-                                backgroundColor: value === '/lend-books' ? 'primary.dark' : 'primary.main',
-                                color: 'white',
-                                '&.Mui-selected': {
-                                    color: 'white'
-                                }
-                            }}
-                        />
-                        <Tab
-                            label="Get-togethers"
+                            label="Your Social Group(s)"
                             value="/manage-communities"
                             component={Link}
                             to="/manage-communities"
@@ -77,6 +53,34 @@ const Header: React.FC = () => {
                                 }
                             }}
                         />
+                        <Tab
+                            label="Your Offerings"
+                            value="/lend-books"
+                            component={Link}
+                            to="/lend-books"
+                            sx={{
+                                backgroundColor: value === '/lend-books' ? 'primary.dark' : 'primary.main',
+                                color: 'white',
+                                '&.Mui-selected': {
+                                    color: 'white'
+                                }
+                            }}
+                        />
+
+                        <Tab
+                            label="Your Requests"
+                            value="/request-books"
+                            component={Link}
+                            to="/request-books"
+                            sx={{
+                                backgroundColor: value === '/request-books' ? 'primary.dark' : 'primary.main',
+                                color: 'white',
+                                '&.Mui-selected': {
+                                    color: 'white'
+                                }
+                            }}
+                        />
+
                     </Tabs>
 
                     <Button color="inherit" onClick={handleLogout} sx={{ marginLeft: 'auto' }}>
