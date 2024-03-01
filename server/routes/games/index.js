@@ -34,34 +34,31 @@ router.get("/search", async (req, res) => {
 });
 
 // Add a game to the user's library
-// POST /api/games/lend
 router.post("/lend", checkAuthentication, async (req, res) => {
-	if (!req.body.gameId) {
-		return res
-			.status(400)
-			.json({ message: "Game ID is missing from the request" });
-	}
-	const gameId = req.body.gameId;
 	const userId = req.user._id;
+	const gameId = req.body.gameId; // Assuming you're sending just the game ID now
 
 	try {
-		// Check if the game is already in the lending library
 		const user = await User.findById(userId);
 		if (!user) {
 			return res.status(404).json({ message: "User not found" });
 		}
 
-		const isAlreadyAdded = user.lendingLibraryGames.includes(gameId);
+		// Check if the game is already in the user's lending library
+		const isAlreadyAdded = user.lendingLibraryGames.some((game) =>
+			game.equals(gameId)
+		);
 		if (isAlreadyAdded) {
 			return res
 				.status(400)
 				.json({ message: "Game already added to lending library" });
 		}
 
+		// If not already added, push the game ID and save the user
 		user.lendingLibraryGames.push(gameId);
 		await user.save();
 
-		res.json(user.lendingLibraryGames);
+		res.status(200).json(user.lendingLibraryGames);
 	} catch (error) {
 		console.error("Error adding game to lending library:", error);
 		res.status(500).json({ message: "Server error" });

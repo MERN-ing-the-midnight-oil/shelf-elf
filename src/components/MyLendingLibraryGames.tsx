@@ -75,44 +75,53 @@ const MyLendingLibraryGames: React.FC<MyLendingLibraryGamesProps> = ({ token, re
         }
     };
 
-
     return (
-        <TableContainer component={Paper}>
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Title</TableCell>
-                        <TableCell>Rating</TableCell>
-                        <TableCell>Status</TableCell>
-                        <TableCell align="right">Actions</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {games.map((game) => (
-                        <TableRow key={game._id}>
-                            <TableCell>{game.title}</TableCell>
-                            <TableCell>{game.bggRating}</TableCell>
-                            <TableCell>{game.status}</TableCell>
-                            <TableCell align="right">
-                                <Tooltip title="Mark as Unavailable">
-                                    <span>
-                                        <IconButton onClick={() => handleMarkAsUnavailable(game._id)} color="warning" disabled={game.status === 'unavailable'}>
-                                            <BlockIcon />
-                                        </IconButton>
-                                    </span>
-                                </Tooltip>
-                                <Tooltip title="Delete Forever">
-                                    <IconButton onClick={() => handleDeleteForever(game._id)} color="error">
-                                        <DeleteForeverIcon />
-                                    </IconButton>
-                                </Tooltip>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </TableContainer>
+        <div>
+            {games.length === 0 ? (
+                <p>You don't have any games in your offerings library yet.</p>
+            ) : (
+                <>
+                    <h1>You are offering to lend the following games:</h1>
+                    <TableContainer component={Paper}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Title</TableCell>
+                                    <TableCell>Rating</TableCell>
+                                    <TableCell>Status</TableCell>
+                                    <TableCell align="right">Actions</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {games.map((game) => (
+                                    <TableRow key={game._id} style={{ backgroundColor: game.status === 'unavailable' ? '#e0e0e0' : '' }}>
+                                        <TableCell>{game.title}</TableCell>
+                                        <TableCell>{game.bggRating}</TableCell>
+                                        <TableCell>{game.status || 'Available'}</TableCell>
+                                        <TableCell align="right">
+                                            <Tooltip title="Mark as Unavailable">
+                                                <span>
+                                                    <IconButton onClick={() => handleMarkAsUnavailable(game._id)} color="warning" disabled={game.status === 'unavailable'}>
+                                                        <BlockIcon />
+                                                    </IconButton>
+                                                </span>
+                                            </Tooltip>
+                                            <Tooltip title="Delete Forever">
+                                                <IconButton onClick={() => handleDeleteForever(game._id)} color="error">
+                                                    <DeleteForeverIcon />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </>
+            )}
+        </div>
     );
+
 };
 
 export default MyLendingLibraryGames;

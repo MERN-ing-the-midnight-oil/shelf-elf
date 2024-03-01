@@ -58,14 +58,20 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token }) => {
         }
     };
 
-    const offerToLend = async (game: any) => {
+    interface Game {
+        _id: string;
+        title: string;
+        bggLink: string;
+        bggRating: number;
+    }
+    const offerToLend = async (game: Game) => {
         const requestOptions = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
             },
-            body: JSON.stringify({ gameId: game._id }), // Send only gameId
+            body: JSON.stringify({ gameId: game._id }), // Ensure you're sending the correct game ID
         };
 
         try {
@@ -73,9 +79,12 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token }) => {
             const response = await fetch(`${API_URL}/api/games/lend`, requestOptions);
 
             if (response.ok) {
-                const updatedGames = await response.json();
-                console.log('Updated lendingLibraryGames:', updatedGames);
-                setGames([]); // Clear the search results after adding a game
+                // If the game was successfully added, clear the search results
+                setGames([]); // Assuming setGames is the state updater function for your search results
+            } else if (response.status === 400) {
+                // If the game is already in the lending library, alert the user
+                const errorMessage = await response.json();
+                alert(errorMessage.message);
             } else {
                 throw new Error('Network response was not ok');
             }
@@ -83,6 +92,9 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token }) => {
             console.error('Error offering game to lend:', error);
         }
     };
+
+
+
 
     return (
         <ContainerStyled maxWidth="sm">
