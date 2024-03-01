@@ -53,8 +53,18 @@ const LendForm: React.FC<LendFormProps> = ({ token, setRefetchCounter }) => {
   //creating a debounced version of handleSearch
   const debouncedHandleSearch = debounce(handleSearch, 300);
 
-
-  const handleOwnBookClick = (book: any) => {
+  interface Book {
+    id: string;
+    volumeInfo: {
+      title: string;
+      authors: string[];
+      description: string;
+      imageLinks?: {
+        thumbnail?: string;
+      };
+    };
+  }
+  const handleOwnBookClick = async (book: Book) => {
     console.log('Book data received:', book);
 
     if (!token) {
@@ -66,7 +76,7 @@ const LendForm: React.FC<LendFormProps> = ({ token, setRefetchCounter }) => {
       title: book.volumeInfo.title,
       author: book.volumeInfo.authors && book.volumeInfo.authors.join(', '),
       description: book.volumeInfo.description,
-      imageUrl: book.volumeInfo.imageLinks && book.volumeInfo.imageLinks.thumbnail,
+      imageUrl: book.volumeInfo.imageLinks?.thumbnail,
       googleBooksId: book.id,
       currentBorrower: null,
     };
@@ -74,33 +84,29 @@ const LendForm: React.FC<LendFormProps> = ({ token, setRefetchCounter }) => {
     console.log('Book data to send:', bookData);
 
     const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
-    fetch(`${API_URL}/api/books/add`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(bookData)
-    })
-      .then(response => {
-        if (!response.ok) {
-          return response.json().then(errData => {
-            console.error('Error from server:', errData);
-            throw new Error('Network response was not ok');
-          });
-        }
-        return response.json();
-      })
-      .then(data => {
-        console.log('Book added to library:', data);
-        setRefetchCounter(prev => prev + 1);
-        // Add the book's ID to the offeredBooks set
-        setOfferedBooks(prevBooks => new Set(prevBooks.add(book.id)));
-      })
-      .catch(error => {
-        console.error('Error during fetch operation: ', error);
+    try {
+      const response = await fetch(`${API_URL}/api/books/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(bookData)
       });
+
+      if (response.ok) {
+        console.log('Book added to library:', await response.json());
+        setRefetchCounter((prev) => prev + 1);
+        setSearchResults([]); // Clear the search results after successful addition
+      } else {
+        throw new Error('Network response was not ok');
+      }
+    } catch (error) {
+      console.error('Error during fetch operation: ', error);
+    }
   };
+
+
 
   const renderSearchResults = searchResults.map((book: any) => (
     <div key={book.id}>
