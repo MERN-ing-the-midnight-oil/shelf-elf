@@ -68,6 +68,35 @@ router.post("/lend", checkAuthentication, async (req, res) => {
 	}
 });
 
+// Route to remove a game from the user's lending library
+router.delete("/remove-game/:gameId", checkAuthentication, async (req, res) => {
+	try {
+		const userId = req.user._id;
+		const gameId = req.params.gameId;
+
+		// Find the user and remove the gameId from their lendingLibraryGames array
+		const user = await User.findByIdAndUpdate(
+			userId,
+			{ $pull: { lendingLibraryGames: gameId } },
+			{ new: true } // Return the updated document
+		).populate("lendingLibraryGames"); // Optionally populate the lendingLibraryGames field to return updated list
+
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		res.json({
+			message: "Game removed from lending library successfully.",
+			lendingLibraryGames: user.lendingLibraryGames,
+		});
+	} catch (error) {
+		console.error("Error removing game from lending library:", error);
+		res
+			.status(500)
+			.json({ message: "Error removing game from lending library" });
+	}
+});
+
 // Route to get the logged-in user's games library
 router.get("/my-library-games", checkAuthentication, async (req, res) => {
 	try {

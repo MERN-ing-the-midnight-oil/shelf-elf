@@ -20,7 +20,7 @@ const LendBooks: React.FC<{ token: string, setRefetchCounter: (value: React.SetS
             </div>
 
             {/* Display user's game lending library */}
-            <MyLendingLibraryGames token={token} refetchCounter={refetchCounter} />
+            <MyLendingLibraryGames token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />
         </div>
     );
 }

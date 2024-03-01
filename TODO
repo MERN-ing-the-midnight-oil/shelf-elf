@@ -1,13 +1,16 @@
 Create Get-Together
 
-Rename "Community" and "gettogether" as social group.
+Rename "Community" and "gettogether" as "Social Group"
 
 Community Joining Functionality:
 Users can join a community by entering a 4 digit code
 Implement rate-limiting on the community join endpoint to prevent abuse.
 
-Admin Functionality to Remove Users:
+Admin Functionality
+to Remove Users:
 Implement a feature where community admins can remove users from their community. This could be a simple option in the community management interface.
+to change the passcode
+to give other users admin privileges
 
 Logging and Monitoring:
 Implement logging for join requests and monitor for unusual activity, like a single user trying to join numerous communities in a short period.

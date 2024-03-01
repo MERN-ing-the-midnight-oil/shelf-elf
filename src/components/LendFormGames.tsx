@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TextField, Button, Typography, CircularProgress, Container } from '@mui/material';
 import { styled } from '@mui/system';
 
@@ -26,6 +26,17 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token }) => {
     const [games, setGames] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
+    // Debounce search term
+    useEffect(() => {
+        const delayDebounce = setTimeout(() => {
+            if (searchTerm) {
+                handleSearch(searchTerm);
+            }
+        }, 500); // Delay in milliseconds
+
+        return () => clearTimeout(delayDebounce);
+    }, [searchTerm]);
+
     const handleSearch = async (title: string) => {
         setIsLoading(true);
         try {
@@ -47,14 +58,14 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token }) => {
         }
     };
 
-    const offerToLend = async (gameId: string) => {
+    const offerToLend = async (game: any) => {
         const requestOptions = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
             },
-            body: JSON.stringify({ gameId }), // Only send gameId
+            body: JSON.stringify({ gameId: game._id }), // Send only gameId
         };
 
         try {
@@ -64,6 +75,7 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token }) => {
             if (response.ok) {
                 const updatedGames = await response.json();
                 console.log('Updated lendingLibraryGames:', updatedGames);
+                setGames([]); // Clear the search results after adding a game
             } else {
                 throw new Error('Network response was not ok');
             }
@@ -71,7 +83,6 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token }) => {
             console.error('Error offering game to lend:', error);
         }
     };
-
 
     return (
         <ContainerStyled maxWidth="sm">
@@ -84,7 +95,6 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token }) => {
                 variant="outlined"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                onBlur={() => handleSearch(searchTerm)}
                 placeholder="Type a game title"
                 margin="normal"
             />
