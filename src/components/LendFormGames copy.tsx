@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Typography, CircularProgress, Container, Link } from '@mui/material';
+import { TextField, Button, Typography, CircularProgress, Container } from '@mui/material';
 import { styled } from '@mui/system';
 
 interface Game {
@@ -14,6 +14,7 @@ interface LendFormGamesProps {
     setRefetchCounter: React.Dispatch<React.SetStateAction<number>>;
 }
 
+
 const ContainerStyled = styled(Container)({
     display: 'flex',
     flexDirection: 'column',
@@ -23,25 +24,24 @@ const ContainerStyled = styled(Container)({
 
 const GameItem = styled('div')({
     display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'start',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     width: '100%',
     margin: '10px 0',
-    borderBottom: '1px solid #ccc',
-    paddingBottom: '10px',
 });
 
 const LendFormGames: React.FC<LendFormGamesProps> = ({ token, setRefetchCounter }) => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [games, setGames] = useState<Game[]>([]);
+    const [games, setGames] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
+    // Debounce search term
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
             if (searchTerm) {
                 handleSearch(searchTerm);
             }
-        }, 500);
+        }, 500); // Delay in milliseconds
 
         return () => clearTimeout(delayDebounce);
     }, [searchTerm]);
@@ -82,9 +82,11 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token, setRefetchCounter 
             const response = await fetch(`${API_URL}/api/games/lend`, requestOptions);
 
             if (response.ok) {
-                setRefetchCounter(prev => prev + 1);
-                setGames([]);
+                // If the game was successfully added, advance the refetch counter
+                setRefetchCounter(prev => prev + 1); // This will cause MyLendingLibraryGames to re-fetch
+                setGames([]); // Clear the search results
             } else if (response.status === 400) {
+                // If the game is already in the lending library, alert the user
                 const errorMessage = await response.json();
                 alert(errorMessage.message);
             } else {
@@ -94,6 +96,10 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token, setRefetchCounter 
             console.error('Error offering game to lend:', error);
         }
     };
+
+
+
+
 
     return (
         <ContainerStyled maxWidth="sm">
@@ -113,10 +119,6 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token, setRefetchCounter 
             {games.map((game) => (
                 <GameItem key={game._id}>
                     <Typography>{game.title}</Typography>
-                    {/* Add a clickable link to the BGG page */}
-                    <Link href={game.bggLink} target="_blank" rel="noopener noreferrer">
-                        View on BoardGameGeek in a new tab
-                    </Link>
                     <Button variant="contained" color="primary" onClick={() => offerToLend(game)}>
                         Offer to Lend
                     </Button>
