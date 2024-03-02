@@ -4,7 +4,9 @@ import { styled } from '@mui/system';
 
 interface LendFormGamesProps {
     token: string;
+    setRefetchCounter: React.Dispatch<React.SetStateAction<number>>;
 }
+
 
 const ContainerStyled = styled(Container)({
     display: 'flex',
@@ -21,7 +23,7 @@ const GameItem = styled('div')({
     margin: '10px 0',
 });
 
-const LendFormGames: React.FC<LendFormGamesProps> = ({ token }) => {
+const LendFormGames: React.FC<LendFormGamesProps> = ({ token, setRefetchCounter }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [games, setGames] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -79,8 +81,9 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token }) => {
             const response = await fetch(`${API_URL}/api/games/lend`, requestOptions);
 
             if (response.ok) {
-                // If the game was successfully added, clear the search results
-                setGames([]); // Assuming setGames is the state updater function for your search results
+                // If the game was successfully added, advance the refetch counter
+                setRefetchCounter(prev => prev + 1); // This will cause MyLendingLibraryGames to re-fetch
+                setGames([]); // Clear the search results
             } else if (response.status === 400) {
                 // If the game is already in the lending library, alert the user
                 const errorMessage = await response.json();
@@ -92,6 +95,7 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token }) => {
             console.error('Error offering game to lend:', error);
         }
     };
+
 
 
 
