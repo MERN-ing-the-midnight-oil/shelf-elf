@@ -13,12 +13,22 @@ router.get("/search", async (req, res) => {
 	}
 
 	try {
-		// Create a regex pattern to search for any of the words, ensuring they stand as separate words using word boundaries (\b)
-		const words = title.trim().split(/\s+/);
-		const searchRegexPattern = words.map((word) => `\\b${word}\\b`).join("|");
-		const searchRegex = new RegExp(searchRegexPattern, "i");
-
-		const games = await Game.find({ title: { $regex: searchRegex } });
+		// Perform a text search on the 'title' field using the text index
+		const games = await Game.find(
+			{
+				$text: {
+					$search: title,
+					$caseSensitive: false,
+					$diacriticSensitive: false,
+				},
+			},
+			{
+				// Project the textScore to sort by relevance
+				score: { $meta: "textScore" },
+			}
+		).sort({
+			score: { $meta: "textScore" }, // Sort by relevance based on textScore
+		});
 
 		if (games.length > 0) {
 			res.json(games);
