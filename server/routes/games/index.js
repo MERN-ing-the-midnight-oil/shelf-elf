@@ -2,6 +2,7 @@ const express = require("express");
 const Game = require("../../models/game");
 const { checkAuthentication } = require("../../../middlewares/authentication");
 const User = require("../../models/user"); // Your User model
+const Community = require("../../models/community");
 const router = express.Router();
 
 // Search for games
@@ -121,5 +122,51 @@ router.get("/my-library-games", checkAuthentication, async (req, res) => {
 		res.status(500).json({ message: "Error fetching user's games library" });
 	}
 });
+
+// Route to get games from all users in a community
+router.get("/gamesFromMyCommunities", checkAuthentication, async (req, res) => {
+	console.log("Using the route to get games from all users in a community");
+
+	try {
+		// Assuming req.user._id contains the ID of the logged-in user
+		const userCommunities = await Community.find({
+			members: req.user._id,
+		});
+
+		console.log(`Found ${userCommunities.length} communities for the user`);
+
+		// Extract member IDs from the communities
+		const memberIds = userCommunities.flatMap((community) => community.members);
+		// Remove duplicates
+		const uniqueMemberIds = [...new Set(memberIds.map((id) => id.toString()))];
+
+		console.log(`Unique member IDs: ${uniqueMemberIds}`);
+
+		// Fetch games from these users, excluding the current user's games
+		const games = await User.find({
+			_id: { $in: uniqueMemberIds, $ne: req.user._id },
+		})
+			.populate("lendingLibraryGames")
+			.select("lendingLibraryGames -_id");
+
+		// Flatten the array of games arrays and remove any null values
+		const availableGames = games
+			.flatMap((user) => user.lendingLibraryGames)
+			.filter((game) => game);
+
+		console.log(
+			`Found ${availableGames.length} games from community members. Games:`,
+			availableGames.map((game) => game.title)
+		);
+
+		res.json(availableGames);
+	} catch (error) {
+		console.error("Error fetching games from community members:", error);
+		res
+			.status(500)
+			.json({ error: "Failed to fetch games from community members" });
+	}
+});
+
 // Export the router
 module.exports = router;
