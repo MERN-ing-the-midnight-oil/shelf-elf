@@ -12,11 +12,13 @@ const AvailableTableGames: React.FC<AvailableTableGamesProps> = ({ games }) => {
         <div>
             {games.length > 0 ? (
                 games.map((game) => (
-                    <div key={game._id} style={{ marginBottom: "10px" }}>
-                        <h4>{game.title}</h4>
-                        <p><a href={game.bggLink} target="_blank" rel="noopener noreferrer">
-                            BoardGameGeek Link
-                        </a></p>
+                    <div key={game.gameId} style={{ marginBottom: "10px" }}>
+                        <h4>{game.gameTitle}</h4>
+                        <p>
+                            <a href={game.bggLink} target="_blank" rel="noopener noreferrer">
+                                BoardGameGeek Link
+                            </a>
+                        </p>
                         <p>Offered by: {game.ownerUsername}</p>
                         <p>Community: {game.communityName}</p>
                     </div>
@@ -27,5 +29,7 @@ const AvailableTableGames: React.FC<AvailableTableGamesProps> = ({ games }) => {
         </div>
     );
 };
+
+
 
 export default AvailableTableGames;
