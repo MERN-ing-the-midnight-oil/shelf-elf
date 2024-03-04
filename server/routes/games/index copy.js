@@ -123,46 +123,43 @@ router.get("/my-library-games", checkAuthentication, async (req, res) => {
 	}
 });
 
+// Route to get games from all users in a community
 router.get("/gamesFromMyCommunities", checkAuthentication, async (req, res) => {
 	console.log("Using the route to get games from all users in a community");
 
 	try {
+		// Assuming req.user._id contains the ID of the logged-in user
 		const userCommunities = await Community.find({
 			members: req.user._id,
-		}).populate({
-			path: "members",
-			populate: {
-				path: "lendingLibraryGames",
-			},
 		});
+
+		console.log(`Found ${userCommunities.length} communities for the user`);
+
+		// Extract member IDs from the communities
+		const memberIds = userCommunities.flatMap((community) => community.members);
+		// Remove duplicates
+		const uniqueMemberIds = [...new Set(memberIds.map((id) => id.toString()))];
+
+		console.log(`Unique member IDs: ${uniqueMemberIds}`);
+
+		// Fetch games from these users, excluding the current user's games
+		const games = await User.find({
+			_id: { $in: uniqueMemberIds, $ne: req.user._id },
+		})
+			.populate("lendingLibraryGames")
+			.select("lendingLibraryGames -_id");
+
+		// Flatten the array of games arrays and remove any null values
+		const availableGames = games
+			.flatMap((user) => user.lendingLibraryGames)
+			.filter((game) => game);
 
 		console.log(
-			`Community names: ${userCommunities
-				.map((community) => community.name)
-				.join(", ")}`
+			`Found ${availableGames.length} games from community members. Games:`,
+			availableGames.map((game) => game.title)
 		);
 
-		let gamesInfo = [];
-
-		userCommunities.forEach((community) => {
-			community.members.forEach((member) => {
-				if (member._id.toString() !== req.user._id.toString()) {
-					member.lendingLibraryGames.forEach((game) => {
-						gamesInfo.push({
-							gameId: game._id,
-							gameTitle: game.title,
-							ownerUsername: member.username,
-							communityName: community.name,
-							bggLink: game.bggLink, // Include the BGG link here
-						});
-					});
-				}
-			});
-		});
-
-		console.log(`Prepared games info: `, gamesInfo);
-
-		res.json(gamesInfo);
+		res.json(availableGames);
 	} catch (error) {
 		console.error("Error fetching games from community members:", error);
 		res

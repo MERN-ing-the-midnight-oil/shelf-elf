@@ -1,14 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Typography, CircularProgress, Container } from '@mui/material';
 import AvailableTableGames from './AvailableTableGames'; // Assuming you've created this component
+import { Game } from '../types'; // Adjust the import path as necessary
 
-// Define a minimal Game type for TypeScript
-interface Game {
-    _id: string;
-    title: string;
-    bggLink: string;
-    bggRating: number;
-}
 
 const AvailableGames: React.FC = () => {
     const [games, setGames] = useState<Game[]>([]);
