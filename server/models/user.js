@@ -19,6 +19,12 @@ const UserSchema = new mongoose.Schema({
 			ref: "Book",
 		},
 	],
+	requestedGames: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Game",
+		},
+	],
 	communities: [
 		{
 			type: mongoose.Schema.Types.ObjectId,

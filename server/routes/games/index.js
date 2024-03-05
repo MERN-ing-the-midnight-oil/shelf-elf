@@ -122,7 +122,7 @@ router.get("/my-library-games", checkAuthentication, async (req, res) => {
 		res.status(500).json({ message: "Error fetching user's games library" });
 	}
 });
-
+//Route to get the games listed by users in all common communities
 router.get("/gamesFromMyCommunities", checkAuthentication, async (req, res) => {
 	console.log("Using the route to get games from all users in a community");
 
@@ -151,9 +151,9 @@ router.get("/gamesFromMyCommunities", checkAuthentication, async (req, res) => {
 						gamesInfo.push({
 							gameId: game._id,
 							gameTitle: game.title,
+							bggRating: game.bggRating, // Include the bggRating here
 							ownerUsername: member.username,
 							communityName: community.name,
-							bggLink: game.bggLink, // Include the BGG link here
 						});
 					});
 				}
@@ -168,6 +168,31 @@ router.get("/gamesFromMyCommunities", checkAuthentication, async (req, res) => {
 		res
 			.status(500)
 			.json({ error: "Failed to fetch games from community members" });
+	}
+});
+
+// GET /api/games/my-requested-games
+router.get("/my-requested-games", checkAuthentication, async (req, res) => {
+	try {
+		const user = await User.findById(req.user._id).populate("requestedGames");
+		res.json(user.requestedGames);
+	} catch (error) {
+		res.status(500).json({ message: "Error fetching requested games", error });
+	}
+});
+// PATCH /api/games/request/:gameId
+router.patch("/request/:gameId", checkAuthentication, async (req, res) => {
+	try {
+		const game = await Game.findById(req.params.gameId);
+		if (!game) {
+			return res.status(404).json({ message: "Game not found" });
+		}
+		await User.findByIdAndUpdate(req.user._id, {
+			$addToSet: { requestedGames: game._id },
+		});
+		res.status(200).json({ message: "Game requested successfully" });
+	} catch (error) {
+		res.status(500).json({ message: "Error requesting game", error });
 	}
 });
 

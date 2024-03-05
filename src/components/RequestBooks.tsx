@@ -1,22 +1,53 @@
-import React from 'react';
+import React, { useState } from 'react';
 import MyRequestedBooks from './MyRequestedBooks';
 import AvailableBooks from './AvailableBooks';
-import AvailableGames from './AvailableGames'; // Import the AvailableGames component
+import AvailableGames from './AvailableGames';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
-// RequestBooks.tsx
-const RequestBooks: React.FC<{ token: string, setRefetchCounter: React.Dispatch<React.SetStateAction<number>>, refetchCounter: number }> = ({ token, setRefetchCounter, refetchCounter }) => {
+// Assuming SharedComponentProps is properly imported
+import { SharedComponentProps } from '../types';
+
+const RequestBooks: React.FC<SharedComponentProps> = ({ token, setRefetchCounter, refetchCounter }) => {
+    // Use 'books' or 'games' as the value to determine what to show
+    const [view, setView] = useState('books');
+
+    const handleViewChange = (_event: React.MouseEvent<HTMLElement>, newView: string) => {
+        // Prevent the view from being cleared on click
+        if (newView !== null) {
+            setView(newView);
+        }
+    };
+
     return (
         <div>
-            <MyRequestedBooks token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />
-            <div style={{ backgroundColor: '#e8f0fe', padding: '20px', borderRadius: '5px', margin: '20px 0' }}>
-                <AvailableBooks setRefetchCounter={setRefetchCounter} />
-            </div>
-            {/* Add the AvailableGames component below the AvailableBooks component */}
-            <div style={{ backgroundColor: '#f0e8fe', padding: '20px', borderRadius: '5px', margin: '20px 0' }}>
-                <AvailableGames />
-            </div>
+            <ToggleButtonGroup
+                color="primary"
+                value={view}
+                exclusive
+                onChange={handleViewChange}
+                aria-label="View Toggle"
+            >
+                <ToggleButton value="books" aria-label="Show Books">
+                    Books
+                </ToggleButton>
+                <ToggleButton value="games" aria-label="Show Games">
+                    Games
+                </ToggleButton>
+            </ToggleButtonGroup>
+
+            {view === 'books' && (
+                <>
+                    <MyRequestedBooks token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />
+                    <AvailableBooks token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />
+                </>
+            )}
+
+            {view === 'games' && (
+                <AvailableGames token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />
+            )}
         </div>
     );
-}
+};
 
 export default RequestBooks;

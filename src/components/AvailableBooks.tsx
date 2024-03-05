@@ -3,10 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { Typography, Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import AvailableTable from './AvailableTable';
 import axios from 'axios';
+import { SharedComponentProps } from '../types'; // Adjust the import path as necessary
 
-interface AvailableBooksProps {
-    setRefetchCounter: React.Dispatch<React.SetStateAction<number>>;
-}
 
 interface Owner {
     _id: string;
@@ -22,7 +20,8 @@ interface Book {
     owner: Owner;
 }
 
-const AvailableBooks: React.FC<AvailableBooksProps> = ({ setRefetchCounter }) => {
+const AvailableBooks: React.FC<SharedComponentProps> = ({ token, setRefetchCounter, refetchCounter }) => {
+
     const [books, setBooks] = useState<Book[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedBook, setSelectedBook] = useState<Book | null>(null);

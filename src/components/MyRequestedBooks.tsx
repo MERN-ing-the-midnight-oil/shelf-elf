@@ -57,10 +57,7 @@ const MyRequestedBooks: React.FC<MyRequestedBooksProps> = ({ token, setRefetchCo
         fetchRequestedBooks();
     }, [refetchCounter, token, user]);
 
-    const generateGoogleMapsLink = (street1: string, street2: string, zipCode: string) => {
-        const query = encodeURIComponent(`${street1} and ${street2}, ${zipCode}`);
-        return `https://www.google.com/maps/search/?api=1&query=${query}`;
-    };
+
 
     const getDescriptionPreview = (description: string) => {
         return description.length > 100 ? `${description.substring(0, 100)}...` : description;

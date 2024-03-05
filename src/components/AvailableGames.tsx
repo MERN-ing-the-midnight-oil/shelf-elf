@@ -2,9 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Typography, CircularProgress, Container } from '@mui/material';
 import AvailableTableGames from './AvailableTableGames'; // Assuming you've created this component
 import { Game } from '../types'; // Adjust the import path as necessary
+import { SharedComponentProps } from '../types'; // Adjust the import path as necessary
 
 
-const AvailableGames: React.FC = () => {
+
+const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCounter, refetchCounter }) => {
+
     const [games, setGames] = useState<Game[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -13,7 +16,7 @@ const AvailableGames: React.FC = () => {
             setIsLoading(true);
             try {
                 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
-                const token = localStorage.getItem('userToken');
+                // Use the token passed via props, not from localStorage
                 const response = await fetch(`${API_URL}/api/games/gamesFromMyCommunities`, {
                     headers: { 'Authorization': `Bearer ${token}` },
                 });
@@ -28,7 +31,7 @@ const AvailableGames: React.FC = () => {
         };
 
         fetchGamesFromAllCommunities();
-    }, []);
+    }, [token]); // Depend on the token prop to refetch when it changes
 
     return (
         <Container maxWidth="md">
@@ -38,7 +41,8 @@ const AvailableGames: React.FC = () => {
             {isLoading ? (
                 <CircularProgress />
             ) : (
-                <AvailableTableGames games={games} />
+                // Pass all required props to AvailableTableGames
+                <AvailableTableGames games={games} token={token} setRefetchCounter={setRefetchCounter} />
             )}
         </Container>
     );
