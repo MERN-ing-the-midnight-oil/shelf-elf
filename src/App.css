@@ -45,3 +45,30 @@
   width: 80%;
   margin-top: 1rem;
 }
+
+
+.carousel-item {
+  padding: 20px;
+}
+
+.carousel-title {
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.carousel-rating,
+.carousel-owner,
+.carousel-community,
+.carousel-link {
+  margin-bottom: 10px;
+}
+
+.carousel-link {
+  text-decoration: underline;
+}
+
+.carousel-link a, .MuiTypography-root.MuiLink-root {
+  z-index: 1000; /* Use a high value */
+  position: relative; /* Required for z-index to work */
+}

@@ -1,13 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, CircularProgress, Container } from '@mui/material';
-import AvailableTableGames from './AvailableTableGames'; // Assuming you've created this component
-import { Game } from '../types'; // Adjust the import path as necessary
-import { SharedComponentProps } from '../types'; // Adjust the import path as necessary
-
-
+import { Container, Typography, Grid, CircularProgress } from '@mui/material';
+import GameCard from './Cards/GameCard'; // Ensure the import path is correct
+import { Game, SharedComponentProps } from '../types'; // Assuming types.ts is directly under src/
 
 const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCounter, refetchCounter }) => {
-
     const [games, setGames] = useState<Game[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -16,7 +12,6 @@ const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCount
             setIsLoading(true);
             try {
                 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
-                // Use the token passed via props, not from localStorage
                 const response = await fetch(`${API_URL}/api/games/gamesFromMyCommunities`, {
                     headers: { 'Authorization': `Bearer ${token}` },
                 });
@@ -31,18 +26,49 @@ const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCount
         };
 
         fetchGamesFromAllCommunities();
-    }, [token]); // Depend on the token prop to refetch when it changes
+    }, [token]);
+
+    const handleRequestGame = async (gameId: string) => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001'}/api/games/request/${gameId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to request game');
+            }
+            console.log("Game requested successfully");
+            setRefetchCounter(prev => prev + 1); // Trigger refresh
+        } catch (error) {
+            console.error('Error requesting game:', error);
+        }
+    };
 
     return (
         <Container maxWidth="md">
             <Typography variant="h5" gutterBottom>
-                Games available in your communities:
+                Browse games available in your social groups:
             </Typography>
             {isLoading ? (
                 <CircularProgress />
             ) : (
-                // Pass all required props to AvailableTableGames
-                <AvailableTableGames games={games} token={token} setRefetchCounter={setRefetchCounter} />
+                <Grid container justifyContent="center" spacing={2}>
+                    {games.map((game) => (
+                        <Grid item key={game.gameId} xs={12} sm={6} md={4}>
+                            <GameCard
+                                game={game}
+                                token={token}
+                                setRefetchCounter={setRefetchCounter}
+                                onRequestGame={handleRequestGame} // Defined in AvailableGames or parent component
+                            />
+                        </Grid>
+                    ))}
+                </Grid>
+
+
             )}
         </Container>
     );

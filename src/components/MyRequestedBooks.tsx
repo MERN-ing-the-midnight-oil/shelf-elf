@@ -5,12 +5,13 @@ import { Typography, Table, TableBody, TableCell, TableContainer, TableHead, Tab
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import { SharedComponentProps } from '../types'; // Adjust the import path as necessary
 
-interface MyRequestedBooksProps {
-    token: string | null;
-    setRefetchCounter: React.Dispatch<React.SetStateAction<number>>;
-    refetchCounter: number;
-}
+// interface MyRequestedBooksProps {
+//     token: string | null;
+//     setRefetchCounter: React.Dispatch<React.SetStateAction<number>>;
+//     refetchCounter: number;
+// }
 
 interface Owner {
     _id: string;
@@ -36,7 +37,7 @@ interface User {
     requestedBooks: Book[];
 }
 
-const MyRequestedBooks: React.FC<MyRequestedBooksProps> = ({ token, setRefetchCounter, refetchCounter }) => {
+const MyRequestedBooks: React.FC<SharedComponentProps> = ({ token, setRefetchCounter, refetchCounter }) => {
     const { user } = useAuth() as { user: User | null };
     const [requestedBooks, setRequestedBooks] = useState<Book[]>([]);
 

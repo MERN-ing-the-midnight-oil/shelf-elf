@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import MyRequestedBooks from './MyRequestedBooks';
+import MyRequestedGames from './MyRequestedGames';
 import AvailableBooks from './AvailableBooks';
 import AvailableGames from './AvailableGames';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -44,8 +45,10 @@ const RequestBooks: React.FC<SharedComponentProps> = ({ token, setRefetchCounter
             )}
 
             {view === 'games' && (
-                <AvailableGames token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />
-            )}
+                <>     <MyRequestedGames token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />
+
+                    <AvailableGames token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />
+                </>)}
         </div>
     );
 };

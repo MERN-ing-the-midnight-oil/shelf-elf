@@ -15,7 +15,6 @@ const gameSchema = new mongoose.Schema({
 		unique: true,
 	},
 	bggLink: {
-		// Changed from bggUrl to bggLink
 		type: String,
 		required: true,
 	},

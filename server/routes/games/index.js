@@ -122,7 +122,6 @@ router.get("/my-library-games", checkAuthentication, async (req, res) => {
 		res.status(500).json({ message: "Error fetching user's games library" });
 	}
 });
-//Route to get the games listed by users in all common communities
 router.get("/gamesFromMyCommunities", checkAuthentication, async (req, res) => {
 	console.log("Using the route to get games from all users in a community");
 
@@ -151,7 +150,8 @@ router.get("/gamesFromMyCommunities", checkAuthentication, async (req, res) => {
 						gamesInfo.push({
 							gameId: game._id,
 							gameTitle: game.title,
-							bggRating: game.bggRating, // Include the bggRating here
+							bggLink: game.bggLink,
+							bggRating: game.bggRating,
 							ownerUsername: member.username,
 							communityName: community.name,
 						});

@@ -2,19 +2,23 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Typography } from '@mui/material';
+import { SharedComponentProps } from '../types'; // Adjust the import path as necessary
 
 interface Game {
     _id: string;
     title: string;
 }
 
-const MyRequestedGames: React.FC<{ token: string }> = ({ token }) => {
+const MyRequestedGames: React.FC<SharedComponentProps> = ({ token, setRefetchCounter, refetchCounter }) => {
     const [requestedGames, setRequestedGames] = useState<Game[]>([]);
 
     useEffect(() => {
         const fetchRequestedGames = async () => {
+            if (!token) return;
+
             try {
-                const response = await axios.get('http://localhost:5001/api/games/my-requested-games', {
+                const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+                const response = await axios.get(`${API_URL}/api/games/my-requested-games`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setRequestedGames(response.data);
@@ -24,17 +28,21 @@ const MyRequestedGames: React.FC<{ token: string }> = ({ token }) => {
         };
 
         fetchRequestedGames();
-    }, [token]);
+    }, [token, refetchCounter]); // Include refetchCounter in the dependency array
 
     return (
         <div>
             <Typography variant="h5">My Requested Games</Typography>
-            {requestedGames.map((game) => (
-                <div key={game._id}>
-                    <p>{game.title}</p>
-                    {/* Additional game details here */}
-                </div>
-            ))}
+            {requestedGames.length > 0 ? (
+                requestedGames.map((game) => (
+                    <div key={game._id}>
+                        <p>{game.title}</p>
+                        {/* Additional game details here */}
+                    </div>
+                ))
+            ) : (
+                <Typography variant="body1">You have not requested any games yet.</Typography>
+            )}
         </div>
     );
 };
