@@ -8,6 +8,7 @@
     ownerUsername: string;
     communityName: string;
     bggRating: number;
+    thumbnailUrl?: string;
 }
 
 

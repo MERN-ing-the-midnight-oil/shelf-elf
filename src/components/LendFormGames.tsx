@@ -1,18 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, Typography, CircularProgress, Container, Link } from '@mui/material';
 import { styled } from '@mui/system';
-
-interface Game {
-    _id: string;
-    title: string;
-    bggLink: string;
-    bggRating: number;
-}
-
-interface LendFormGamesProps {
-    token: string;
-    setRefetchCounter: React.Dispatch<React.SetStateAction<number>>;
-}
+import { Game } from '../types'; // Make sure this path is correct
 
 const ContainerStyled = styled(Container)({
     display: 'flex',
@@ -31,7 +20,7 @@ const GameItem = styled('div')({
     paddingBottom: '10px',
 });
 
-const LendFormGames: React.FC<LendFormGamesProps> = ({ token, setRefetchCounter }) => {
+const LendFormGames: React.FC<{ token: string; setRefetchCounter: React.Dispatch<React.SetStateAction<number>>; }> = ({ token, setRefetchCounter }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [games, setGames] = useState<Game[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -74,7 +63,7 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token, setRefetchCounter 
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
             },
-            body: JSON.stringify({ gameId: game._id }),
+            body: JSON.stringify({ gameId: game.gameId }), // Ensure correct ID is sent
         };
 
         try {
@@ -111,9 +100,11 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token, setRefetchCounter 
             />
             {isLoading && <CircularProgress />}
             {games.map((game) => (
-                <GameItem key={game._id}>
-                    <Typography>{game.title}</Typography>
-                    {/* Add a clickable link to the BGG page */}
+                <GameItem key={game.gameId}>
+                    {game.thumbnailUrl && (
+                        <img src={game.thumbnailUrl} alt={game.gameTitle} style={{ maxWidth: '100%', marginBottom: '10px' }} />
+                    )}
+                    <Typography>{game.gameTitle}</Typography>
                     <Link href={game.bggLink} target="_blank" rel="noopener noreferrer">
                         View on BoardGameGeek in a new tab
                     </Link>

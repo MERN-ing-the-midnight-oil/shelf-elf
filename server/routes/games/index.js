@@ -4,40 +4,37 @@ const { checkAuthentication } = require("../../../middlewares/authentication");
 const User = require("../../models/user"); // Your User model
 const Community = require("../../models/community");
 const router = express.Router();
+const fetchGameImage = require("./fetchGameThumbnail");
 
-// Search for games
-router.get("/search", async (req, res) => {
+// routes/games/index.js
+
+router.get("/search", checkAuthentication, async (req, res) => {
 	const { title } = req.query;
 
-	if (!title) {
-		return res.status(400).json({ message: "No search term provided" });
-	}
-
 	try {
-		// Perform a text search on the 'title' field using the text index
-		const games = await Game.find(
-			{
-				$text: {
-					$search: title,
-					$caseSensitive: false,
-					$diacriticSensitive: false,
-				},
-			},
-			{
-				// Project the textScore to sort by relevance
-				score: { $meta: "textScore" },
-			}
-		).sort({
-			score: { $meta: "textScore" }, // Sort by relevance based on textScore
-		});
+		let games = await Game.find({
+			$text: { $search: title },
+		}).sort({ score: { $meta: "textScore" } });
 
-		if (games.length > 0) {
-			res.json(games);
-		} else {
-			res
-				.status(404)
-				.json({ message: "No games found matching the search criteria" });
+		for (let game of games) {
+			if (!game.thumbnailUrl) {
+				// If the thumbnail URL is missing, fetch it
+				try {
+					const thumbnailUrl = await fetchGameImage(game.bggId);
+					game.thumbnailUrl = thumbnailUrl;
+					await game.save(); // Persist the thumbnail URL
+				} catch (fetchError) {
+					console.error(
+						"Failed to fetch thumbnail for game:",
+						game.title,
+						fetchError
+					);
+					// Optionally handle the failure gracefully
+				}
+			}
 		}
+
+		res.json(games);
 	} catch (error) {
 		console.error("Error searching for games:", error);
 		res.status(500).json({ message: "Error searching for games" });
