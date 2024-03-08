@@ -74,12 +74,28 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, setRefetch
 
     const updatePasscode = (communityId: string, passcode: string) => {
         setJoinPasscodes(prev => ({ ...prev, [communityId]: passcode }));
-    };
-
-    return (
+    }; return (
         <div>
-            <h1>Manage Social Groups</h1>
-            <CommunityForm token={token} setRefetchCounter={setRefetchCounter} />
+            <h1>Join or Create a Social Group</h1>
+
+            <h2>Join an Existing Social Group</h2>
+            {communities.length > 0 ? (
+                communities.map(community => (
+                    <div key={community._id} style={{ marginBottom: '20px' }}>
+                        <p>{community.name} - {community.description}</p>
+                        <input
+                            type="password"
+                            placeholder="Enter passcode"
+                            value={joinPasscodes[community._id] || ''}
+                            onChange={(e) => updatePasscode(community._id, e.target.value)}
+                            style={{ marginRight: '10px' }}
+                        />
+                        <button onClick={() => handleJoinCommunity(community._id)}>Join</button>
+                    </div>
+                ))
+            ) : (
+                <p>No available communities to join at this moment.</p>
+            )}
 
             <h2>Your Social Groups</h2>
             {userCommunities.length > 0 ? (
@@ -92,21 +108,12 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, setRefetch
                 <p>You are not part of any social groups yet.</p>
             )}
 
-            <h2>Find and join an existing Social Group if you have a passcode</h2>
-            {communities.map(community => (
-                <div key={community._id}>
-                    <p>{community.name} - {community.description}</p>
-                    <input
-                        type="password"
-                        placeholder="Enter passcode"
-                        value={joinPasscodes[community._id] || ''}
-                        onChange={(e) => updatePasscode(community._id, e.target.value)}
-                    />
-                    <button onClick={() => handleJoinCommunity(community._id)}>Join</button>
-                </div>
-            ))}
+            <h2>Don't see your group? Create a new social group!</h2>
+            <CommunityForm token={token} setRefetchCounter={setRefetchCounter} />
         </div>
     );
+
+
 };
 
 export default ManageCommunities;
