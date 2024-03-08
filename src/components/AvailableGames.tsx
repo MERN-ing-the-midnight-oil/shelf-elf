@@ -68,7 +68,7 @@ const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCount
             ) : (
                 <Grid container justifyContent="center" spacing={2}>
                     {games.map((game) => (
-                        <Grid item key={game.gameId} xs={12} sm={6} md={4}>
+                        <Grid item key={game._id} xs={12} sm={6} md={4}>
                             <GameCard
                                 game={game}
                                 token={token}

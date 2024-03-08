@@ -31,47 +31,77 @@ const MyRequestedGames: React.FC<SharedComponentProps> = ({ token, setRefetchCou
     }, [token, setRefetchCounter, refetchCounter]);
 
 
+    // return (
+    //     <div>
+    //         <Typography variant="h5">My Requested Games</Typography>
+    //         {requestedGames.length > 0 ? (
+    //             requestedGames.map((requestedGame) => (
+    //                 <Card key={requestedGame._id} style={{ marginBottom: '20px' }}>
+    //                     <CardMedia
+    //                         component="img"
+    //                         height="140"
+    //                         image={requestedGame.game.thumbnailUrl}
+    //                         alt={requestedGame.game.gameTitle}
+    //                     />
+    //                     <CardContent>
+    //                         <div>
+    //                             <Typography variant="h5">My Requested Games</Typography>
+    //                             {requestedGames.length > 0 ? (
+    //                                 requestedGames.map((requestedGame) => (
+    //                                     <div key={requestedGame._id}>
+    //                                         <p>{requestedGame.game?.title}</p>
+    //                                         <img src={requestedGame.game?.thumbnailUrl} alt={requestedGame.game?.title} />
+    //                                         <a href={requestedGame.game?.bggLink} target="_blank" rel="noopener noreferrer">
+    //                                             View on BoardGameGeek
+    //                                         </a>
+    //                                         <p>Offered by: {requestedGame.offeredBy?.username}</p>
+    //                                     </div>
+    //                                 ))
+    //                             ) : (
+    //                                 <Typography variant="body1">You have not requested any games yet.</Typography>
+    //                             )}
+    //                         </div>
+    //                     </CardContent>
+
+
+
+    //                 </Card>
+    //             ))
+    //         ) : (
+    //             <Typography variant="body1">You have not requested any games yet.</Typography>
+    //         )}
+    //     </div>
+    // );
+
+
     return (
         <div>
             <Typography variant="h5">My Requested Games</Typography>
             {requestedGames.length > 0 ? (
                 requestedGames.map((requestedGame) => (
-                    <Card key={requestedGame._id} style={{ marginBottom: '20px' }}>
-                        <CardMedia
-                            component="img"
-                            height="140"
-                            image={requestedGame.game.thumbnailUrl}
-                            alt={requestedGame.game.gameTitle}
-                        />
-                        <CardContent>
-                            <div>
-                                <Typography variant="h5">My Requested Games</Typography>
-                                {requestedGames.length > 0 ? (
-                                    requestedGames.map((requestedGame) => (
-                                        <div key={requestedGame._id}>
-                                            <p>{requestedGame.game?.title}</p>
-                                            <img src={requestedGame.game?.thumbnailUrl} alt={requestedGame.game?.title} />
-                                            <a href={requestedGame.game?.bggLink} target="_blank" rel="noopener noreferrer">
-                                                View on BoardGameGeek
-                                            </a>
-                                            <p>Offered by: {requestedGame.offeredBy?.username}</p>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <Typography variant="body1">You have not requested any games yet.</Typography>
-                                )}
-                            </div>
-                        </CardContent>
-
-
-
-                    </Card>
+                    <div key={requestedGame._id} style={{ marginBottom: '20px' }}>
+                        <img src={requestedGame.game.thumbnailUrl} alt={requestedGame.game.title} style={{ width: '100px', height: 'auto' }} />
+                        <div>
+                            <Typography variant="h6">{requestedGame.game.title}</Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                Offered by: {requestedGame.offeredBy.username}
+                            </Typography>
+                            <a href={requestedGame.game.bggLink} target="_blank" rel="noopener noreferrer">
+                                View on BoardGameGeek
+                            </a>
+                        </div>
+                    </div>
                 ))
             ) : (
                 <Typography variant="body1">You have not requested any games yet.</Typography>
             )}
         </div>
     );
+
+
+
+
+
 };
 
 export default MyRequestedGames;

@@ -2,15 +2,9 @@
 
 import React from 'react';
 import { Button } from '@mui/material';
+import { Game } from '../../types'; // Assuming types.ts is directly under src/
 
-interface Game {
-    gameId: string;
-    gameTitle: string;
-    bggLink: string;
-    ownerUsername: string;
-    communityName: string;
-    bggRating: number;
-}
+
 
 // Assuming the Game type includes ownerUsername
 interface GameCardProps {
@@ -22,7 +16,7 @@ interface GameCardProps {
 const GameCard: React.FC<GameCardProps> = ({ game, token, setRefetchCounter, onRequestGame }) => {
     const requestGame = async () => {
         // Pass both gameId and ownerUsername to the onRequestGame function
-        onRequestGame(game.gameId, game.ownerUsername); // Adjusted to pass ownerUsername as well
+        onRequestGame(game._id, game.ownerUsername); // Adjusted to pass ownerUsername as well
     };
 
     return (

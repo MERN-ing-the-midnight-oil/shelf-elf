@@ -31,7 +31,7 @@ const MyRequestedGames: React.FC<SharedComponentProps> = ({ token, setRefetchCou
             <Typography variant="h5">My Requested Games</Typography>
             {requestedGames.length > 0 ? (
                 requestedGames.map((game) => (
-                    <div key={game.gameId}>
+                    <div key={game._id}>
                         <p>{game.gameTitle}</p>
 
                     </div>

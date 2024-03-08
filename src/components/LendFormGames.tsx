@@ -57,13 +57,16 @@ const LendFormGames: React.FC<{ token: string; setRefetchCounter: React.Dispatch
     };
 
     const offerToLend = async (game: Game) => {
+        console.log("Offering to lend game:", game); // Add this line to log the game object
+
         const requestOptions = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
             },
-            body: JSON.stringify({ gameId: game.gameId }), // Ensure correct ID is sent
+            //figure out why the game incorrectly has property "_id" instead of "gameId"
+            body: JSON.stringify({ gameId: game._id }), // Ensure correct ID is sent
         };
 
         try {
@@ -100,7 +103,7 @@ const LendFormGames: React.FC<{ token: string; setRefetchCounter: React.Dispatch
             />
             {isLoading && <CircularProgress />}
             {games.map((game) => (
-                <GameItem key={game.gameId}>
+                <GameItem key={game._id}>
                     {game.thumbnailUrl && (
                         <img src={game.thumbnailUrl} alt={game.gameTitle} style={{ maxWidth: '100%', marginBottom: '10px' }} />
                     )}

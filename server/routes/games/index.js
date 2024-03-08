@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose"); // Import mongoose
 const { checkAuthentication } = require("../../../middlewares/authentication");
 const fetchGameImage = require("./fetchGameThumbnail");
 const User = require("../../models/user"); // Your User model
@@ -13,15 +14,19 @@ router.get("/search", checkAuthentication, async (req, res) => {
 	const { title } = req.query;
 
 	try {
+		// Limit the search results to the first 10 games
 		let games = await Game.find({
 			$text: { $search: title },
-		}).sort({ score: { $meta: "textScore" } });
+		})
+			.sort({ score: { $meta: "textScore" } })
+			.limit(10); // Limit to 10 results
 
+		// Attempt to fetch thumbnailUrl only for these 10 games, if missing
 		for (let game of games) {
-			if (!game.thumbnailUrl) {
-				// If the thumbnail URL is missing, fetch it
+			if (!game.thumbnailUrl && game.bggId) {
+				// Ensure there's a BGG ID to fetch the image
 				try {
-					const thumbnailUrl = await fetchGameImage(game.bggId);
+					const thumbnailUrl = await fetchGameImage(game.bggId); // Assuming this function is async
 					game.thumbnailUrl = thumbnailUrl;
 					await game.save(); // Persist the thumbnail URL
 				} catch (fetchError) {
@@ -35,38 +40,29 @@ router.get("/search", checkAuthentication, async (req, res) => {
 			}
 		}
 
-		res.json(games);
+		res.json(games); // This will include up to 10 games with their thumbnails if fetched
 	} catch (error) {
 		console.error("Error searching for games:", error);
 		res.status(500).json({ message: "Error searching for games" });
 	}
 });
-
 // Add a game to the user's library
 router.post("/lend", checkAuthentication, async (req, res) => {
 	const userId = req.user._id;
-	const gameId = req.body.gameId; // Assuming you're sending just the game ID now
+	const gameId = req.body.gameId;
 
 	try {
 		const user = await User.findById(userId);
 		if (!user) {
+			console.log("User not found");
 			return res.status(404).json({ message: "User not found" });
 		}
 
-		// Check if the game is already in the user's lending library
-		const isAlreadyAdded = user.lendingLibraryGames.some((game) =>
-			game.equals(gameId)
-		);
-		if (isAlreadyAdded) {
-			return res
-				.status(400)
-				.json({ message: "Game already added to lending library" });
-		}
-
-		// If not already added, push the game ID and save the user
+		// Directly push the game ID without checking if it's already added
 		user.lendingLibraryGames.push(gameId);
 		await user.save();
 
+		console.log(`Game ${gameId} added to user ${userId}'s lending library.`);
 		res.status(200).json(user.lendingLibraryGames);
 	} catch (error) {
 		console.error("Error adding game to lending library:", error);
@@ -111,15 +107,26 @@ router.get("/my-library-games", checkAuthentication, async (req, res) => {
 		// Find the user and populate their lendingLibraryGames
 		const user = await User.findById(userId).populate("lendingLibraryGames");
 		if (!user) {
+			console.log("User not found for ID:", userId);
 			return res.status(404).json({ message: "User not found" });
 		}
 
+		console.log(
+			`Sending ${user.lendingLibraryGames.length} games for user ${userId}`
+		);
 		res.json(user.lendingLibraryGames);
 	} catch (error) {
-		console.error("Error fetching user's games library:", error);
+		console.error(
+			"Error fetching user's games library for user ID",
+			userId,
+			":",
+			error
+		);
 		res.status(500).json({ message: "Error fetching user's games library" });
 	}
 });
+
+//get all games from all users in all your communities
 router.get("/gamesFromMyCommunities", checkAuthentication, async (req, res) => {
 	console.log("Using the route to get games from all users in a community");
 
