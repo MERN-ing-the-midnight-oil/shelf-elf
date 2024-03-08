@@ -51,7 +51,7 @@ const CommunityForm: React.FC<CommunityFormProps> = ({ token, setRefetchCounter 
                     name="communityName"
                     value={communityName}
                     onChange={(e) => setCommunityName(e.target.value)}
-                    label="Name your Get-together"
+                    label="Name your Social Group"
                     variant="outlined"
                 />
                 <TextField
@@ -76,7 +76,7 @@ const CommunityForm: React.FC<CommunityFormProps> = ({ token, setRefetchCounter 
                     type="password"
                 />
                 <Button type="submit" variant="contained" color="primary">
-                    Create Get-together
+                    Create Social Group
                 </Button>
             </form>
         </FormContainer>

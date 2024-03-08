@@ -78,10 +78,10 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, setRefetch
 
     return (
         <div>
-            <h1>Manage Get-togethers</h1>
+            <h1>Manage Social Groups</h1>
             <CommunityForm token={token} setRefetchCounter={setRefetchCounter} />
 
-            <h2>Your Get-togethers</h2>
+            <h2>Your Social Groups</h2>
             {userCommunities.length > 0 ? (
                 <ul>
                     {userCommunities.map((community) => (
@@ -89,10 +89,10 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, setRefetch
                     ))}
                 </ul>
             ) : (
-                <p>You are not part of any communities yet.</p>
+                <p>You are not part of any social groups yet.</p>
             )}
 
-            <h2>Find and join an existing Get-together if you have a passcode</h2>
+            <h2>Find and join an existing Social Group if you have a passcode</h2>
             {communities.map(community => (
                 <div key={community._id}>
                     <p>{community.name} - {community.description}</p>

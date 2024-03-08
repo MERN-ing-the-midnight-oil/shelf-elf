@@ -10,7 +10,7 @@ const Header: React.FC = () => {
     const [value, setValue] = useState(location.pathname);
 
     useEffect(() => {
-        setValue(location.pathname); // Update the value whenever the location changes
+        setValue(location.pathname);
     }, [location]);
 
     const handleLogout = () => {
@@ -33,56 +33,54 @@ const Header: React.FC = () => {
         <AppBar position="static">
             <Toolbar>
                 <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
-                    <Typography variant="h6" color="inherit" sx={{ marginRight: '20px' }}>
+                    <Typography variant="h6" color="inherit" sx={{ flexGrow: 0, flexShrink: 0, marginRight: '40px' }}>
                         Welcome, {user.username}!
                     </Typography>
-
-                    <Tabs value={value} onChange={handleChange} aria-label="Navigation Tabs">
-
-
+                    <Tabs value={value} onChange={handleChange} aria-label="Navigation Tabs" sx={{ flexGrow: 1, '& .MuiTab-root': { marginRight: '24px' } }}>
                         <Tab
                             label="Your Social Group(s)"
                             value="/manage-communities"
                             component={Link}
                             to="/manage-communities"
                             sx={{
-                                backgroundColor: value === '/manage-communities' ? 'primary.dark' : 'primary.main',
                                 color: 'white',
                                 '&.Mui-selected': {
-                                    color: 'white'
+                                    backgroundColor: 'secondary.main', // Use theme's secondary color
+                                    color: 'white',
+                                    fontWeight: 'bold'
                                 }
                             }}
                         />
                         <Tab
-                            label="Your Offerings"
+                            label="Your Lending Shelf"
                             value="/lend-books"
                             component={Link}
                             to="/lend-books"
                             sx={{
-                                backgroundColor: value === '/lend-books' ? 'primary.dark' : 'primary.main',
                                 color: 'white',
                                 '&.Mui-selected': {
-                                    color: 'white'
+                                    backgroundColor: 'secondary.main', // Use theme's secondary color
+                                    color: 'white',
+                                    fontWeight: 'bold'
                                 }
                             }}
                         />
-
                         <Tab
-                            label="Your Requests"
+                            label="Your Wishlist"
                             value="/request-books"
                             component={Link}
                             to="/request-books"
                             sx={{
-                                backgroundColor: value === '/request-books' ? 'primary.dark' : 'primary.main',
                                 color: 'white',
                                 '&.Mui-selected': {
-                                    color: 'white'
+                                    backgroundColor: 'secondary.main', // Use theme's secondary color
+                                    color: 'white',
+                                    fontWeight: 'bold'
                                 }
                             }}
                         />
 
                     </Tabs>
-
                     <Button color="inherit" onClick={handleLogout} sx={{ marginLeft: 'auto' }}>
                         Logout
                     </Button>
