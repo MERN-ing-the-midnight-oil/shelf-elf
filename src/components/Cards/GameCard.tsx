@@ -12,17 +12,17 @@ interface Game {
     bggRating: number;
 }
 
+// Assuming the Game type includes ownerUsername
 interface GameCardProps {
-    game: Game;
+    game: Game; // Make sure the Game type includes ownerUsername
     token: string;
     setRefetchCounter: React.Dispatch<React.SetStateAction<number>>;
-    onRequestGame: (gameId: string) => void;
+    onRequestGame: (gameId: string, ownerUsername: string) => void; // Updated to accept two parameters
 }
-
 const GameCard: React.FC<GameCardProps> = ({ game, token, setRefetchCounter, onRequestGame }) => {
     const requestGame = async () => {
-        onRequestGame(game.gameId);
-        // Assuming onRequestGame handles the API request and state updates
+        // Pass both gameId and ownerUsername to the onRequestGame function
+        onRequestGame(game.gameId, game.ownerUsername); // Adjusted to pass ownerUsername as well
     };
 
     return (
@@ -32,14 +32,14 @@ const GameCard: React.FC<GameCardProps> = ({ game, token, setRefetchCounter, onR
             <p>Offered by: {game.ownerUsername}</p>
             <p>Community: {game.communityName}</p>
             <a href={game.bggLink} target="_blank" rel="noopener noreferrer">
-                {game.bggLink}
+                BoardGameGeek Link
             </a>
-
             <Button variant="contained" color="primary" onClick={requestGame}>
                 Request This Game
             </Button>
         </div>
     );
 };
+
 
 export default GameCard;

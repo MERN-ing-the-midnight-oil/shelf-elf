@@ -1,13 +1,14 @@
 const express = require("express");
-const Game = require("../../models/game");
+const router = express.Router();
 const { checkAuthentication } = require("../../../middlewares/authentication");
+const fetchGameImage = require("./fetchGameThumbnail");
 const User = require("../../models/user"); // Your User model
 const Community = require("../../models/community");
-const router = express.Router();
-const fetchGameImage = require("./fetchGameThumbnail");
+const RequestedGame = require("../../models/requestedGame");
+const Game = require("../../models/game");
 
 // routes/games/index.js
-
+//search means add a game from the db
 router.get("/search", checkAuthentication, async (req, res) => {
 	const { title } = req.query;
 
@@ -169,27 +170,57 @@ router.get("/gamesFromMyCommunities", checkAuthentication, async (req, res) => {
 });
 
 // GET /api/games/my-requested-games
+// route to fetch requested games for the current user
 router.get("/my-requested-games", checkAuthentication, async (req, res) => {
 	try {
-		const user = await User.findById(req.user._id).populate("requestedGames");
-		res.json(user.requestedGames);
+		const requestedGames = await RequestedGame.find({ wantedBy: req.user._id })
+			.populate("game")
+			.populate("offeredBy");
+		res.json(requestedGames);
 	} catch (error) {
 		res.status(500).json({ message: "Error fetching requested games", error });
 	}
 });
+
 // PATCH /api/games/request/:gameId
-router.patch("/request/:gameId", checkAuthentication, async (req, res) => {
+
+router.patch("/request", checkAuthentication, async (req, res) => {
+	const { gameId, ownerUsername } = req.body;
+
+	console.log(
+		"Received request for game:",
+		gameId,
+		"from owner:",
+		ownerUsername
+	); // Log the incoming request details
+
 	try {
-		const game = await Game.findById(req.params.gameId);
-		if (!game) {
-			return res.status(404).json({ message: "Game not found" });
-		}
-		await User.findByIdAndUpdate(req.user._id, {
-			$addToSet: { requestedGames: game._id },
+		const game = await Game.findById(gameId);
+		const owner = await User.findOne({ username: ownerUsername });
+		const requestedBy = req.user._id; // The current authenticated user
+
+		console.log("Found game:", game, "and owner:", owner); // Log found game and owner details
+
+		const newRequestedGame = new RequestedGame({
+			game: game._id,
+			gameTitle: game.title,
+			wantedBy: requestedBy,
+			offeredBy: owner._id,
+			status: "requested",
+			// Add thumbnails or messages, etc
 		});
-		res.status(200).json({ message: "Game requested successfully" });
+
+		await newRequestedGame.save();
+
+		console.log("New game request created:", newRequestedGame);
+
+		res.status(201).json({
+			message: "Game request created successfully",
+			requestedGame: newRequestedGame,
+		});
 	} catch (error) {
-		res.status(500).json({ message: "Error requesting game", error });
+		console.error("Error creating game request:", error);
+		res.status(500).json({ message: "Error creating game request", error });
 	}
 });
 

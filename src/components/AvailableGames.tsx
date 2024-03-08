@@ -28,24 +28,35 @@ const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCount
         fetchGamesFromAllCommunities();
     }, [token]);
 
-    const handleRequestGame = async (gameId: string) => {
+    const handleRequestGame = async (gameId: string, ownerUsername: string) => {
+        const payload = {
+            gameId,
+            ownerUsername,
+        };
+
+        console.log("Sending request payload:", payload);
+
         try {
-            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001'}/api/games/request/${gameId}`, {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001'}/api/games/request`, {
                 method: 'PATCH',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
+                body: JSON.stringify(payload),
             });
             if (!response.ok) {
                 throw new Error('Failed to request game');
             }
             console.log("Game requested successfully");
-            setRefetchCounter(prev => prev + 1); // Trigger refresh
+            setRefetchCounter(prev => prev + 1);
         } catch (error) {
             console.error('Error requesting game:', error);
         }
     };
+
+
+
 
     return (
         <Container maxWidth="md">
