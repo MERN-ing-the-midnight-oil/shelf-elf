@@ -44,14 +44,27 @@ const MyRequestedGames: React.FC<SharedComponentProps> = ({ token, setRefetchCou
                             alt={requestedGame.game.gameTitle}
                         />
                         <CardContent>
-                            <Typography gutterBottom variant="h5" component="div">
-                                {requestedGame.game.gameTitle}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                Offered by: {requestedGame.offeredBy.username}
-                            </Typography>
-                            {/* Display messages or other game details as needed */}
+                            <div>
+                                <Typography variant="h5">My Requested Games</Typography>
+                                {requestedGames.length > 0 ? (
+                                    requestedGames.map((requestedGame) => (
+                                        <div key={requestedGame._id}>
+                                            <p>{requestedGame.game?.title}</p>
+                                            <img src={requestedGame.game?.thumbnailUrl} alt={requestedGame.game?.title} />
+                                            <a href={requestedGame.game?.bggLink} target="_blank" rel="noopener noreferrer">
+                                                View on BoardGameGeek
+                                            </a>
+                                            <p>Offered by: {requestedGame.offeredBy?.username}</p>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <Typography variant="body1">You have not requested any games yet.</Typography>
+                                )}
+                            </div>
                         </CardContent>
+
+
+
                     </Card>
                 ))
             ) : (

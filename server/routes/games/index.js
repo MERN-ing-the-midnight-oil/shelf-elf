@@ -174,8 +174,14 @@ router.get("/gamesFromMyCommunities", checkAuthentication, async (req, res) => {
 router.get("/my-requested-games", checkAuthentication, async (req, res) => {
 	try {
 		const requestedGames = await RequestedGame.find({ wantedBy: req.user._id })
-			.populate("game")
-			.populate("offeredBy");
+			.populate({
+				path: "game",
+				select: "title thumbnailUrl bggLink", // Only include specific fields
+			})
+			.populate({
+				path: "offeredBy",
+				select: "username", // Only include the username field
+			});
 		res.json(requestedGames);
 	} catch (error) {
 		res.status(500).json({ message: "Error fetching requested games", error });
