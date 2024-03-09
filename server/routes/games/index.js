@@ -153,10 +153,11 @@ router.get("/gamesFromMyCommunities", checkAuthentication, async (req, res) => {
 				if (member._id.toString() !== req.user._id.toString()) {
 					member.lendingLibraryGames.forEach((game) => {
 						gamesInfo.push({
-							gameId: game._id,
+							gameIdentification: game._id,
 							gameTitle: game.title,
 							bggLink: game.bggLink,
 							bggRating: game.bggRating,
+							thumbnailUrl: game.thumbnailUrl,
 							ownerUsername: member.username,
 							communityName: community.name,
 						});
@@ -195,24 +196,45 @@ router.get("/my-requested-games", checkAuthentication, async (req, res) => {
 	}
 });
 
-// PATCH /api/games/request/:gameId
+// PATCH /api/games/request
 
 router.patch("/request", checkAuthentication, async (req, res) => {
 	const { gameId, ownerUsername } = req.body;
 
-	console.log(
-		"Received request for game:",
-		gameId,
-		"from owner:",
-		ownerUsername
-	); // Log the incoming request details
+	console.log("Received request payload:", req.body); // Log the full payload for debugging
+
+	// Check if gameId and ownerUsername are received correctly
+	if (!gameId || !ownerUsername) {
+		console.error("Missing gameId or ownerUsername in the request:", {
+			gameId,
+			ownerUsername,
+		});
+		return res
+			.status(400)
+			.json({ message: "Missing gameId or ownerUsername in the request" });
+	}
 
 	try {
 		const game = await Game.findById(gameId);
 		const owner = await User.findOne({ username: ownerUsername });
 		const requestedBy = req.user._id; // The current authenticated user
 
-		console.log("Found game:", game, "and owner:", owner); // Log found game and owner details
+		// Additional checks to ensure game and owner are found
+		if (!game) {
+			console.error("Game not found with ID:", gameId);
+			return res.status(404).json({ message: "Game not found" });
+		}
+		if (!owner) {
+			console.error("Owner not found with username:", ownerUsername);
+			return res.status(404).json({ message: "Owner not found" });
+		}
+
+		console.log(
+			"Processing request for game:",
+			game.title,
+			"offered by:",
+			owner.username
+		); // More detailed log
 
 		const newRequestedGame = new RequestedGame({
 			game: game._id,
@@ -225,7 +247,7 @@ router.patch("/request", checkAuthentication, async (req, res) => {
 
 		await newRequestedGame.save();
 
-		console.log("New game request created:", newRequestedGame);
+		console.log("New game request created successfully:", newRequestedGame);
 
 		res.status(201).json({
 			message: "Game request created successfully",

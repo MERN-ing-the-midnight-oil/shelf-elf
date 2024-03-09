@@ -16,6 +16,7 @@ const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCount
                 });
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
+                console.log("Received games data:", data); // Log to see the structure
                 setGames(data);
             } catch (error) {
                 console.error('Error fetching games from communities:', error);
@@ -26,6 +27,7 @@ const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCount
 
         fetchGamesFromAllCommunities();
     }, [token]);
+
 
     const handleRequestGame = async (gameId: string, ownerUsername: string) => {
         const payload = {
@@ -62,10 +64,13 @@ const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCount
             ) : (
                 <Grid container justifyContent="center" spacing={2}>
                     {games.map((game) => (
-                        <Grid item key={game._id} xs={12} sm={6} md={4}>
+                        <Grid item key={game.gameIdentification} xs={12} sm={6} md={4}>
                             <Card>
                                 <CardContent>
                                     <Typography variant="h6">{game.gameTitle}</Typography>
+                                    <div className="game-thumbnail">
+                                        <img src={game.thumbnailUrl} alt={`Thumbnail of ${game.gameTitle}`} />
+                                    </div>
                                     <Typography>Rating: {game.bggRating}</Typography>
                                     <Typography>Offered by: {game.ownerUsername}</Typography>
                                     <Typography>Community: {game.communityName}</Typography>
@@ -74,9 +79,13 @@ const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCount
                                     </Button>
                                 </CardContent>
                                 <CardActions>
-                                    <Button variant="contained" color="primary" onClick={() => handleRequestGame(game._id, game.ownerUsername)}>
+                                    <Button variant="contained" color="primary" onClick={() => {
+                                        console.log("About to request game with ID:", game._id); // Ensure game._id is logged correctly here
+                                        handleRequestGame(game.gameIdentification, game.ownerUsername)
+                                    }}>
                                         Request This Game
                                     </Button>
+
                                 </CardActions>
                             </Card>
                         </Grid>

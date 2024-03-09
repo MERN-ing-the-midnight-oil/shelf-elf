@@ -2,6 +2,7 @@
 // src/types.ts
 
   export interface Game {
+    gameIdentification: string;
     _id: string;
     gameTitle: string;
     bggLink: string;
