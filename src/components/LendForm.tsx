@@ -3,6 +3,7 @@ import { Formik, Form, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Button, TextField, Container, Typography, CircularProgress } from '@mui/material';
 import { styled } from '@mui/system';
+import { SharedComponentProps } from '../types'; // Adjust the path as needed
 
 //creating debouncer
 function debounce<F extends (...args: any[]) => any>(func: F, wait: number): (...funcArgs: Parameters<F>) => void {
@@ -34,7 +35,7 @@ interface LendFormProps {
 
 }
 
-const LendForm: React.FC<LendFormProps> = ({ token, setRefetchCounter }) => {
+const LendForm: React.FC<SharedComponentProps> = ({ token, setRefetchCounter, refetchCounter }) => {
   const [searchResults, setSearchResults] = useState([]);
   const apiKey = process.env.REACT_APP_API_KEY;
 

@@ -5,13 +5,8 @@ import { Typography, Table, TableBody, TableCell, TableContainer, TableHead, Tab
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
-import { SharedComponentProps } from '../types'; // Adjust the import path as necessary
+import { SharedComponentProps } from '../types';
 
-// interface MyRequestedBooksProps {
-//     token: string | null;
-//     setRefetchCounter: React.Dispatch<React.SetStateAction<number>>;
-//     refetchCounter: number;
-// }
 
 interface Owner {
     _id: string;
@@ -80,7 +75,7 @@ const MyRequestedBooks: React.FC<SharedComponentProps> = ({ token, setRefetchCou
 
     return (
         <div>
-            <Typography variant="h5">You have requested to borrow the following books:</Typography>
+            <Typography variant="h5">You have asked to borrow the following books:</Typography>
             <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 650 }} aria-label="requested books table">
                     <TableHead>

@@ -47,10 +47,6 @@ const DefaultColumnFilter = ({ column: { filterValue, setFilter } }) => {
   );
 };
 
-const generateGoogleMapsLink = (street1, street2, zipCode) => {
-  const query = encodeURIComponent(`${street1} and ${street2}, ${zipCode}`);
-  return `https://www.google.com/maps/search/?api=1&query=${query}`;
-};
 
 
 const AvailableTable = ({ books, onRequestClick }) => {

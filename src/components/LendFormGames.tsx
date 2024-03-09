@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { TextField, Button, Typography, CircularProgress, Container, Link } from '@mui/material';
 import { styled } from '@mui/system';
 import { Game } from '../types'; // Make sure this path is correct
+import { SharedComponentProps } from '../types'; // Adjust the path as needed
+
+
 
 const ContainerStyled = styled(Container)({
     display: 'flex',
@@ -20,7 +23,8 @@ const GameItem = styled('div')({
     paddingBottom: '10px',
 });
 
-const LendFormGames: React.FC<{ token: string; setRefetchCounter: React.Dispatch<React.SetStateAction<number>>; }> = ({ token, setRefetchCounter }) => {
+const LendFormGames: React.FC<SharedComponentProps> = ({ token, setRefetchCounter, refetchCounter }) => {
+
     const [searchTerm, setSearchTerm] = useState('');
     const [games, setGames] = useState<Game[]>([]);
     const [isLoading, setIsLoading] = useState(false);

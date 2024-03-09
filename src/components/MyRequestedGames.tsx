@@ -19,7 +19,6 @@ const MyRequestedGames: React.FC<SharedComponentProps> = ({ token, setRefetchCou
                 if (response.data && response.data.length > 0) {
                     setRequestedGames(response.data);
                 } else {
-                    // Handle the case where there are no requested games
                     console.log('No requested games found');
                 }
             } catch (error) {
@@ -29,49 +28,6 @@ const MyRequestedGames: React.FC<SharedComponentProps> = ({ token, setRefetchCou
 
         fetchRequestedGames();
     }, [token, setRefetchCounter, refetchCounter]);
-
-
-    // return (
-    //     <div>
-    //         <Typography variant="h5">My Requested Games</Typography>
-    //         {requestedGames.length > 0 ? (
-    //             requestedGames.map((requestedGame) => (
-    //                 <Card key={requestedGame._id} style={{ marginBottom: '20px' }}>
-    //                     <CardMedia
-    //                         component="img"
-    //                         height="140"
-    //                         image={requestedGame.game.thumbnailUrl}
-    //                         alt={requestedGame.game.gameTitle}
-    //                     />
-    //                     <CardContent>
-    //                         <div>
-    //                             <Typography variant="h5">My Requested Games</Typography>
-    //                             {requestedGames.length > 0 ? (
-    //                                 requestedGames.map((requestedGame) => (
-    //                                     <div key={requestedGame._id}>
-    //                                         <p>{requestedGame.game?.title}</p>
-    //                                         <img src={requestedGame.game?.thumbnailUrl} alt={requestedGame.game?.title} />
-    //                                         <a href={requestedGame.game?.bggLink} target="_blank" rel="noopener noreferrer">
-    //                                             View on BoardGameGeek
-    //                                         </a>
-    //                                         <p>Offered by: {requestedGame.offeredBy?.username}</p>
-    //                                     </div>
-    //                                 ))
-    //                             ) : (
-    //                                 <Typography variant="body1">You have not requested any games yet.</Typography>
-    //                             )}
-    //                         </div>
-    //                     </CardContent>
-
-
-
-    //                 </Card>
-    //             ))
-    //         ) : (
-    //             <Typography variant="body1">You have not requested any games yet.</Typography>
-    //         )}
-    //     </div>
-    // );
 
 
     return (

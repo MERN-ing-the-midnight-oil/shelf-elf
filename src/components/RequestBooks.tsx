@@ -6,7 +6,6 @@ import AvailableGames from './AvailableGames';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
-// Assuming SharedComponentProps is properly imported
 import { SharedComponentProps } from '../types';
 
 const RequestBooks: React.FC<SharedComponentProps> = ({ token, setRefetchCounter, refetchCounter }) => {
@@ -14,7 +13,6 @@ const RequestBooks: React.FC<SharedComponentProps> = ({ token, setRefetchCounter
     const [view, setView] = useState('books');
 
     const handleViewChange = (_event: React.MouseEvent<HTMLElement>, newView: string) => {
-        // Prevent the view from being cleared on click
         if (newView !== null) {
             setView(newView);
         }
@@ -28,6 +26,14 @@ const RequestBooks: React.FC<SharedComponentProps> = ({ token, setRefetchCounter
                 exclusive
                 onChange={handleViewChange}
                 aria-label="View Toggle"
+                sx={{
+                    '& .MuiToggleButtonGroup-grouped': {
+                        padding: '10px 20px', // Increase padding
+                        fontSize: '3rem', // Increase font size
+                        margin: '5px', // Add some space between buttons
+                        border: 0, // Optional: remove border if desired
+                    }
+                }}
             >
                 <ToggleButton value="books" aria-label="Show Books">
                     Books
@@ -45,10 +51,11 @@ const RequestBooks: React.FC<SharedComponentProps> = ({ token, setRefetchCounter
             )}
 
             {view === 'games' && (
-                <>     <MyRequestedGames token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />
-
+                <>
+                    <MyRequestedGames token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />
                     <AvailableGames token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />
-                </>)}
+                </>
+            )}
         </div>
     );
 };

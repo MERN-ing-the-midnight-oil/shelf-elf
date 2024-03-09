@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, Grid, CircularProgress } from '@mui/material';
-import GameCard from './Cards/GameCard'; // Ensure the import path is correct
+import { Container, Typography, Grid, CircularProgress, Card, CardContent, CardActions, Button } from '@mui/material';
 import { Game, SharedComponentProps } from '../types'; // Assuming types.ts is directly under src/
 
 const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCounter, refetchCounter }) => {
@@ -34,8 +33,6 @@ const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCount
             ownerUsername,
         };
 
-        console.log("Sending request payload:", payload);
-
         try {
             const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001'}/api/games/request`, {
                 method: 'PATCH',
@@ -55,9 +52,6 @@ const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCount
         }
     };
 
-
-
-
     return (
         <Container maxWidth="md">
             <Typography variant="h5" gutterBottom>
@@ -69,17 +63,25 @@ const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCount
                 <Grid container justifyContent="center" spacing={2}>
                     {games.map((game) => (
                         <Grid item key={game._id} xs={12} sm={6} md={4}>
-                            <GameCard
-                                game={game}
-                                token={token}
-                                setRefetchCounter={setRefetchCounter}
-                                onRequestGame={handleRequestGame} // Defined in AvailableGames or parent component
-                            />
+                            <Card>
+                                <CardContent>
+                                    <Typography variant="h6">{game.gameTitle}</Typography>
+                                    <Typography>Rating: {game.bggRating}</Typography>
+                                    <Typography>Offered by: {game.ownerUsername}</Typography>
+                                    <Typography>Community: {game.communityName}</Typography>
+                                    <Button component="a" href={game.bggLink} target="_blank" rel="noopener noreferrer">
+                                        BoardGameGeek Link
+                                    </Button>
+                                </CardContent>
+                                <CardActions>
+                                    <Button variant="contained" color="primary" onClick={() => handleRequestGame(game._id, game.ownerUsername)}>
+                                        Request This Game
+                                    </Button>
+                                </CardActions>
+                            </Card>
                         </Grid>
                     ))}
                 </Grid>
-
-
             )}
         </Container>
     );
