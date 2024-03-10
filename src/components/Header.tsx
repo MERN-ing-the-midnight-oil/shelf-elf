@@ -32,11 +32,11 @@ const Header: React.FC = () => {
     return (
         <AppBar position="static">
             <Toolbar>
-                <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
-                    <Typography variant="h6" color="inherit" sx={{ flexGrow: 0, flexShrink: 0, marginRight: '40px' }}>
+                <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Typography variant="h6" color="inherit" sx={{ flexGrow: 0, flexShrink: 0, marginRight: '20px', marginLeft: '20px' }}>
                         Welcome, {user.username}!
                     </Typography>
-                    <Tabs value={value} onChange={handleChange} aria-label="Navigation Tabs" sx={{ flexGrow: 1, '& .MuiTab-root': { marginRight: '24px' } }}>
+                    <Tabs value={value} onChange={handleChange} aria-label="Navigation Tabs" sx={{ flexGrow: 1, '& .MuiTab-root': { padding: '0 12px', marginRight: '24px', marginLeft: '24px' } }}>
                         <Tab
                             label="Your Social Group(s)"
                             value="/manage-communities"
@@ -45,7 +45,7 @@ const Header: React.FC = () => {
                             sx={{
                                 color: 'white',
                                 '&.Mui-selected': {
-                                    backgroundColor: 'secondary.main', // Use theme's secondary color
+                                    backgroundColor: 'secondary.main',
                                     color: 'white',
                                     fontWeight: 'bold'
                                 }
@@ -59,7 +59,7 @@ const Header: React.FC = () => {
                             sx={{
                                 color: 'white',
                                 '&.Mui-selected': {
-                                    backgroundColor: 'secondary.main', // Use theme's secondary color
+                                    backgroundColor: 'secondary.main',
                                     color: 'white',
                                     fontWeight: 'bold'
                                 }
@@ -73,15 +73,14 @@ const Header: React.FC = () => {
                             sx={{
                                 color: 'white',
                                 '&.Mui-selected': {
-                                    backgroundColor: 'secondary.main', // Use theme's secondary color
+                                    backgroundColor: 'secondary.main',
                                     color: 'white',
                                     fontWeight: 'bold'
                                 }
                             }}
                         />
-
                     </Tabs>
-                    <Button color="inherit" onClick={handleLogout} sx={{ marginLeft: 'auto' }}>
+                    <Button color="inherit" onClick={handleLogout} sx={{ marginRight: '20px' }}>
                         Logout
                     </Button>
                 </Box>

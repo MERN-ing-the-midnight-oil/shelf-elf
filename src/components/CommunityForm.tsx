@@ -51,7 +51,7 @@ const CommunityForm: React.FC<CommunityFormProps> = ({ token, setRefetchCounter 
                     name="communityName"
                     value={communityName}
                     onChange={(e) => setCommunityName(e.target.value)}
-                    label="Name your Social Group"
+                    label="Name your Social Group (e.g. Cora G.'s thursday night game-night)"
                     variant="outlined"
                 />
                 <TextField
@@ -60,7 +60,7 @@ const CommunityForm: React.FC<CommunityFormProps> = ({ token, setRefetchCounter 
                     name="communityDescription"
                     value={communityDescription}
                     onChange={(e) => setCommunityDescription(e.target.value)}
-                    label="Who are you? (e.g. Springfield Dungeons and Dragons) Where and when do you meet? (e.g. 'John's house, about once per month') "
+                    label="Who are you? (e.g. We play Scrabble every thursday night at the Blue house on State Street)"
                     variant="outlined"
                     multiline
                     rows={4}
@@ -71,7 +71,7 @@ const CommunityForm: React.FC<CommunityFormProps> = ({ token, setRefetchCounter 
                     name="communityPasscode"
                     value={communityPasscode}
                     onChange={(e) => setCommunityPasscode(e.target.value)}
-                    label="Passcode to join (choose a simple passcode and Share it with the right people)"
+                    label="Passcode to join (choose a simple passcode and tell your friends via text, email, stage whisper, or semaphore)"
                     variant="outlined"
                     type="password"
                 />
