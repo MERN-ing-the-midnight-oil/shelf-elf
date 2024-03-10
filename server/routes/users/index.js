@@ -30,42 +30,40 @@ router.get("/me", checkAuthentication, async (req, res) => {
 	}
 });
 
-// POST route to create a new user
 router.post("/register", async (req, res) => {
 	console.log("Received a create a new user POST request on /register");
-	try {
-		const { username, password } = req.body;
+	const { username, password } = req.body;
 
-		// Basic validation
-		if (!username || !password) {
-			return res
-				.status(400)
-				.json({ error: "Username and password are required" });
-		}
-
-		// Check if the username already exists
-		const existingUser = await User.findOne({ username });
-		if (existingUser) {
-			return res.status(400).json({ error: "Username already exists" });
-		}
-
-		// Encrypt the password
-		const hashedPassword = await bcrypt.hash(password, 10);
-
-		// Create a new user with username and password
-		const newUser = new User({
-			username,
-			password: hashedPassword,
-		});
-		await newUser.save();
-		res
-			.status(201)
-			.json({ message: "User created successfully", user: newUser._id }); // Respond with the user ID
-	} catch (error) {
-		console.error(error);
-		res.status(500).send("Internal Server Error"); // Respond with a generic error message
+	// Basic validation
+	if (!username || !password) {
+		return res
+			.status(400)
+			.json({ error: "Username and password are required" });
 	}
+
+	// Simplified password requirements
+	if (password.length < 5) {
+		return res
+			.status(400)
+			.json({ error: "Password must be at least 5 characters long" });
+	}
+
+	// Check if the username already exists
+	const existingUser = await User.findOne({ username });
+	if (existingUser) {
+		return res.status(400).json({ error: "Username already exists" });
+	}
+
+	// Encrypt the password and create a new user
+	const hashedPassword = await bcrypt.hash(password, 10);
+	const newUser = new User({ username, password: hashedPassword });
+	await newUser.save();
+
+	res
+		.status(201)
+		.json({ message: "User created successfully", user: newUser._id });
 });
+
 // LOGIN route
 router.post("/login", async (req, res) => {
 	try {
