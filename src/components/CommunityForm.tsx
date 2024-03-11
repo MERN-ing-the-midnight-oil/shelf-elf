@@ -11,10 +11,9 @@ const FormContainer = styled(Container)({
 
 interface CommunityFormProps {
     token: string;
-    setRefetchCounter: React.Dispatch<React.SetStateAction<number>>;
+    onRefetch: () => void; // This prop is a function to trigger refetching
 }
-
-const CommunityForm: React.FC<CommunityFormProps> = ({ token, setRefetchCounter }) => {
+const CommunityForm: React.FC<CommunityFormProps> = ({ token, onRefetch }) => {
     const [communityName, setCommunityName] = useState('');
     const [communityDescription, setCommunityDescription] = useState('');
     const [communityPasscode, setCommunityPasscode] = useState('');
@@ -32,18 +31,25 @@ const CommunityForm: React.FC<CommunityFormProps> = ({ token, setRefetchCounter 
                 passcode: communityPasscode,
             };
             const response = await axios.post(`${API_URL}/api/communities/create`, communityData, { headers });
-            console.log(response.data);
-            setRefetchCounter(prev => prev + 1); // Trigger re-fetch
-            // Handle success
+            console.log('Community created successfully:', response.data);
+
+            onRefetch(); // This should already be in place based on your description
+            console.log('Community created and refetch triggered.');
+
+            // Reset form fields after successful submission
+            setCommunityName('');
+            setCommunityDescription('');
+            setCommunityPasscode('');
+
+            // Optionally, handle success UI feedback to the user here
         } catch (error) {
             console.error('Error creating community:', error);
-            // Handle error
+            // Optionally, handle error UI feedback to the user here
         }
     }
 
     return (
         <FormContainer>
-
             <form onSubmit={handleSubmit}>
                 <TextField
                     fullWidth
@@ -81,6 +87,6 @@ const CommunityForm: React.FC<CommunityFormProps> = ({ token, setRefetchCounter 
             </form>
         </FormContainer>
     );
-}
+};
 
 export default CommunityForm;
