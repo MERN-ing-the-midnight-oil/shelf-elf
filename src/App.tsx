@@ -26,7 +26,7 @@ function App() {
             <Route path="/lend-books" element={<LendBooks token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />} />
             <Route path="/request-books" element={<RequestBooks token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />} />
             <Route path="/manage-communities" element={<ManageCommunities token={token} />} />
-            <Route path="*" element={<Navigate replace to="/lend-books" />} />
+            <Route path="*" element={<Navigate replace to="/manage-communities" />} />
           </Routes>
         ) : (
           <>

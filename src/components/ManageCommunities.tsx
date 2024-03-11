@@ -11,7 +11,7 @@ import {
     AccordionSummary,
     AccordionDetails,
     ListItemText,
-    ListItemSecondaryAction
+    SxProps
 } from '@mui/material'; import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 interface Community {
@@ -54,11 +54,11 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token }) => {
     const handleJoinCommunity = async (communityId: string, joinCode: string) => {
         try {
             await axios.post(`${API_URL}/api/communities/join`, { communityId, passcode: joinCode }, { headers: { Authorization: `Bearer ${token}` } });
-            alert('Joined community successfully.');
+            alert('Joined group successfully.');
             fetchCommunities(); // Refresh communities list
         } catch (error) {
             console.error('Error joining community:', error);
-            alert('Failed to join community.');
+            alert('Failed to join group.');
         }
     };
 
@@ -66,14 +66,14 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token }) => {
         e.preventDefault();
         try {
             await axios.post(`${API_URL}/api/communities/create`, { name: newCommunityName, description: newCommunityDescription, passcode: newCommunityPasscode }, { headers: { Authorization: `Bearer ${token}` } });
-            alert('Community created successfully.');
+            alert('Group created successfully.');
             setNewCommunityName('');
             setNewCommunityDescription('');
             setNewCommunityPasscode('');
             fetchCommunities(); // Refresh communities list
         } catch (error) {
             console.error('Error creating community:', error);
-            alert('Failed to create community.');
+            alert('Failed to create group.');
         }
     };
 
@@ -93,98 +93,114 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token }) => {
     };
 
     return (
-        <Box>
-            <Typography variant="h4" gutterBottom>Manage Your Communities</Typography>
-            <Typography variant="h5" gutterBottom>Your Communities:</Typography>
-            <List>
-                {userCommunities.map((community) => (
-                    <ListItem
-                        key={community._id}
-                        secondaryAction={
-                            <Button
-                                color="secondary"
-                                onClick={() => handleLeaveCommunity(community._id)}
+        <Box sx={{ maxWidth: '600px', margin: 'auto', mt: 4 }}>
+            {/* Manage Your Social Groups Header */}
+            <Typography variant="h4" gutterBottom textAlign="center">Manage Your Social Groups</Typography>
+
+            {/* Your Social Groups Section */}
+            <Box sx={{ mb: 4, p: 2, boxShadow: 1, borderRadius: '5px', backgroundColor: '#f0f0f0', border: '1px solid #e0e0e0' }}>
+                <Typography variant="h5" gutterBottom textAlign="center">Your Social Groups:</Typography>
+                {userCommunities.length > 0 ? (
+                    <List>
+                        {userCommunities.map((community) => (
+                            <ListItem
+                                key={community._id}
+                                secondaryAction={
+                                    <Button
+                                        color="secondary"
+                                        onClick={() => handleLeaveCommunity(community._id)}
+                                    >
+                                        Leave Social Group
+                                    </Button>
+                                }
                             >
-                                Leave Social Group
-                            </Button>
-                        }
-                    >
-                        <ListItemText primary={community.name} secondary={community.description} />
-                    </ListItem>
+                                {/* Center the names of the Social Groups */}
+                                <ListItemText primary={community.name} primaryTypographyProps={{ textAlign: 'center' }} secondary={community.description} secondaryTypographyProps={{ textAlign: 'center' }} />
+                            </ListItem>
+                        ))}
+                    </List>
+                ) : (
+                    <Typography textAlign="center">You have not joined a Social Group yet. Ask another user for a Social Group name and passcode, or if you are the first one in your social group to use this app, please create a new Social Group.</Typography>
+                )}
+            </Box>
+
+            {/* Join an Existing Social Group Section */}
+            <Box sx={{ mb: 4, backgroundColor: '#ffffff' }}>
+                <Typography variant="h6" gutterBottom textAlign="center">Join an Existing Social Group:</Typography>
+                {communities.map((community) => (
+                    <Accordion key={community._id}>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id={`panel1a-header-${community._id}`}>
+                            {/* Center the names of the Social Groups */}
+                            <Typography textAlign="center">{community.name}</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <Typography variant="body1" textAlign="center">{community.description}</Typography>
+                            {/* Community join form */}
+                            <form onSubmit={(e) => {
+                                e.preventDefault();
+                                const formData = new FormData(e.currentTarget);
+                                const joinCode = formData.get('joinCode') as string;
+                                handleJoinCommunity(community._id, joinCode);
+                            }} style={{ textAlign: 'center' }}>
+                                <TextField
+                                    name="joinCode"
+                                    label="Enter Join Code"
+                                    variant="outlined"
+                                    size="small"
+                                    margin="normal"
+                                />
+                                <Button variant="contained" color="primary" type="submit" sx={{ mt: 1 }}>
+                                    Join
+                                </Button>
+                            </form>
+
+                        </AccordionDetails>
+                    </Accordion>
                 ))}
-            </List>
+            </Box>
 
-            <Typography variant="h6" gutterBottom>Join an Existing Community:</Typography>
-            {communities.map((community) => (
-                <Accordion key={community._id}>
-                    <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id={`panel1a-header-${community._id}`}>
-                        <Typography>{community.name}</Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                        <Typography variant="body1">{community.description}</Typography>
-                        {/* Community join form */}
-                        <form onSubmit={(e) => {
-                            e.preventDefault();
-                            // Use FormData to access the input value in a type-safe manner
-                            const formData = new FormData(e.currentTarget);
-                            const joinCode = formData.get('joinCode') as string; // Assuming the input's name is 'joinCode'
-                            handleJoinCommunity(community._id, joinCode);
-                        }}>
-                            <TextField
-                                name="joinCode"
-                                label="Enter Join Code"
-                                variant="outlined"
-                                size="small"
-                                margin="normal"
-                            />
-                            <Button variant="contained" color="primary" type="submit" sx={{ mt: 1 }}>
-                                Join
-                            </Button>
-                        </form>
-
-                    </AccordionDetails>
-                </Accordion>
-            ))}
-
-            {/* New community creation form */}
-            <Typography variant="h6" gutterBottom>Don't see the community you want to join? Create it!</Typography>
-            <form onSubmit={handleCreateCommunity}>
-                <TextField
-                    label="Community Name"
-                    value={newCommunityName}
-                    onChange={(e) => setNewCommunityName(e.target.value)}
-                    variant="outlined"
-                    size="small"
-                    margin="normal"
-                    fullWidth
-                />
-                <TextField
-                    label="Description"
-                    value={newCommunityDescription}
-                    onChange={(e) => setNewCommunityDescription(e.target.value)}
-                    variant="outlined"
-                    size="small"
-                    margin="normal"
-                    fullWidth
-                    multiline
-                    rows={2}
-                />
-                <TextField
-                    label="Passcode"
-                    value={newCommunityPasscode}
-                    onChange={(e) => setNewCommunityPasscode(e.target.value)}
-                    type="password"
-                    variant="outlined"
-                    size="small"
-                    margin="normal"
-                    fullWidth
-                />
-                <Button variant="contained" color="primary" type="submit" sx={{ mt: 1 }}>
-                    Create Community
-                </Button>
-            </form>
+            {/* New Social Group Creation Form */}
+            <Box sx={{ p: 2, boxShadow: 1, borderRadius: '5px', backgroundColor: '#e3f2fd', border: '1px solid #e0e0e0' }}>
+                <Typography variant="h6" gutterBottom textAlign="center">Don't see the Social Group you want to join? Create it!</Typography>
+                <form onSubmit={handleCreateCommunity} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <TextField
+                        label="Social Group Name"
+                        value={newCommunityName}
+                        onChange={(e) => setNewCommunityName(e.target.value)}
+                        variant="outlined"
+                        size="small"
+                        margin="normal"
+                        fullWidth
+                    />
+                    <TextField
+                        label="Description"
+                        value={newCommunityDescription}
+                        onChange={(e) => setNewCommunityDescription(e.target.value)}
+                        variant="outlined"
+                        size="small"
+                        margin="normal"
+                        fullWidth
+                        multiline
+                        rows={2}
+                    />
+                    <TextField
+                        label="Passcode"
+                        value={newCommunityPasscode}
+                        onChange={(e) => setNewCommunityPasscode(e.target.value)}
+                        type="password"
+                        variant="outlined"
+                        size="small"
+                        margin="normal"
+                        fullWidth
+                    />
+                    <Button variant="contained" color="primary" type="submit" sx={{ mt: 1 }}>
+                        Create Social Group
+                    </Button>
+                </form>
+            </Box>
         </Box>
     );
+
 };
 
 export default ManageCommunities;
