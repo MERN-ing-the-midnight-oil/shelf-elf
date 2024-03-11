@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Button, TextField, Typography, Box, List, ListItem } from '@mui/material';
-import { Accordion, AccordionSummary, AccordionDetails, } from '@mui/material';
+import { Button, TextField, Typography, Box, List, ListItem, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 interface Community {
@@ -17,35 +16,46 @@ interface ManageCommunitiesProps {
 const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token }) => {
     const [communities, setCommunities] = useState<Community[]>([]);
     const [userCommunities, setUserCommunities] = useState<Community[]>([]);
+    const [newCommunityName, setNewCommunityName] = useState('');
+    const [newCommunityPasscode, setNewCommunityPasscode] = useState('');
+    const [newCommunityDescription, setNewCommunityDescription] = useState('');
 
     const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
 
+    const fetchCommunities = async () => {
+        const allCommunitiesResponse = await axios.get(`${API_URL}/api/communities/list`, { headers: { Authorization: `Bearer ${token}` } });
+        setCommunities(allCommunitiesResponse.data);
+        const userCommunitiesResponse = await axios.get(`${API_URL}/api/communities/user-communities`, { headers: { Authorization: `Bearer ${token}` } });
+        setUserCommunities(userCommunitiesResponse.data);
+    };
+
     useEffect(() => {
-        const fetchCommunities = async () => {
-            const allCommunitiesResponse = await axios.get(`${API_URL}/api/communities/list`, { headers: { Authorization: `Bearer ${token}` } });
-            setCommunities(allCommunitiesResponse.data);
-
-            const userCommunitiesResponse = await axios.get(`${API_URL}/api/communities/user-communities`, { headers: { Authorization: `Bearer ${token}` } });
-            setUserCommunities(userCommunitiesResponse.data);
-        };
-
         fetchCommunities();
     }, [token, API_URL]);
 
     const handleJoinCommunity = async (communityId: string, joinCode: string) => {
         try {
-            await axios.post(
-                `${API_URL}/api/communities/join`,
-                { communityId, passcode: joinCode },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await axios.post(`${API_URL}/api/communities/join`, { communityId, passcode: joinCode }, { headers: { Authorization: `Bearer ${token}` } });
             alert('Joined community successfully.');
-            // Refetch user communities to update the list
-            const userCommunitiesResponse = await axios.get(`${API_URL}/api/communities/user-communities`, { headers: { Authorization: `Bearer ${token}` } });
-            setUserCommunities(userCommunitiesResponse.data);
+            fetchCommunities(); // Refresh communities list
         } catch (error) {
             console.error('Error joining community:', error);
-            // Existing error handling
+            alert('Failed to join community.');
+        }
+    };
+
+    const handleCreateCommunity = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            await axios.post(`${API_URL}/api/communities/create`, { name: newCommunityName, description: newCommunityDescription, passcode: newCommunityPasscode }, { headers: { Authorization: `Bearer ${token}` } });
+            alert('Community created successfully.');
+            setNewCommunityName('');
+            setNewCommunityDescription('');
+            setNewCommunityPasscode('');
+            fetchCommunities(); // Refresh communities list
+        } catch (error) {
+            console.error('Error creating community:', error);
+            alert('Failed to create community.');
         }
     };
 
@@ -62,15 +72,12 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token }) => {
             <Typography variant="h6" gutterBottom>Join an Existing Community:</Typography>
             {communities.map((community) => (
                 <Accordion key={community._id}>
-                    <AccordionSummary
-                        expandIcon={<ExpandMoreIcon />}
-                        aria-controls="panel1a-content"
-                        id={`panel1a-header-${community._id}`}
-                    >
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id={`panel1a-header-${community._id}`}>
                         <Typography>{community.name}</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
                         <Typography variant="body1">{community.description}</Typography>
+                        {/* Community join form */}
                         <form onSubmit={(e) => {
                             e.preventDefault();
                             // Use FormData to access the input value in a type-safe manner
@@ -89,12 +96,50 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token }) => {
                                 Join
                             </Button>
                         </form>
+
                     </AccordionDetails>
                 </Accordion>
             ))}
+
+            {/* New community creation form */}
+            <Typography variant="h6" gutterBottom>Don't see the community you want to join? Create it!</Typography>
+            <form onSubmit={handleCreateCommunity}>
+                <TextField
+                    label="Community Name"
+                    value={newCommunityName}
+                    onChange={(e) => setNewCommunityName(e.target.value)}
+                    variant="outlined"
+                    size="small"
+                    margin="normal"
+                    fullWidth
+                />
+                <TextField
+                    label="Description"
+                    value={newCommunityDescription}
+                    onChange={(e) => setNewCommunityDescription(e.target.value)}
+                    variant="outlined"
+                    size="small"
+                    margin="normal"
+                    fullWidth
+                    multiline
+                    rows={2}
+                />
+                <TextField
+                    label="Passcode"
+                    value={newCommunityPasscode}
+                    onChange={(e) => setNewCommunityPasscode(e.target.value)}
+                    type="password"
+                    variant="outlined"
+                    size="small"
+                    margin="normal"
+                    fullWidth
+                />
+                <Button variant="contained" color="primary" type="submit" sx={{ mt: 1 }}>
+                    Create Community
+                </Button>
+            </form>
         </Box>
     );
-
 };
 
 export default ManageCommunities;
