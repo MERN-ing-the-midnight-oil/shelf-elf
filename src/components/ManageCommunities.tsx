@@ -1,7 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Button, TextField, Typography, Box, List, ListItem, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import {
+    Button,
+    TextField,
+    Typography,
+    Box,
+    List,
+    ListItem,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
+    ListItemText,
+    ListItemSecondaryAction
+} from '@mui/material'; import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 interface Community {
     _id: string;
@@ -30,8 +41,15 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token }) => {
     };
 
     useEffect(() => {
+        const fetchCommunities = async () => {
+            const allCommunitiesResponse = await axios.get(`${API_URL}/api/communities/list`, { headers: { Authorization: `Bearer ${token}` } });
+            setCommunities(allCommunitiesResponse.data);
+            const userCommunitiesResponse = await axios.get(`${API_URL}/api/communities/user-communities`, { headers: { Authorization: `Bearer ${token}` } });
+            setUserCommunities(userCommunitiesResponse.data);
+        };
         fetchCommunities();
-    }, [token, API_URL]);
+    }, [token]); // Removed API_URL from dependencies as it's not expected to change
+
 
     const handleJoinCommunity = async (communityId: string, joinCode: string) => {
         try {
@@ -59,13 +77,40 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token }) => {
         }
     };
 
+    const handleLeaveCommunity = async (communityId: string) => {
+        if (!window.confirm('Are you sure you want to leave this community?')) return;
+
+        try {
+            await axios.post(`${API_URL}/api/communities/${communityId}/leave`, {}, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            alert('You have left the community.');
+            fetchCommunities(); // Refresh the list to show updated membership
+        } catch (error) {
+            console.error('Error leaving community:', error);
+            alert('Failed to leave the community.');
+        }
+    };
+
     return (
         <Box>
             <Typography variant="h4" gutterBottom>Manage Your Communities</Typography>
             <Typography variant="h5" gutterBottom>Your Communities:</Typography>
             <List>
                 {userCommunities.map((community) => (
-                    <ListItem key={community._id}>{community.name} - {community.description}</ListItem>
+                    <ListItem
+                        key={community._id}
+                        secondaryAction={
+                            <Button
+                                color="secondary"
+                                onClick={() => handleLeaveCommunity(community._id)}
+                            >
+                                Leave Social Group
+                            </Button>
+                        }
+                    >
+                        <ListItemText primary={community.name} secondary={community.description} />
+                    </ListItem>
                 ))}
             </List>
 

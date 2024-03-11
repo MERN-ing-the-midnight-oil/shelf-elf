@@ -86,6 +86,52 @@ router.post("/join", checkAuthentication, async (req, res) => {
 		res.status(500).send("Internal Server Error");
 	}
 });
+router.post("/:communityId/leave", checkAuthentication, async (req, res) => {
+	console.log("Leave community route hit", req.params.communityId); // Log when route is hit
+	const { communityId } = req.params;
+	const userId = req.user._id; // Assuming checkAuthentication populates req.user with the authenticated user's info
+
+	try {
+		console.log(`Looking for community with ID: ${communityId}`); // Log community search
+		const community = await Community.findById(communityId);
+		if (!community) {
+			console.log("Community not found", communityId); // Log if community is not found
+			return res.status(404).send("Community not found.");
+		}
+
+		console.log(
+			`Checking if user ${userId} is a member of community ${communityId}`
+		); // Log member check
+		const isMember = community.members.some((member) => member.equals(userId));
+		if (!isMember) {
+			console.log(`User ${userId} is not a member of community ${communityId}`); // Log if user is not a member
+			return res.status(400).send("You are not a member of this community.");
+		}
+
+		// Proceed to remove the user from the community's members list
+		console.log(`Removing user ${userId} from community ${communityId}`); // Log removal action
+		community.members = community.members.filter(
+			(member) => !member.equals(userId)
+		);
+		await community.save();
+
+		// Remove the community from the user's list of communities
+		console.log(
+			`Removing community ${communityId} from user ${userId}'s community list`
+		); // Log user update
+		const user = await User.findById(userId);
+		user.communities = user.communities.filter(
+			(communityId) => !communityId.equals(community._id)
+		);
+		await user.save();
+
+		console.log(`User ${userId} successfully left community ${communityId}`); // Log successful leave
+		res.send("You have successfully left the community.");
+	} catch (error) {
+		console.error("Error leaving community:", error);
+		res.status(500).send("Internal Server Error");
+	}
+});
 
 // GET route to list all communities a user belongs to
 router.get("/user-communities", checkAuthentication, async (req, res) => {
