@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, Typography, CircularProgress, Container, Link } from '@mui/material';
 import { styled } from '@mui/system';
-import { Game } from '../types'; // Make sure this path is correct
-import { SharedComponentProps } from '../types'; // Adjust the path as needed
+import { Game } from '../types';
+import { SharedComponentProps } from '../types';
 
 
 

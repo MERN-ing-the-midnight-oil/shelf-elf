@@ -122,7 +122,7 @@ router.get("/my-communities", checkAuthentication, async (req, res) => {
 	}
 });
 
-//Display the logged in users lending library
+//Display the logged in users books lending library
 router.get("/lending-library", async (req, res) => {
 	try {
 		const user = await User.findById(req.user._id).populate("lendingLibrary");

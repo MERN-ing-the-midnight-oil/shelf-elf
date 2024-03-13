@@ -40,3 +40,12 @@ Collect zip codes for social groups to avoid conflating similarly named groups
 "Offered by" user names become links that show the offered by user's location in google maps.
 
 communication between users
+
+Delete LendFormManual
+
+Routes are disorganized. Maybe arrange them like this:
+/routes
+/books - index.js (Handles all book-related routes including add, delete-offer, my-library, borrow, return, request, booksFromMyCommunities, offeredInCommunity, and unavailable)
+/games - index.js (Handles all game-related operations like search, lend, remove-game, my-library-games, request, my-requested-games, gamesFromMyCommunities)
+/communities - index.js (Includes routes for create, list, join, leave, user-communities)
+/users - index.js (Contains routes for user registration, login, me, and potentially other user profile or management operations not directly related to books or games)

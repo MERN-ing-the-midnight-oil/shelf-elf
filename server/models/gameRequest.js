@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+// Define the schema for individual messages
 const messageSchema = new mongoose.Schema({
 	sender: {
 		type: mongoose.Schema.Types.ObjectId,
@@ -16,15 +17,11 @@ const messageSchema = new mongoose.Schema({
 	},
 });
 
-const requestedGameSchema = new mongoose.Schema({
-	game: {
+// Update the gameRequestSchema to include an array of messages
+const gameRequestSchema = new mongoose.Schema({
+	lendingLibraryGame: {
 		type: mongoose.Schema.Types.ObjectId,
-		ref: "Game",
-		required: true,
-	},
-	offeredBy: {
-		type: mongoose.Schema.Types.ObjectId,
-		ref: "User",
+		ref: "LendingLibraryGame",
 		required: true,
 	},
 	wantedBy: {
@@ -32,7 +29,7 @@ const requestedGameSchema = new mongoose.Schema({
 		ref: "User",
 		required: true,
 	},
-	messages: [messageSchema],
+	messages: [messageSchema], // Incorporating messageSchema here
 	status: {
 		type: String,
 		enum: ["requested", "accepted", "declined", "borrowed", "returned"],
@@ -40,5 +37,5 @@ const requestedGameSchema = new mongoose.Schema({
 	},
 });
 
-const RequestedGame = mongoose.model("RequestedGame", requestedGameSchema);
-module.exports = RequestedGame;
+const GameRequest = mongoose.model("GameRequest", gameRequestSchema);
+module.exports = GameRequest;

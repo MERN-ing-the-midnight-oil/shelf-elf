@@ -6,7 +6,6 @@ import LendFormGames from './LendFormGames';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
-// Properly import SharedComponentProps
 import { SharedComponentProps } from '../types';
 
 const LendBooks: React.FC<SharedComponentProps> = ({ token, setRefetchCounter, refetchCounter }) => {
