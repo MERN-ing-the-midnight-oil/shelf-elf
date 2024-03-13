@@ -28,11 +28,10 @@ const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCount
         fetchGamesFromAllCommunities();
     }, [token]);
 
-
-    const handleRequestGame = async (gameId: string, ownerUsername: string) => {
+    const handleRequestGame = async (lendingLibraryGameId: string) => {
+        // Construct the payload with lendingLibraryGameId
         const payload = {
-            gameId,
-            ownerUsername,
+            lendingLibraryGameId,
         };
 
         try {
@@ -45,14 +44,17 @@ const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCount
                 body: JSON.stringify(payload),
             });
             if (!response.ok) {
-                throw new Error('Failed to request game');
+                const errorResponse = await response.json();
+                throw new Error(`Failed to request game: ${errorResponse.message || ''}`);
             }
             console.log("Game requested successfully");
+            // Increment the refetch counter to trigger a refresh of the game listings
             setRefetchCounter(prev => prev + 1);
         } catch (error) {
             console.error('Error requesting game:', error);
         }
     };
+
 
     return (
         <Container maxWidth="md">
@@ -80,11 +82,12 @@ const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCount
                                 </CardContent>
                                 <CardActions>
                                     <Button variant="contained" color="primary" onClick={() => {
-                                        console.log("About to request game with ID:", game._id); // Ensure game._id is logged correctly here
-                                        handleRequestGame(game.gameIdentification, game.ownerUsername)
+                                        console.log("About to request game with ID:", game.gameIdentification); // Log the gameIdentification
+                                        handleRequestGame(game.gameIdentification) // Call handleRequestGame with only the gameIdentification
                                     }}>
                                         Request This Game
                                     </Button>
+
 
                                 </CardActions>
                             </Card>

@@ -35,27 +35,31 @@ const MyRequestedGames: React.FC<SharedComponentProps> = ({ token, setRefetchCou
             <Typography variant="h5">My Requested Games</Typography>
             {requestedGames.length > 0 ? (
                 requestedGames.map((requestedGame) => (
-                    <div key={requestedGame._id} style={{ marginBottom: '20px' }}>
-                        <img src={requestedGame.game.thumbnailUrl} alt={requestedGame.game.title} style={{ width: '100px', height: 'auto' }} />
-                        <div>
-                            <Typography variant="h6">{requestedGame.game.title}</Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                Offered by: {requestedGame.offeredBy.username}
-                            </Typography>
-                            <a href={requestedGame.game.bggLink} target="_blank" rel="noopener noreferrer">
-                                View on BoardGameGeek
-                            </a>
+                    // Adjust access to nested 'game' property
+                    requestedGame.lendingLibraryGame && requestedGame.lendingLibraryGame.game ? (
+                        <div key={requestedGame._id} style={{ marginBottom: '20px' }}>
+                            <img src={requestedGame.lendingLibraryGame.game.thumbnailUrl || 'defaultThumbnailUrl.jpg'} alt={requestedGame.lendingLibraryGame.game.title || 'Default Title'} style={{ width: '100px', height: 'auto' }} />
+                            <div>
+                                <Typography variant="h6">{requestedGame.lendingLibraryGame.game.title || 'Unknown Title'}</Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Offered by: {requestedGame.lendingLibraryGame.owner.username || 'Unknown'}
+                                </Typography>
+                                <a href={requestedGame.lendingLibraryGame.game.bggLink || '#'} target="_blank" rel="noopener noreferrer">
+                                    View on BoardGameGeek
+                                </a>
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <Typography key={requestedGame._id} variant="body2" color="text.secondary">
+                            Game details unavailable.
+                        </Typography>
+                    )
                 ))
             ) : (
                 <Typography variant="body1">You have not requested any games yet.</Typography>
             )}
         </div>
     );
-
-
-
 
 
 };

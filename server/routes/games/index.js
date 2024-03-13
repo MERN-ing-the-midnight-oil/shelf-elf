@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const mongoose = require("mongoose"); // Import mongoose
+const mongoose = require("mongoose");
 const { checkAuthentication } = require("../../../middlewares/authentication");
 const fetchGameImage = require("./fetchGameThumbnail");
-const User = require("../../models/user"); // Your User model
+const User = require("../../models/user");
 const Community = require("../../models/community");
-const RequestedGame = require("../../models/gameRequest");
+const GameRequest = require("../../models/GameRequest");
 const Game = require("../../models/game");
 
 // routes/games/index.js
@@ -293,84 +293,86 @@ router.get("/gamesFromMyCommunities", checkAuthentication, async (req, res) => {
 	}
 });
 
-// GET /api/games/my-requested-games
-// route to fetch requested games for the current user
-router.get("/my-requested-games", checkAuthentication, async (req, res) => {
-	try {
-		const requestedGames = await RequestedGame.find({ wantedBy: req.user._id })
-			.populate({
-				path: "game",
-				select: "title thumbnailUrl bggLink", // Only include specific fields
-			})
-			.populate({
-				path: "offeredBy",
-				select: "username", // Only include the username field
-			});
-		res.json(requestedGames);
-	} catch (error) {
-		res.status(500).json({ message: "Error fetching requested games", error });
-	}
-});
-
-// PATCH /api/games/request   creates a new requested game
+// PATCH /api/games/request creates a new requested game
 router.patch("/request", checkAuthentication, async (req, res) => {
-	const { gameId, ownerUsername } = req.body;
+	const { lendingLibraryGameId } = req.body; // Assuming the front end sends the ID of the LendingLibraryGame being requested
 
 	console.log("Received request payload:", req.body); // Log the full payload for debugging
 
-	// Check if gameId and ownerUsername are received correctly
-	if (!gameId || !ownerUsername) {
-		console.error("Missing gameId or ownerUsername in the request:", {
-			gameId,
-			ownerUsername,
+	// Check if lendingLibraryGameId is received correctly
+	if (!lendingLibraryGameId) {
+		console.error("Missing lendingLibraryGameId in the request", {
+			lendingLibraryGameId,
 		});
 		return res
 			.status(400)
-			.json({ message: "Missing gameId or ownerUsername in the request" });
+			.json({ message: "Missing lendingLibraryGameId in the request" });
 	}
 
 	try {
-		const game = await Game.findById(gameId);
-		const owner = await User.findOne({ username: ownerUsername });
+		// Find the LendingLibraryGame being requested
+		const lendingLibraryGame = await LendingLibraryGame.findById(
+			lendingLibraryGameId
+		).populate("owner", "username");
+
+		if (!lendingLibraryGame) {
+			console.error(
+				"LendingLibraryGame not found with ID:",
+				lendingLibraryGameId
+			);
+			return res.status(404).json({ message: "LendingLibraryGame not found" });
+		}
+
 		const requestedBy = req.user._id; // The current authenticated user
 
-		// Additional checks to ensure game and owner are found
-		if (!game) {
-			console.error("Game not found with ID:", gameId);
-			return res.status(404).json({ message: "Game not found" });
-		}
-		if (!owner) {
-			console.error("Owner not found with username:", ownerUsername);
-			return res.status(404).json({ message: "Owner not found" });
-		}
-
-		console.log(
-			"Processing request for game:",
-			game.title,
-			"offered by:",
-			owner.username
-		); // More detailed log
-
-		const newRequestedGame = new RequestedGame({
-			game: game._id,
-			gameTitle: game.title,
+		// Create a new GameRequest document
+		const newGameRequest = new GameRequest({
+			lendingLibraryGame: lendingLibraryGame._id,
 			wantedBy: requestedBy,
-			offeredBy: owner._id,
 			status: "requested",
-			// Add thumbnails or messages, etc
+			messages: [], // Initially empty
 		});
 
-		await newRequestedGame.save();
+		await newGameRequest.save();
 
-		console.log("New game request created successfully:", newRequestedGame);
+		// Optionally, update the LendingLibraryGame document to include the requesting user's ObjectId in its requests array
+		lendingLibraryGame.requests.push(requestedBy);
+		await lendingLibraryGame.save();
+
+		console.log("New game request created successfully:", newGameRequest);
 
 		res.status(201).json({
 			message: "Game request created successfully",
-			requestedGame: newRequestedGame,
+			requestedGame: newGameRequest,
 		});
 	} catch (error) {
 		console.error("Error creating game request:", error);
 		res.status(500).json({ message: "Error creating game request", error });
+	}
+});
+
+router.get("/my-requested-games", checkAuthentication, async (req, res) => {
+	try {
+		const requestedGames = await GameRequest.find({ wantedBy: req.user._id })
+			.populate({
+				path: "lendingLibraryGame",
+				populate: {
+					path: "game", // Populates the game details
+				},
+			})
+			.populate({
+				path: "lendingLibraryGame",
+				populate: {
+					path: "owner", // Nested population to get the owner from the lendingLibraryGame
+					select: "username", // Just select the username of the owner
+				},
+			})
+			.populate("messages.sender", "username"); // Assuming you want to populate sender's username in messages
+
+		res.json(requestedGames);
+	} catch (error) {
+		console.error("Error fetching requested games:", error);
+		res.status(500).json({ message: "Error fetching requested games", error });
 	}
 });
 
