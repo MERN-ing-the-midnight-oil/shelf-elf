@@ -32,7 +32,14 @@ const gameRequestSchema = new mongoose.Schema({
 	messages: [messageSchema], // Incorporating messageSchema here
 	status: {
 		type: String,
-		enum: ["requested", "accepted", "declined", "borrowed", "returned"],
+		enum: [
+			"requested",
+			"accepted",
+			"declined",
+			"borrowed",
+			"returned",
+			"rescinded",
+		],
 		default: "requested",
 	},
 });

@@ -351,6 +351,7 @@ router.patch("/request", checkAuthentication, async (req, res) => {
 	}
 });
 
+//show all my requested games
 router.get("/my-requested-games", checkAuthentication, async (req, res) => {
 	try {
 		const requestedGames = await GameRequest.find({ wantedBy: req.user._id })
@@ -375,6 +376,47 @@ router.get("/my-requested-games", checkAuthentication, async (req, res) => {
 		res.status(500).json({ message: "Error fetching requested games", error });
 	}
 });
+
+// lets a user take back their game request without deleting the record
+// POST /api/games/rescind-game-request/:requestId
+router.patch(
+	"/rescind-game-request/:requestId",
+	checkAuthentication,
+	async (req, res) => {
+		const { requestId } = req.params;
+		console.log(`Rescinding game request with ID: ${requestId}`); // Log the requestId being processed
+		const userId = req.user._id; // Assuming checkAuthentication middleware adds the user ID to the request
+		console.log(`User ID attempting to rescind request: ${userId}`); // Log the userId for debugging
+
+		try {
+			// Find the game request and ensure it's made by the current user
+			const gameRequest = await GameRequest.findOneAndUpdate(
+				{
+					_id: requestId,
+					wantedBy: userId,
+				},
+				{
+					$set: { status: "rescinded" },
+				},
+				{ new: true }
+			);
+
+			if (!gameRequest) {
+				console.log("Game request not found or not authorized to rescind.");
+				return res.status(404).json({
+					message:
+						"Game request not found or you're not authorized to rescind it.",
+				});
+			}
+
+			console.log(`Game request with ID: ${requestId} rescinded successfully.`);
+			res.json({ message: "Game request rescinded successfully", gameRequest });
+		} catch (error) {
+			console.error("Error rescinding game request:", error);
+			res.status(500).json({ message: "Error rescinding game request", error });
+		}
+	}
+);
 
 // Export the router
 module.exports = router;
