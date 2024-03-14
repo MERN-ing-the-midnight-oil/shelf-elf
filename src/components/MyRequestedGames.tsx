@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Typography, Card, CardContent, CardMedia, Grid, Button } from '@mui/material';
+import { Snackbar, Typography, Card, CardContent, CardMedia, Grid, Button } from '@mui/material';
 import { SharedComponentProps } from '../types'; // Ensure this import path is correct
 
 const MyRequestedGames: React.FC<SharedComponentProps> = ({ token, setRefetchCounter, refetchCounter }) => {
     const [requestedGames, setRequestedGames] = useState<any[]>([]);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+
 
     useEffect(() => {
         const fetchRequestedGames = async () => {
@@ -31,19 +34,22 @@ const MyRequestedGames: React.FC<SharedComponentProps> = ({ token, setRefetchCou
     }, [token, refetchCounter]);
 
     const handleRescindRequest = async (requestId: string): Promise<void> => {
-        console.log(`Attempting to rescind request with ID: ${requestId}`); // Log the requestId being used
+        console.log(`Attempting to rescind request with ID: ${requestId}`);
         try {
             const response = await axios.patch(`${process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001'}/api/games/rescind-game-request/${requestId}`, {}, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (response.status === 200) {
                 console.log("Game request rescinded successfully");
+                setSnackbarMessage("You have cancelled a game request!");
+                setSnackbarOpen(true);
                 setRefetchCounter(prev => prev + 1);
             }
         } catch (error) {
             console.error('Error rescinding game request:', error);
         }
     };
+
 
 
     return (
@@ -76,8 +82,15 @@ const MyRequestedGames: React.FC<SharedComponentProps> = ({ token, setRefetchCou
                                     <Typography variant="body2" color="text.secondary">
                                         Status: {requestedGame.status}
                                     </Typography>
-                                    <Button size="small" color="primary" onClick={() => console.log('Handle view details here')}>
-                                        View Details
+                                    <Button
+                                        component="a"
+                                        href={requestedGame.lendingLibraryGame.game.bggLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        size="small"
+                                        color="primary"
+                                    >
+                                        View on Board Game Geek
                                     </Button>
                                     <Button size="small" color="secondary" onClick={() => handleRescindRequest(requestedGame._id)}>
                                         Cancel My Request
@@ -90,6 +103,12 @@ const MyRequestedGames: React.FC<SharedComponentProps> = ({ token, setRefetchCou
                     <Typography variant="body1">You have not requested any games yet.</Typography>
                 )}
             </Grid>
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={() => setSnackbarOpen(false)}
+                message={snackbarMessage}
+            />
         </div>
     );
 };
