@@ -41,17 +41,18 @@ mongoose
 	.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
 	.then(() => console.log("MongoDB Connected"))
 	.catch((err) => console.log("there is a problem with mongoose " + err));
-
 // Import and use routes
 const bookRoutes = require("./routes/books");
 const userRoutes = require("./routes/users");
 const communityRoutes = require("./routes/communities/");
-const gameRoutes = require("./routes/games"); // Update the path as per your directory structure
+const gameRoutes = require("./routes/games");
+const messageRoutes = require("./routes/messages");
 
 app.use("/api/books", bookRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/communities", communityRoutes);
 app.use("/api/games", gameRoutes);
+app.use("/api/messages", messageRoutes);
 
 // Deployment - Serving the static files from express
 if (process.env.NODE_ENV === "production") {

@@ -5,8 +5,9 @@ import LoginForm from './components/LoginForm';
 import Header from './components/Header';
 import LendBooks from './components/LendBooks';
 import RequestBooks from './components/RequestBooks';
-import ManageCommunities from './components/ManageCommunities'; // Ensure this import is correct
+import ManageCommunities from './components/ManageCommunities';
 import LandingHeader from './components/LandingHeader';
+import Messages from './components/Messages'; // Added import for Messages component
 import { useAuth } from './context/AuthContext';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
             <Route path="/lend-books" element={<LendBooks token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />} />
             <Route path="/request-books" element={<RequestBooks token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />} />
             <Route path="/manage-communities" element={<ManageCommunities token={token} />} />
+            <Route path="/messages" element={<Messages token={token} />} />
             <Route path="*" element={<Navigate replace to="/manage-communities" />} />
           </Routes>
         ) : (

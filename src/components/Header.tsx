@@ -79,6 +79,21 @@ const Header: React.FC = () => {
                                 }
                             }}
                         />
+                        <Tab
+                            label="Messages"
+                            value="/messages"
+                            component={Link}
+                            to="/messages"
+                            sx={{
+                                color: 'white',
+                                '&.Mui-selected': {
+                                    backgroundColor: 'secondary.main',
+                                    color: 'white',
+                                    fontWeight: 'bold'
+                                }
+                            }}
+                        />
+
                     </Tabs>
                     <Button color="inherit" onClick={handleLogout} sx={{ marginRight: '20px' }}>
                         Logout

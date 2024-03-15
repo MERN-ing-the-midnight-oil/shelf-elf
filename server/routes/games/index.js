@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const mongoose = require("mongoose");
 const { checkAuthentication } = require("../../../middlewares/authentication");
 const fetchGameImage = require("./fetchGameThumbnail");
 const User = require("../../models/user");
