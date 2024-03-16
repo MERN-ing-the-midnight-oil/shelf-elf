@@ -32,7 +32,7 @@ const RegisterForm: React.FC = () => {
   const [registrationStatus, setRegistrationStatus] = useState<string | null>(null);
 
   return (
-    <Formik
+    <div className="App-header"> <Formik
       initialValues={{ username: '', password: '' }}
       validationSchema={validationSchema}
       onSubmit={async (values, { setSubmitting }) => {
@@ -106,7 +106,8 @@ const RegisterForm: React.FC = () => {
           </Form>
         </FormContainer>
       )}
-    </Formik>
+    </Formik></div>
+
   );
 };
 

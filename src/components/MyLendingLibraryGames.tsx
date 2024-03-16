@@ -88,8 +88,13 @@ const MyLendingLibraryGames: React.FC<MyLendingLibraryGamesProps> = ({ token, re
 
             if (response.status === 200) {
                 console.log("Successfully marked game as unavailable: ", response.data);
-                // Optionally update the local state to reflect the change
-                // This might involve filtering out the game, updating its status, or triggering a re-fetch
+                // Update the game's availability in your component's state to reflect the change
+                setGames(currentGames => currentGames.map(game => {
+                    if (game._id === gameId) {
+                        return { ...game, isAvailable: false }; // Set isAvailable to false
+                    }
+                    return game;
+                }));
             } else {
                 console.log(`Received unexpected status code: ${response.status}`);
                 // Handle unexpected status codes
@@ -99,6 +104,7 @@ const MyLendingLibraryGames: React.FC<MyLendingLibraryGamesProps> = ({ token, re
             // Handle errors, possibly by displaying a notification to the user
         }
     };
+
 
     const handleMarkAvailable = async (gameId: string) => {
         try {

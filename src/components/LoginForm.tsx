@@ -49,105 +49,106 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <Formik
-      initialValues={{ username: '', password: '' }}
+    <div className="App-header">
+      <Formik
+        initialValues={{ username: '', password: '' }}
 
-      validationSchema={validationSchema}
-      onSubmit={async (values, { setSubmitting, setErrors }) => {
-        try {
-          const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
-          const loginResponse = await axios.post(`${API_URL}/api/users/login`, {
-            username: values.username,
-            password: values.password
-          });
+        validationSchema={validationSchema}
+        onSubmit={async (values, { setSubmitting, setErrors }) => {
+          try {
+            const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+            const loginResponse = await axios.post(`${API_URL}/api/users/login`, {
+              username: values.username,
+              password: values.password
+            });
 
-          // Check if the component is still mounted before updating the state
-          if (isMounted.current) {
-            if (loginResponse.status === 200 && loginResponse.data.token) {
-              const token = loginResponse.data.token;
-              localStorage.setItem('userToken', token);
-              setToken(token);
+            // Check if the component is still mounted before updating the state
+            if (isMounted.current) {
+              if (loginResponse.status === 200 && loginResponse.data.token) {
+                const token = loginResponse.data.token;
+                localStorage.setItem('userToken', token);
+                setToken(token);
 
-              const config = { headers: { Authorization: `Bearer ${token}` } };
-              const userResponse = await axios.get(`${API_URL}/api/users/me`, config);
+                const config = { headers: { Authorization: `Bearer ${token}` } };
+                const userResponse = await axios.get(`${API_URL}/api/users/me`, config);
 
-              setUser(userResponse.data);  // Set user data in context
+                setUser(userResponse.data);  // Set user data in context
 
-              const userId = userResponse.data._id;
-              if (userId) {
-                localStorage.setItem('userId', userId);
+                const userId = userResponse.data._id;
+                if (userId) {
+                  localStorage.setItem('userId', userId);
+                }
+              } else {
+                setErrors({ username: ' ', password: loginResponse.data.message || 'Invalid credentials' });
               }
-            } else {
-              setErrors({ username: ' ', password: loginResponse.data.message || 'Invalid credentials' });
+            }
+          } catch (error) {
+            // Check if the component is still mounted before setting errors
+            if (isMounted.current) {
+              setErrors({ username: ' ', password: 'Invalid credentials or server error' });
+            }
+          } finally {
+            // Check if the component is still mounted before setting submitting to false
+            if (isMounted.current) {
+              setSubmitting(false);
             }
           }
-        } catch (error) {
-          // Check if the component is still mounted before setting errors
-          if (isMounted.current) {
-            setErrors({ username: ' ', password: 'Invalid credentials or server error' });
-          }
-        } finally {
-          // Check if the component is still mounted before setting submitting to false
-          if (isMounted.current) {
-            setSubmitting(false);
-          }
-        }
-      }}
+        }}
 
-    >
-      {({ isSubmitting }) => (
-        <FormContainer>
-          <Form>
-            <Typography variant="h5" gutterBottom>Login</Typography>
+      >
+        {({ isSubmitting }) => (
+          <FormContainer>
+            <Form>
+              <Typography variant="h5" gutterBottom>Login</Typography>
 
 
-            <Field name="username">
-              {({ field, form }: FieldProps) => (
-                <TextField
-                  {...field}
-                  label="Username"
-                  variant="outlined"
-                  fullWidth
-                  helperText={form.touched.username && typeof form.errors.username === 'string' ? form.errors.username : undefined}
-                  error={form.touched.username && Boolean(form.errors.username)}
-                />
-              )}
-            </Field>
-            <ErrorMessage name="username" component={ErrorText} />
+              <Field name="username">
+                {({ field, form }: FieldProps) => (
+                  <TextField
+                    {...field}
+                    label="Username"
+                    variant="outlined"
+                    fullWidth
+                    helperText={form.touched.username && typeof form.errors.username === 'string' ? form.errors.username : undefined}
+                    error={form.touched.username && Boolean(form.errors.username)}
+                  />
+                )}
+              </Field>
+              <ErrorMessage name="username" component={ErrorText} />
 
-            <Field name="password">
-              {({ field, form }: FieldProps) => (
-                <TextField
-                  {...field}
-                  type={showPassword ? "text" : "password"}
-                  label="Password"
-                  variant="outlined"
-                  fullWidth
-                  helperText={form.touched.password && typeof form.errors.password === 'string' ? form.errors.password : undefined}
-                  error={form.touched.password && Boolean(form.errors.password)}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle password visibility"
-                          onClick={handlePasswordVisibility}
-                        >
-                          {showPassword ? <Visibility /> : <VisibilityOff />}
-                        </IconButton>
-                      </InputAdornment>
-                    )
-                  }}
-                />
-              )}
-            </Field>
-            <ErrorMessage name="password" component={ErrorText} />
+              <Field name="password">
+                {({ field, form }: FieldProps) => (
+                  <TextField
+                    {...field}
+                    type={showPassword ? "text" : "password"}
+                    label="Password"
+                    variant="outlined"
+                    fullWidth
+                    helperText={form.touched.password && typeof form.errors.password === 'string' ? form.errors.password : undefined}
+                    error={form.touched.password && Boolean(form.errors.password)}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={handlePasswordVisibility}
+                          >
+                            {showPassword ? <Visibility /> : <VisibilityOff />}
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                  />
+                )}
+              </Field>
+              <ErrorMessage name="password" component={ErrorText} />
 
-            <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>Login</Button>
-          </Form>
-        </FormContainer>
-      )}
-    </Formik>
-  );
+              <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>Login</Button>
+            </Form>
+          </FormContainer>
+        )}
+      </Formik>
+    </div>);
 
 };
 

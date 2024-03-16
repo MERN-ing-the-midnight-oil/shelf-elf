@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AppBar, Toolbar, Box, Tabs, Tab, Button, Typography } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 
+
 const Header: React.FC = () => {
     const { user, setToken, setUser } = useAuth();
     const navigate = useNavigate();
@@ -33,9 +34,12 @@ const Header: React.FC = () => {
         <AppBar position="static">
             <Toolbar>
                 <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    {/* Include the app icon image before the welcome text */}
+                    <img src="/app_icon.png" alt="App Icon" style={{ height: '30px', marginRight: '10px' }} />
                     <Typography variant="h6" color="inherit" sx={{ flexGrow: 0, flexShrink: 0, marginRight: '20px', marginLeft: '20px' }}>
                         Welcome, {user.username}!
                     </Typography>
+
                     <Tabs value={value} onChange={handleChange} aria-label="Navigation Tabs" sx={{ flexGrow: 1, '& .MuiTab-root': { padding: '0 12px', marginRight: '24px', marginLeft: '24px' } }}>
                         <Tab
                             label="Your Social Group(s)"
