@@ -18,6 +18,7 @@ interface Book {
   author: string;
   requestedBy: Request[];  // This field is an array of user IDs.
   status: string;  // Add this line
+  imageUrl: string;
 }
 
 
@@ -126,6 +127,7 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
             <Table>
               <TableHead>
                 <TableRow>
+                  <TableCell>Cover</TableCell> {/* Add this line for the new "Cover" column header */}
                   <TableCell>Title</TableCell>
                   <TableCell>Author</TableCell>
                   <TableCell>Requested By</TableCell>
@@ -136,6 +138,12 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
               <TableBody>
                 {myBooks.map((book) => (
                   <TableRow key={book._id || book.googleBooksId} style={{ backgroundColor: book.status === 'unavailable' ? '#e0e0e0' : '' }}>
+                    <TableCell>
+                      {/* Check if imageUrl exists and display it as an image */}
+                      {book.imageUrl && (
+                        <img src={book.imageUrl} alt="Book cover" style={{ height: 60 }} /> // Adjust size as needed
+                      )}
+                    </TableCell>
                     <TableCell>{book.title}</TableCell>
                     <TableCell>{book.author}</TableCell>
                     <TableCell>
@@ -143,7 +151,7 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
                         ? book.requestedBy.map((request) => request.username).join(', ')
                         : 'No current requests.'}
                     </TableCell>
-                    <TableCell>{book.status}</TableCell> {/* Display the book status here */}
+                    <TableCell>{book.status}</TableCell>
                     <TableCell align="right">
                       <Tooltip title="Mark as Unavailable">
                         <span>
@@ -161,9 +169,9 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
                   </TableRow>
                 ))}
               </TableBody>
-
             </Table>
           </TableContainer>
+
         </>
       )}
     </div>

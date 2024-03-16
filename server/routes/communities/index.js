@@ -4,28 +4,37 @@ const Community = require("../../models/community");
 const User = require("../../models/user");
 const { checkAuthentication } = require("../../../middlewares/authentication");
 
-// POST route to create a new community and become a member of the newly created community
+// Route to create a new community and add the user to this community
 router.post("/create", checkAuthentication, async (req, res) => {
-	console.log("Inside /api/communities/create route handler");
-	try {
-		const { name, description, passcode } = req.body;
-		// Create the new community with the passcode
-		const newCommunity = new Community({ name, description, passcode });
-		await newCommunity.save();
+	const { name, description, passcode } = req.body;
+	const userId = req.user._id; // Now, assuming you have middleware to authenticate and add user to req should work
 
-		// Add the community to the user's list of communities
-		req.user.communities.push(newCommunity._id);
-		await User.findByIdAndUpdate(req.user._id, {
-			$push: { communities: newCommunity._id },
+	try {
+		// Create new community
+		const newCommunity = new Community({
+			name,
+			description,
+			passcode,
+			members: [userId], // Add the user as a member of the new community
 		});
+		const savedCommunity = await newCommunity.save();
+
+		// Add newly created community to user's communities
+		await User.findByIdAndUpdate(
+			userId,
+			{
+				$push: { communities: savedCommunity._id },
+			},
+			{ new: true }
+		);
 
 		res.status(201).json({
 			message: "Community created successfully",
-			community: newCommunity,
+			community: savedCommunity,
 		});
 	} catch (error) {
-		console.error(error);
-		res.status(500).send("Internal Server Error");
+		console.error("Error creating community:", error);
+		res.status(500).json({ message: "Error creating community", error });
 	}
 });
 

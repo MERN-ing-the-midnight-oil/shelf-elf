@@ -19,12 +19,10 @@ const BookSchema = new mongoose.Schema(
 		description: {
 			type: String,
 			trim: true,
-			//maxlength: [500, "Description must not exceed 500 characters"],
 		},
 		imageUrl: {
 			type: String,
 			trim: true,
-			// Add regex to validate URL if needed
 		},
 		googleBooksId: String,
 		status: {
@@ -34,7 +32,7 @@ const BookSchema = new mongoose.Schema(
 		},
 		owner: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: "User", // Reference to the User model
+			ref: "User",
 			required: true,
 		},
 		requestedBy: [
@@ -48,12 +46,11 @@ const BookSchema = new mongoose.Schema(
 					type: String,
 					required: true,
 				},
-				// TODO add user rating
 			},
 		],
 		currentBorrower: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: "User", // Reference to the User model
+			ref: "User",
 		},
 	},
 	{

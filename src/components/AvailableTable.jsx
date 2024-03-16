@@ -50,11 +50,16 @@ const DefaultColumnFilter = ({ column: { filterValue, setFilter } }) => {
 
 
 const AvailableTable = ({ books, onRequestClick }) => {
-    // Simulated state for testing the filter
-    const [testFilterValue, setTestFilterValue] = React.useState('');
   // Define columns
 const columns = React.useMemo(
   () => [
+    {
+      Header: 'Cover',
+      accessor: 'imageUrl',
+      Cell: ({ value }) => value ? <img src={value} alt="Book cover" style={{ height: 60 }} /> : null,
+      disableFilters: true, 
+      disableSortBy: true, 
+    },
     {
       Header: 'Title',
       accessor: 'title',

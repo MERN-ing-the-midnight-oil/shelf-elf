@@ -10,13 +10,15 @@ router.post("/add", checkAuthentication, async (req, res) => {
 	console.log("Received request to add book to book lending library");
 	try {
 		// Extract the relevant book data from the request
-		const { title, description, author } = req.body;
+		const { title, description, author, imageUrl, googleBooksId } = req.body;
 
 		const newBook = new Book({
 			title,
 			description,
 			author,
 			owner: req.user._id, // assuming req.user contains the authenticated user data
+			imageUrl,
+			googleBooksId,
 		});
 
 		// Save the new book
@@ -27,7 +29,7 @@ router.post("/add", checkAuthentication, async (req, res) => {
 			{ _id: req.user._id },
 			{ $addToSet: { lendingLibrary: newBook } }
 		);
-
+		// Respond with the newly created book record
 		res.status(201).json(newBook);
 	} catch (error) {
 		console.error("Error when offering the book:", error);
