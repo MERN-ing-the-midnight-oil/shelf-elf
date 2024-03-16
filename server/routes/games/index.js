@@ -4,7 +4,7 @@ const { checkAuthentication } = require("../../../middlewares/authentication");
 const fetchGameImage = require("./fetchGameThumbnail");
 const User = require("../../models/user");
 const Community = require("../../models/community");
-const GameRequest = require("../../models/GameRequest");
+const GameRequest = require("../../models/gameRequest");
 const Game = require("../../models/game");
 
 // routes/games/index.js
