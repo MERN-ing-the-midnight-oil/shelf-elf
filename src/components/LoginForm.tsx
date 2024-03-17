@@ -99,7 +99,8 @@ const LoginForm: React.FC = () => {
         {({ isSubmitting }) => (
           <FormContainer>
             <Form>
-              <Typography variant="h5" gutterBottom>Login</Typography>
+              <Typography variant="h5" gutterBottom style={{ color: 'var(--form-text-color)' }}>Login</Typography>
+
 
 
               <Field name="username">

@@ -31,11 +31,11 @@ function App() {
             <Route path="*" element={<Navigate replace to="/manage-communities" />} />
           </Routes>
         ) : (
-          <>
+          <div className="landing-container">
             <LandingHeader />
             <LoginForm />
             <RegisterForm />
-          </>
+          </div>
         )}
       </div>
     </Router>

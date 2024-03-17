@@ -84,7 +84,7 @@ const RegisterForm: React.FC = () => {
       {({ isSubmitting }) => (
         <FormContainer>
           <Form>
-            <Typography variant="h5" gutterBottom>Register</Typography>
+            <Typography variant="h5" gutterBottom style={{ color: 'var(--form-text-color)' }}>Register</Typography>
 
             {registrationStatus && <Typography variant="body1" color="primary">{registrationStatus}</Typography>}
 

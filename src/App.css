@@ -1,25 +1,31 @@
+:root {
+  --landing-bg-color: #282c34; /* Landing page background color */
+  --link-color: #61dafb; /* Link color */
+  --form-bg-color: #fff; /* Form background color */
+  --text-color: white; /* General text color */
+  --error-text-color: red; /* Error message text color */
+  --form-text-color: #000; /* Text color for content within the forms */
+}
+
 .App {
   text-align: center;
 }
 
-
-
-.App-header {
-  background-color: #282c34;
+.App-header,
+.landing-container {
+  background-color: var(--landing-bg-color);
   min-height: 40vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
-  text-align: center;
+  color: var(--text-color);
 }
 
 .App-link {
-  color: #61dafb;
+  color: var(--link-color);
 }
-
 
 .tableHeader, .MuiTableCell-root.tableHeader {
   font-weight: bold;
@@ -38,3 +44,17 @@
   margin-top: 1rem;
 }
 
+.landing-form {
+  background-color: var(--form-bg-color); /* Specific to the form itself */
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  width: 300px;
+  margin: 20px auto; /* Adjusted for appropriate spacing */
+  color: var(--form-text-color); /* Ensures text inside the form is dark for contrast */
+}
+
+.ErrorText {
+  color: var(--error-text-color);
+  margin: 5px 0;
+}
