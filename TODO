@@ -49,3 +49,34 @@ Routes are disorganized. Maybe arrange them like this:
 /games - index.js (Handles all game-related operations like search, lend, remove-game, my-library-games, request, my-requested-games, gamesFromMyCommunities)
 /communities - index.js (Includes routes for create, list, join, leave, user-communities)
 /users - index.js (Contains routes for user registration, login, me, and potentially other user profile or management operations not directly related to books or games)
+
+src/components/AvailableBooks.tsx
+Line 28:12: 'requestedBooks' is assigned a value but never used @typescript-eslint/no-unused-vars
+
+src/components/AvailableTable.jsx
+Line 3:91: 'Tooltip' is defined but never used no-unused-vars
+
+src/components/LendForm.tsx
+Line 5:10: 'Button' is defined but never used @typescript-eslint/no-unused-vars
+Line 33:11: 'LendFormProps' is defined but never used @typescript-eslint/no-unused-vars
+Line 44:24: 'setOfferedBooks' is assigned a value but never used @typescript-eslint/no-unused-vars
+
+src/components/LendFormGames.tsx
+Line 40:8: React Hook useEffect has a missing dependency: 'handleSearch'. Either include it or remove the dependency array react-hooks/exhaustive-deps
+
+src/components/ManageCommunities.tsx
+Line 14:5: 'SxProps' is defined but never used @typescript-eslint/no-unused-vars
+Line 51:8: React Hook useEffect has a missing dependency: 'API_URL'. Either include it or remove the dependency array react-hooks/exhaustive-deps
+
+src/components/Messages.tsx
+Line 8:11: 'UserDetail' is defined but never used @typescript-eslint/no-unused-vars
+
+src/components/MyLendingLibrary.tsx
+Line 114:6: React Hook useEffect has a missing dependency: 'fetchBooksOwnedByUser'. Either include it or remove the dependency array react-hooks/exhaustive-deps
+Line 117:6: React Hook useEffect has a missing dependency: 'fetchBooksOwnedByUser'. Either include it or remove the dependency array react-hooks/exhaustive-deps
+
+src/components/MyLendingLibraryGames.tsx
+Line 4:8: 'BlockIcon' is defined but never used @typescript-eslint/no-unused-vars
+
+src/components/MyRequestedBooks.tsx
+Line 66:23: 'response' is assigned a value but never used @typescript-eslint/no-unused-vars

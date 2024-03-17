@@ -90,7 +90,7 @@ const RegisterForm: React.FC = () => {
 
             <Field name="username">
               {({ field, meta }: FieldProps) => (
-                <TextField {...field} label="Screen Name" variant="outlined" fullWidth error={meta.touched && !!meta.error} helperText={meta.touched && meta.error} />
+                <TextField {...field} label="User Name" variant="outlined" fullWidth error={meta.touched && !!meta.error} helperText={meta.touched && meta.error} />
               )}
             </Field>
             <ErrorMessage name="username" component={ErrorText} />
