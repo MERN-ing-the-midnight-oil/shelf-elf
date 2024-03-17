@@ -5,8 +5,8 @@ const path = require("path");
 const app = express();
 
 const allowedOrigins = [
-	// "http://localhost:3000",
-	// "https://bellingham-buy-nothing-books-9fe5de7a4a15.herokuapp.com",
+	"http://localhost:3000",
+	"https://bellingham-buy-nothing-books-9fe5de7a4a15.herokuapp.com",
 	"https://shelf-elf-4b02ddd52e38.herokuapp.com",
 ];
 

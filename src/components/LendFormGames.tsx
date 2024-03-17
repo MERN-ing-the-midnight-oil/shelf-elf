@@ -41,8 +41,9 @@ const LendFormGames: React.FC<SharedComponentProps> = ({ token, setRefetchCounte
 
     const handleSearch = async (title: string) => {
         setIsLoading(true);
+        const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
         try {
-            const response = await fetch(`http://localhost:5001/api/games/search?title=${title}`, {
+            const response = await fetch(`${API_URL}/api/games/search?title=${title}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
