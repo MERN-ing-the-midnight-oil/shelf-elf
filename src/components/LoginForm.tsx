@@ -37,7 +37,6 @@ const LoginForm: React.FC = () => {
   // Ref to keep track of whether the component is mounted
   const isMounted = useRef(true);
 
-  // Set the mounted ref to false when the component unmounts
   useEffect(() => {
     return () => {
       isMounted.current = false;
@@ -51,8 +50,7 @@ const LoginForm: React.FC = () => {
   return (
     <div className="App-header">
       <Formik
-        initialValues={{ username: '', password: '' }}
-
+        initialValues={{ username: 'Hermione Granger', password: 'Muggles' }}
         validationSchema={validationSchema}
         onSubmit={async (values, { setSubmitting, setErrors }) => {
           try {
@@ -62,7 +60,6 @@ const LoginForm: React.FC = () => {
               password: values.password
             });
 
-            // Check if the component is still mounted before updating the state
             if (isMounted.current) {
               if (loginResponse.status === 200 && loginResponse.data.token) {
                 const token = loginResponse.data.token;
