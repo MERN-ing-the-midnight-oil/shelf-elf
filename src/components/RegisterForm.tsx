@@ -10,8 +10,10 @@ const validationSchema = Yup.object({
   username: Yup.string().required('Username is required'),
   password: Yup.string()
     .required('Password is required')
-    .min(5, 'Password must be at least 5 characters long'),
+    .min(5, 'Password must be at least 5 characters long')
+    .max(50, 'Password cannot be more than 50 characters long'), // Set a maximum length for passwords
 });
+
 
 const FormContainer = styled.div`
   padding: 20px;

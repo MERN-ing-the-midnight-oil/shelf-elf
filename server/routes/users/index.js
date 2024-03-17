@@ -41,11 +41,11 @@ router.post("/register", async (req, res) => {
 			.json({ error: "Username and password are required" });
 	}
 
-	// Simplified password requirements
-	if (password.length < 5) {
+	// Extended password requirements to include maximum length
+	if (password.length < 5 || password.length > 50) {
 		return res
 			.status(400)
-			.json({ error: "Password must be at least 5 characters long" });
+			.json({ error: "Password must be between 5 and 50 characters long" });
 	}
 
 	// Check if the username already exists
