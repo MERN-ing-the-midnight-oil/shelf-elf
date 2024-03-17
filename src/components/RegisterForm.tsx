@@ -92,20 +92,40 @@ const RegisterForm: React.FC = () => {
 
             <Field name="username">
               {({ field, meta }: FieldProps) => (
-                <TextField {...field} label="User Name" variant="outlined" fullWidth error={meta.touched && !!meta.error} helperText={meta.touched && meta.error} />
+                <div style={{ marginBottom: '16px' }}> {/* Add this div with style */}
+                  <TextField
+                    {...field}
+                    label="User Name"
+                    variant="outlined"
+                    fullWidth
+                    error={meta.touched && !!meta.error}
+                    helperText={meta.touched && meta.error}
+                  />
+                </div>
               )}
             </Field>
             <ErrorMessage name="username" component={ErrorText} />
 
             <Field name="password">
               {({ field, meta }: FieldProps) => (
-                <TextField {...field} type="password" label="Password" variant="outlined" fullWidth error={meta.touched && !!meta.error} helperText={meta.touched && meta.error} />
+                <div style={{ marginBottom: '16px' }}> {/* Optionally add this div with style if you need space below the password field */}
+                  <TextField
+                    {...field}
+                    type="password"
+                    label="Password"
+                    variant="outlined"
+                    fullWidth
+                    error={meta.touched && !!meta.error}
+                    helperText={meta.touched && meta.error}
+                  />
+                </div>
               )}
             </Field>
             <ErrorMessage name="password" component={ErrorText} />
 
             <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>Register</Button>
           </Form>
+
         </FormContainer>
       )}
     </Formik></div>

@@ -120,7 +120,7 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token }) => {
                         ))}
                     </List>
                 ) : (
-                    <Typography textAlign="center">You have not joined a Social Group yet. Ask another user for a Social Group name and passcode, or if you are the first one in your social group to use this app, please create a new Social Group.</Typography>
+                    <Typography textAlign="center">You have not joined a Social Group yet. Ask another user for a Social Group name and join code, or if you are the first one in your social group to use this app, please create a new Social Group.</Typography>
                 )}
             </Box>
 

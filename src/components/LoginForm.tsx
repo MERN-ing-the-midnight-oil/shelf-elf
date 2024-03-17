@@ -99,17 +99,18 @@ const LoginForm: React.FC = () => {
               <Typography variant="h5" gutterBottom style={{ color: 'var(--form-text-color)' }}>Login</Typography>
 
 
-
               <Field name="username">
                 {({ field, form }: FieldProps) => (
-                  <TextField
-                    {...field}
-                    label="Username"
-                    variant="outlined"
-                    fullWidth
-                    helperText={form.touched.username && typeof form.errors.username === 'string' ? form.errors.username : undefined}
-                    error={form.touched.username && Boolean(form.errors.username)}
-                  />
+                  <div style={{ marginBottom: '16px' }}>
+                    <TextField
+                      {...field}
+                      label="Username"
+                      variant="outlined"
+                      fullWidth
+                      helperText={form.touched.username && typeof form.errors.username === 'string' ? form.errors.username : undefined}
+                      error={form.touched.username && Boolean(form.errors.username)}
+                    />
+                  </div>
                 )}
               </Field>
               <ErrorMessage name="username" component={ErrorText} />

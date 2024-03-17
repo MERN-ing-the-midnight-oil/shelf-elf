@@ -77,7 +77,7 @@ const CommunityForm: React.FC<CommunityFormProps> = ({ token, onRefetch }) => {
                     name="communityPasscode"
                     value={communityPasscode}
                     onChange={(e) => setCommunityPasscode(e.target.value)}
-                    label="Passcode to join (choose a simple passcode and tell your friends via text, email, stage whisper, or semaphore)"
+                    label="Passcode to join (choose a simple join code and tell your friends via text, email, stage whisper, or semaphore)"
                     variant="outlined"
                     type="password"
                 />
