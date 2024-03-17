@@ -117,6 +117,7 @@ const RegisterForm: React.FC = () => {
                     fullWidth
                     error={meta.touched && !!meta.error}
                     helperText={meta.touched && meta.error}
+                    style={{ marginBottom: '16px' }}
                   />
                 </div>
               )}

@@ -15,7 +15,6 @@ const validationSchema = Yup.object({
   password: Yup.string().required('Password is required'),
 });
 
-
 const FormContainer = styled.div`
   padding: 20px;
   background-color: #fff;
@@ -34,7 +33,6 @@ const LoginForm: React.FC = () => {
   const { setToken, setUser } = useAuth();
   const [showPassword, setShowPassword] = React.useState(false);
 
-  // Ref to keep track of whether the component is mounted
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -55,10 +53,7 @@ const LoginForm: React.FC = () => {
         onSubmit={async (values, { setSubmitting, setErrors }) => {
           try {
             const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
-            const loginResponse = await axios.post(`${API_URL}/api/users/login`, {
-              username: values.username,
-              password: values.password
-            });
+            const loginResponse = await axios.post(`${API_URL}/api/users/login`, values);
 
             if (isMounted.current) {
               if (loginResponse.status === 200 && loginResponse.data.token) {
@@ -69,7 +64,7 @@ const LoginForm: React.FC = () => {
                 const config = { headers: { Authorization: `Bearer ${token}` } };
                 const userResponse = await axios.get(`${API_URL}/api/users/me`, config);
 
-                setUser(userResponse.data);  // Set user data in context
+                setUser(userResponse.data);
 
                 const userId = userResponse.data._id;
                 if (userId) {
@@ -80,37 +75,31 @@ const LoginForm: React.FC = () => {
               }
             }
           } catch (error) {
-            // Check if the component is still mounted before setting errors
             if (isMounted.current) {
               setErrors({ username: ' ', password: 'Invalid credentials or server error' });
             }
           } finally {
-            // Check if the component is still mounted before setting submitting to false
             if (isMounted.current) {
               setSubmitting(false);
             }
           }
         }}
-
       >
         {({ isSubmitting }) => (
           <FormContainer>
             <Form>
               <Typography variant="h5" gutterBottom style={{ color: 'var(--form-text-color)' }}>Login</Typography>
-
-
               <Field name="username">
                 {({ field, form }: FieldProps) => (
-                  <div style={{ marginBottom: '16px' }}>
-                    <TextField
-                      {...field}
-                      label="Username"
-                      variant="outlined"
-                      fullWidth
-                      helperText={form.touched.username && typeof form.errors.username === 'string' ? form.errors.username : undefined}
-                      error={form.touched.username && Boolean(form.errors.username)}
-                    />
-                  </div>
+                  <TextField
+                    {...field}
+                    label="Username"
+                    variant="outlined"
+                    fullWidth
+                    helperText={form.touched.username && typeof form.errors.username === 'string' ? form.errors.username : undefined}
+                    error={form.touched.username && Boolean(form.errors.username)}
+                    style={{ marginBottom: '16px' }}
+                  />
                 )}
               </Field>
               <ErrorMessage name="username" component={ErrorText} />
@@ -137,18 +126,19 @@ const LoginForm: React.FC = () => {
                         </InputAdornment>
                       )
                     }}
+                    style={{ marginBottom: '20px' }} // Added space between password field and button
                   />
                 )}
               </Field>
               <ErrorMessage name="password" component={ErrorText} />
 
-              <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>Login</Button>
+              <Button type="submit" variant="contained" color="primary" disabled={isSubmitting} style={{ marginTop: '20px' }}>Login</Button>
             </Form>
           </FormContainer>
         )}
       </Formik>
-    </div>);
-
+    </div>
+  );
 };
 
 export default LoginForm;
