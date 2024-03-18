@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import BlockIcon from '@mui/icons-material/Block';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Paper, Tooltip } from '@mui/material';
 
 
@@ -82,32 +81,6 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
     }
   };
 
-  // Add the handleMarkAsAvailable function
-  const handleMarkAsAvailable = async (id: string) => {
-    if (!token) {
-      console.error('Token not provided.');
-      return;
-    }
-
-    try {
-      const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
-      const response = await fetch(`${API_URL}/api/books/available/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (response.ok) {
-        // Re-fetch books to update the UI
-        setRefetchCounter(prev => prev + 1);
-      } else {
-        console.error('Failed to mark book as available');
-      }
-    } catch (error) {
-      console.error('Failed to mark book as available:', error);
-    }
-  };
-
   const handleDeleteForever = async (id: string) => {
     if (!token) {
       console.error('Token not provided.');
@@ -166,8 +139,9 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
                 {myBooks.map((book) => (
                   <TableRow key={book._id || book.googleBooksId} style={{ backgroundColor: book.status === 'unavailable' ? '#e0e0e0' : '' }}>
                     <TableCell>
+                      {/* Check if imageUrl exists and display it as an image */}
                       {book.imageUrl && (
-                        <img src={book.imageUrl} alt="Book cover" style={{ height: 60 }} />
+                        <img src={book.imageUrl} alt="Book cover" style={{ height: 60 }} /> // Adjust size as needed
                       )}
                     </TableCell>
                     <TableCell>{book.title}</TableCell>
@@ -179,23 +153,13 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
                     </TableCell>
                     <TableCell>{book.status}</TableCell>
                     <TableCell align="right">
-                      {book.status === 'unavailable' ? (
-                        <Tooltip title="Mark as Available">
-                          <span>
-                            <IconButton onClick={() => handleMarkAsAvailable(book._id)} color="primary">
-                              <VisibilityIcon />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      ) : (
-                        <Tooltip title="Mark as Unavailable">
-                          <span>
-                            <IconButton onClick={() => handleMarkAsUnavailable(book._id)} color="warning">
-                              <BlockIcon />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      )}
+                      <Tooltip title="Mark as Unavailable">
+                        <span>
+                          <IconButton onClick={() => handleMarkAsUnavailable(book._id)} color="warning" disabled={book.status === 'unavailable'}>
+                            <BlockIcon />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
                       <Tooltip title="Delete Forever">
                         <IconButton onClick={() => handleDeleteForever(book._id)} color="error">
                           <DeleteForeverIcon />
@@ -205,8 +169,6 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
                   </TableRow>
                 ))}
               </TableBody>
-
-
             </Table>
           </TableContainer>
 

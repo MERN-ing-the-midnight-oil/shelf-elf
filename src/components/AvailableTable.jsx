@@ -1,6 +1,7 @@
+//AvailableTable.jsx
 import React from 'react';
 import { useTable, useSortBy, useFilters, usePagination } from 'react-table';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Tooltip } from '@mui/material';
+import { Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Tooltip } from '@mui/material';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import '../App.css'; 
 
@@ -66,6 +67,12 @@ const columns = React.useMemo(
       Filter: DefaultColumnFilter,
       // Enable sorting for this column
       disableSortBy: false,
+    },
+    {
+      Header: 'Status',
+      accessor: 'status',
+      disableFilters: true,
+      disableSortBy: true,
     },
     {
       Header: 'Author',
@@ -166,28 +173,36 @@ const {
           ))}
         </TableHead>
         <TableBody {...getTableBodyProps()}>
-          {page.map(row => {
-            prepareRow(row);
-            return (
-              <TableRow {...row.getRowProps()}>
-                {row.cells.map(cell => (
-                  <TableCell {...cell.getCellProps()}>
-                    {cell.render('Cell')}
-                  </TableCell>
-                ))}
-                <TableCell align="right">
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => onRequestClick(row.original)}
-                  >
-                    Request!
-                  </Button>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
+  {page.map(row => {
+    prepareRow(row);
+    const book = row.original; // Access the original row data
+    return (
+      <TableRow {...row.getRowProps()}>
+        {row.cells.map(cell => (
+          <TableCell {...cell.getCellProps()}>
+            {cell.render('Cell')}
+          </TableCell>
+        ))}
+        <TableCell align="right">
+          {book.status === 'available' ? (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => onRequestClick(book)}
+            >
+              Request!
+            </Button>
+          ) : (
+            <Typography variant="body2" color="textSecondary">
+              Unavailable
+            </Typography>
+          )}
+        </TableCell>
+      </TableRow>
+    );
+  })}
+</TableBody>
+
       </Table>
     </TableContainer>
     <div className="pagination">

@@ -136,6 +136,12 @@ router.get("/booksFromMyCommunities", checkAuthentication, async (req, res) => {
 			owner: { $in: userIds, $ne: req.user._id },
 		}).populate("owner", "username");
 
+		// Log each book's title and status before sending the response
+		console.log("Sending book data to frontend:");
+		books.forEach((book) => {
+			console.log(`Title: ${book.title}, Status: ${book.status}`);
+		});
+
 		res.status(200).json(books);
 	} catch (error) {
 		console.error("Error fetching books from user communities:", error);
@@ -331,6 +337,42 @@ router.patch("/unavailable/:bookId", checkAuthentication, async (req, res) => {
 	} catch (error) {
 		console.error("Error when updating the book status:", error);
 		res.status(500).json({ error: "Error updating the book status." });
+	}
+});
+
+// Mark a book as available
+router.patch("/available/:bookId", checkAuthentication, async (req, res) => {
+	try {
+		// Fetch the book to be marked as available using its ID
+		const bookToUpdate = await Book.findById(req.params.bookId);
+		if (!bookToUpdate) {
+			console.log("Book not found with ID:", req.params.bookId);
+			return res.status(404).json({ error: "Book not found." });
+		}
+
+		// Check if the book is already marked as available
+		if (bookToUpdate.status === "available") {
+			console.log("Book is already marked as available");
+			return res
+				.status(400)
+				.json({ error: "Book is already marked as available." });
+		}
+
+		// Update the book's status to 'available'
+		bookToUpdate.status = "available";
+
+		// Save the updated book
+		await bookToUpdate.save();
+		console.log("Book marked as available successfully");
+
+		// stretch goal:, notify users who are interested in this book that it's now available
+
+		res.status(200).json({ message: "Book marked as available successfully." });
+	} catch (error) {
+		console.error("Error when updating the book status to available:", error);
+		res
+			.status(500)
+			.json({ error: "Error updating the book status to available." });
 	}
 });
 
