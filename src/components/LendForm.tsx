@@ -111,18 +111,19 @@ const LendForm: React.FC<SharedComponentProps> = ({ token, setRefetchCounter, re
 
 
   const renderSearchResults = searchResults.map((book: any) => (
-    <div key={book.id}>
-      <p>{book.volumeInfo.title} by {book.volumeInfo.authors && book.volumeInfo.authors.join(', ')}</p>
+    <div key={book.id} style={{ border: '1px solid #ccc', margin: '20px', padding: '10px', borderRadius: '5px', textAlign: 'center' }}>
       {book.volumeInfo.imageLinks && book.volumeInfo.imageLinks.thumbnail && (
-        <img src={book.volumeInfo.imageLinks.thumbnail} alt={book.volumeInfo.title} />
+        <img src={book.volumeInfo.imageLinks.thumbnail} alt={book.volumeInfo.title} style={{ maxWidth: '100px', margin: '0 auto' }} />
       )}
+      <p style={{ marginTop: '10px' }}>{book.volumeInfo.title} by {book.volumeInfo.authors && book.volumeInfo.authors.join(', ')}</p>
       {offeredBooks.has(book.id) ? (
         <span>YOU HAVE ADDED THIS TITLE TO YOUR OFFERINGS</span>
       ) : (
-        <button onClick={() => handleOwnBookClick(book)}>Offer to lend</button>
+        <Button onClick={() => handleOwnBookClick(book)} variant="contained" color="primary" style={{ marginTop: '10px' }}>Offer to lend</Button>
       )}
     </div>
   ));
+
 
 
   return (
