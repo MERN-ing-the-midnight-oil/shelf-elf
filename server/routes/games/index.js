@@ -8,7 +8,6 @@ const GameRequest = require("../../models/gameRequest");
 const Game = require("../../models/game");
 
 // routes/games/index.js
-//search means add a game from the db
 router.get("/search", checkAuthentication, async (req, res) => {
 	const { title } = req.query;
 
@@ -39,6 +38,13 @@ router.get("/search", checkAuthentication, async (req, res) => {
 			}
 		}
 
+		console.log(
+			"Sending search results:",
+			games.map((game) => ({
+				title: game.title,
+				thumbnailUrl: game.thumbnailUrl,
+			}))
+		); // Log game titles and thumbnails
 		res.json(games); // This will include up to 10 games with their thumbnails if fetched
 	} catch (error) {
 		console.error("Error searching for games:", error);

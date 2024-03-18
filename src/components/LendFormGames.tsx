@@ -108,19 +108,24 @@ const LendFormGames: React.FC<SharedComponentProps> = ({ token, setRefetchCounte
             />
             {isLoading && <CircularProgress />}
             {games.map((game) => (
-                <GameItem key={game._id}>
+                <GameItem key={game._id} style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}>
                     {game.thumbnailUrl && (
                         <img src={game.thumbnailUrl} alt={game.gameTitle} style={{ maxWidth: '100%', marginBottom: '10px' }} />
                     )}
-                    <Typography>{game.gameTitle}</Typography>
-                    <Link href={game.bggLink} target="_blank" rel="noopener noreferrer">
-                        View on BoardGameGeek in a new tab
+                    {/* Include "The game title is: " before the game title */}
+                    <Typography variant="h6" component="p" style={{ marginBottom: '10px' }}>
+                        {game.title}
+                    </Typography>
+                    <Link href={game.bggLink} target="_blank" rel="noopener noreferrer" style={{ display: 'block', marginBottom: '10px' }}>
+                        View on BoardGameGeek
                     </Link>
                     <Button variant="contained" color="primary" onClick={() => offerToLend(game)}>
                         Offer to Lend
                     </Button>
                 </GameItem>
             ))}
+
+
         </ContainerStyled>
     );
 };
