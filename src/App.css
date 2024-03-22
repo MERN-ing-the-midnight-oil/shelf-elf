@@ -1,10 +1,10 @@
 :root {
-  --landing-bg-color: #282c34; /* Landing page background color */
-  --link-color: #61dafb; /* Link color */
-  --form-bg-color: #fff; /* Form background color */
-  --text-color: white; /* General text color */
-  --error-text-color: red; /* Error message text color */
-  --form-text-color: #000; /* Text color for content within the forms */
+  --landing-bg-color: #fff;
+  --link-color: #1a0dab;
+  --form-bg-color: #fff;
+  --text-color: #000;
+  --error-text-color: red;
+  --form-text-color: #000;
 }
 
 .App {
@@ -18,10 +18,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: space-around; 
   font-size: calc(10px + 2vmin);
   color: var(--text-color);
+  padding: 20px; 
 }
+
 
 .App-link {
   color: var(--link-color);
@@ -45,13 +47,13 @@
 }
 
 .landing-form {
-  background-color: var(--form-bg-color); /* Specific to the form itself */
+  background-color: var(--form-bg-color);
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 8px 16px rgba(0,0,0,0.2);
   width: 300px;
-  margin: 20px auto; /* Adjusted for appropriate spacing */
-  color: var(--form-text-color); /* Ensures text inside the form is dark for contrast */
+  margin: 20px auto;
+  color: var(--form-text-color);
 }
 
 .ErrorText {
