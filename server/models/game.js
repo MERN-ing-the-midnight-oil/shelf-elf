@@ -19,9 +19,8 @@ const gameSchema = new mongoose.Schema({
 		required: true,
 	},
 	thumbnailUrl: {
-		// Add this field
 		type: String,
-		required: false, // Make this optional as you might not have an image for every game initially
+		required: false,
 	},
 });
 

@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-// Define the schema for individual messages
 const messageSchema = new mongoose.Schema({
 	sender: {
 		type: mongoose.Schema.Types.ObjectId,
@@ -17,7 +16,6 @@ const messageSchema = new mongoose.Schema({
 	},
 });
 
-// Update the gameRequestSchema to include an array of messages
 const gameRequestSchema = new mongoose.Schema({
 	lendingLibraryGame: {
 		type: mongoose.Schema.Types.ObjectId,
@@ -29,7 +27,7 @@ const gameRequestSchema = new mongoose.Schema({
 		ref: "User",
 		required: true,
 	},
-	messages: [messageSchema], // Incorporating messageSchema here
+	messages: [messageSchema], //maybe delete?
 	status: {
 		type: String,
 		enum: [

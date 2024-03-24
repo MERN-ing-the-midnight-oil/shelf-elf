@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Paper, Tooltip } from '@mui/material';
-import BlockIcon from '@mui/icons-material/Block';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 interface GameDetail {
@@ -12,7 +11,7 @@ interface GameDetail {
 }
 
 interface Message {
-    sender: string; // Assuming sender's username for simplicity
+    sender: string;
     messageText: string;
     createdAt: Date;
 }
@@ -20,9 +19,13 @@ interface Message {
 interface Game {
     _id: string; // ID of the LendingLibraryGame document
     game: GameDetail;
-    requests: string[]; // Array of User IDs who have requested the game
+    requests: Request[]; // This should be an array of Request objects
     messages?: Message[];
     isAvailable: boolean;
+}
+interface Request {
+    _id: string;
+    username: string; // Ensure this is included to match the data structure
 }
 
 interface MyLendingLibraryGamesProps {
@@ -32,7 +35,7 @@ interface MyLendingLibraryGamesProps {
 }
 
 
-const MyLendingLibraryGames: React.FC<MyLendingLibraryGamesProps> = ({ token, refetchCounter, setRefetchCounter }) => {
+const MyLendingLibraryGames: React.FC<MyLendingLibraryGamesProps> = ({ token, refetchCounter }) => {
     const [games, setGames] = useState<Game[]>([]);
 
     useEffect(() => {
@@ -44,13 +47,16 @@ const MyLendingLibraryGames: React.FC<MyLendingLibraryGamesProps> = ({ token, re
                         'Authorization': `Bearer ${token}`
                     }
                 });
+                console.log(response.data); // Correctly logs the fetched data
                 setGames(response.data);
             } catch (error) {
                 console.error('Failed to fetch games:', error);
             }
         };
 
+
         fetchGames();
+
     }, [refetchCounter, token]);
 
     const handleDelete = async (gameId: string) => {
@@ -174,8 +180,9 @@ const MyLendingLibraryGames: React.FC<MyLendingLibraryGamesProps> = ({ token, re
                                     <a href={game.game.bggLink} target="_blank" rel="noopener noreferrer">Game Information</a>
                                 </TableCell>
                                 <TableCell>
-                                    {game.requests.join(', ')}
+                                    {game.requests.map(request => request.username).join(', ')}
                                 </TableCell>
+
                                 <TableCell>
                                     {game.messages?.map((msg, index) => (
                                         <div key={index}>{`${msg.sender}: ${msg.messageText}`}</div>
