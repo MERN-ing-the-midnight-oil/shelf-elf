@@ -6,6 +6,7 @@ const User = require("../../models/user");
 const router = express.Router();
 const { checkAuthentication } = require("../../../middlewares/authentication"); // Import the middleware
 
+//add a book to the user's lending library
 router.post("/add", checkAuthentication, async (req, res) => {
 	console.log("Received request to add book to book lending library");
 	try {
