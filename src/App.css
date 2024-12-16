@@ -24,7 +24,6 @@
   padding: 20px; 
 }
 
-
 .App-link {
   color: var(--link-color);
 }
@@ -50,7 +49,7 @@
   background-color: var(--form-bg-color);
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   width: 300px;
   margin: 20px auto;
   color: var(--form-text-color);
@@ -59,4 +58,92 @@
 .ErrorText {
   color: var(--error-text-color);
   margin: 5px 0;
+}
+
+/* LandingHeader Specific Styles */
+.landing-header {
+  padding: 20px;
+  text-align: center;
+}
+
+.landing-title-img {
+  width: 60%;
+  margin: 2rem 0;
+}
+
+.landing-heading {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+.landing-subheading {
+  font-size: 1.2rem;
+  margin: 0 auto 2rem;
+  max-width: 800px;
+  line-height: 1.5;
+  color: var(--text-color);
+}
+
+.landing-image {
+  width: 80%;
+  margin-top: 1rem;
+  border-radius: 10px;
+  object-fit: contain;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .App-header,
+  .landing-container {
+    flex-direction: column;
+    text-align: center;
+    padding: 10px;
+  }
+
+  .landing-form {
+    width: 90%;
+    padding: 15px;
+  }
+
+  .App-header h1,
+  .App-header h2,
+  .App-header h3 {
+    font-size: 1.5em;
+    margin: 1rem;
+  }
+
+  .landing-title-img {
+    width: 80%;
+  }
+
+  .landing-heading {
+    font-size: 1.5rem;
+  }
+
+  .landing-subheading {
+    font-size: 1rem;
+    padding: 0 1rem;
+  }
+
+  .landing-image {
+    width: 90%;
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-title-img {
+    width: 90%;
+  }
+
+  .landing-heading {
+    font-size: 1.2rem;
+  }
+
+  .landing-subheading {
+    font-size: 0.9rem;
+  }
+
+  .landing-image {
+    width: 95%;
+  }
 }
