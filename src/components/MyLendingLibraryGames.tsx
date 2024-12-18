@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Paper, Tooltip } from '@mui/material';
+import { Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Paper, Tooltip } from '@mui/material';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 interface GameDetail {
@@ -143,7 +143,20 @@ const MyLendingLibraryGames: React.FC<MyLendingLibraryGamesProps> = ({ token, re
 
     return (
         <div>
-            <h1>You are offering to lend the following games:</h1>
+            <Box sx={{ textAlign: 'center', mb: 2 }}>
+                <Typography
+                    variant="h5"
+                    component="h2"
+                    sx={{
+                        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' }, // Adjust font size
+                        fontWeight: 'bold',
+                        color: '#333',
+                        wordWrap: 'break-word',
+                    }}
+                >
+                    You are offering to lend the following games:
+                </Typography>
+            </Box>
             <TableContainer
                 component={Paper}
                 sx={{

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import BlockIcon from '@mui/icons-material/Block';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Paper, Tooltip } from '@mui/material';
+import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Paper, Tooltip, Typography } from '@mui/material';
 
 
 interface Request {
@@ -149,7 +149,21 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
         <p>You don't have any books in your offerings library yet.</p>
       ) : (
         <>
-          <h1>You are offering to lend the following books:</h1>
+          <Box sx={{ textAlign: 'center', mb: 2 }}>
+            <Typography
+              variant="h5"
+              component="h2"
+              sx={{
+                fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' }, // Adjust font size
+                fontWeight: 'bold',
+                color: '#333',
+                wordWrap: 'break-word',
+              }}
+            >
+              You are offering to lend the following books:
+            </Typography>
+          </Box>
+
           <TableContainer
             component={Paper}
             sx={{
