@@ -144,16 +144,22 @@ const MyLendingLibraryGames: React.FC<MyLendingLibraryGamesProps> = ({ token, re
     return (
         <div>
             <h1>You are offering to lend the following games:</h1>
-            <TableContainer component={Paper}>
+            <TableContainer
+                component={Paper}
+                sx={{
+                    overflowX: 'auto', // Enable horizontal scrolling
+                    maxWidth: '100%',
+                }}
+            >
                 <Table>
                     <TableHead>
                         <TableRow>
                             <TableCell>Title</TableCell>
                             <TableCell>Availability</TableCell>
                             <TableCell>Thumbnail</TableCell>
-                            <TableCell>Link</TableCell>
-                            <TableCell>Requested By</TableCell>
-                            <TableCell>Messages</TableCell>
+                            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Link</TableCell>
+                            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Requested By</TableCell>
+                            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Messages</TableCell>
                             <TableCell align="right">Delete?</TableCell>
                         </TableRow>
                     </TableHead>
@@ -162,28 +168,45 @@ const MyLendingLibraryGames: React.FC<MyLendingLibraryGamesProps> = ({ token, re
                             <TableRow key={game._id}>
                                 <TableCell>{game.game.title}</TableCell>
                                 <TableCell>
-                                    {game.isAvailable ? "Available" : "Unavailable"}
+                                    {game.isAvailable ? 'Available' : 'Unavailable'}
                                     {game.isAvailable ? (
-                                        <Button onClick={() => handleMarkUnavailable(game._id)} color="secondary" size="small" variant="outlined" style={{ marginLeft: '10px' }}>
+                                        <Button
+                                            onClick={() => handleMarkUnavailable(game._id)}
+                                            color="secondary"
+                                            size="small"
+                                            variant="outlined"
+                                            sx={{ ml: 1 }}
+                                        >
                                             Mark as "Unavailable"
                                         </Button>
                                     ) : (
-                                        <Button onClick={() => handleMarkAvailable(game._id)} color="primary" size="small" variant="outlined" style={{ marginLeft: '10px' }}>
+                                        <Button
+                                            onClick={() => handleMarkAvailable(game._id)}
+                                            color="primary"
+                                            size="small"
+                                            variant="outlined"
+                                            sx={{ ml: 1 }}
+                                        >
                                             Mark as "Available"
                                         </Button>
                                     )}
                                 </TableCell>
                                 <TableCell>
-                                    <img src={game.game.thumbnailUrl} alt={`${game.game.title} thumbnail`} style={{ width: '100px' }} />
+                                    <img
+                                        src={game.game.thumbnailUrl}
+                                        alt={`${game.game.title} thumbnail`}
+                                        style={{ width: '60px', height: 'auto' }}
+                                    />
                                 </TableCell>
-                                <TableCell>
-                                    <a href={game.game.bggLink} target="_blank" rel="noopener noreferrer">Game Information</a>
+                                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                                    <a href={game.game.bggLink} target="_blank" rel="noopener noreferrer">
+                                        Game Information
+                                    </a>
                                 </TableCell>
-                                <TableCell>
-                                    {game.requests.map(request => request.username).join(', ')}
+                                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                                    {game.requests.map((request) => request.username).join(', ')}
                                 </TableCell>
-
-                                <TableCell>
+                                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
                                     {game.messages?.map((msg, index) => (
                                         <div key={index}>{`${msg.sender}: ${msg.messageText}`}</div>
                                     ))}
@@ -200,6 +223,7 @@ const MyLendingLibraryGames: React.FC<MyLendingLibraryGamesProps> = ({ token, re
                     </TableBody>
                 </Table>
             </TableContainer>
+
         </div>
     );
 

@@ -98,31 +98,61 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token }) => {
             <Typography variant="h4" gutterBottom textAlign="center">Manage Your Social Groups</Typography>
 
             {/* Your Social Groups Section */}
-            <Box sx={{ mb: 4, p: 2, boxShadow: 1, borderRadius: '5px', backgroundColor: '#f0f0f0', border: '1px solid #e0e0e0' }}>
-                <Typography variant="h5" gutterBottom textAlign="center">Your Social Groups:</Typography>
+            <Box
+                sx={{
+                    mb: 4,
+                    p: 2,
+                    boxShadow: 1,
+                    borderRadius: '5px',
+                    backgroundColor: '#f0f0f0',
+                    border: '1px solid #e0e0e0',
+                }}
+            >
+                <Typography variant="h5" gutterBottom textAlign="center">
+                    Your Social Groups:
+                </Typography>
                 {userCommunities.length > 0 ? (
                     <List>
                         {userCommunities.map((community) => (
                             <ListItem
                                 key={community._id}
-                                secondaryAction={
-                                    <Button
-                                        color="secondary"
-                                        onClick={() => handleLeaveCommunity(community._id)}
-                                    >
-                                        Leave Social Group
-                                    </Button>
-                                }
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: { xs: 'column', sm: 'row' },
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                }}
                             >
-                                {/* Center the names of the Social Groups */}
-                                <ListItemText primary={community.name} primaryTypographyProps={{ textAlign: 'center' }} secondary={community.description} secondaryTypographyProps={{ textAlign: 'center' }} />
+                                {/* Community Name and Description */}
+                                <ListItemText
+                                    primary={community.name}
+                                    primaryTypographyProps={{ textAlign: 'center' }}
+                                    secondary={community.description}
+                                    secondaryTypographyProps={{ textAlign: 'center' }}
+                                    sx={{ mb: { xs: 1, sm: 0 } }} // Add margin-bottom on mobile
+                                />
+
+                                {/* Leave Social Group Button */}
+                                <Button
+                                    color="secondary"
+                                    variant="contained"
+                                    size="small"
+                                    onClick={() => handleLeaveCommunity(community._id)}
+                                    sx={{ width: { xs: '100%', sm: 'auto' } }} // Full-width on mobile
+                                >
+                                    Leave Social Group
+                                </Button>
                             </ListItem>
                         ))}
                     </List>
                 ) : (
-                    <Typography textAlign="center">You have not joined a Social Group yet. Ask another user for a Social Group name and join code, or if you are the first one in your social group to use this app, please create a new Social Group.</Typography>
+                    <Typography textAlign="center">
+                        You have not joined a Social Group yet. Ask another user for a Social Group name and join code, or if you
+                        are the first one in your social group to use this app, please create a new Social Group.
+                    </Typography>
                 )}
             </Box>
+
 
             {/* Join an Existing Social Group Section */}
             <Box sx={{ mb: 4, backgroundColor: '#ffffff' }}>

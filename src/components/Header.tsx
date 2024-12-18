@@ -78,25 +78,120 @@ const Header: React.FC = () => {
                                 anchor="right"
                                 open={drawerOpen}
                                 onClose={() => setDrawerOpen(false)}
+                                PaperProps={{
+                                    sx: {
+                                        width: 250,
+                                        backgroundColor: '#f9f9f9', // Light background color
+                                        color: '#333', // Text color
+                                        boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+                                    },
+                                }}
                             >
                                 <List>
-                                    <ListItem button component={Link} to="/manage-communities" onClick={() => setDrawerOpen(false)}>
-                                        <ListItemText primary="Your Social Group(s)" />
+                                    <ListItem
+                                        button
+                                        component={Link}
+                                        to="/manage-communities"
+                                        onClick={() => setDrawerOpen(false)}
+                                        sx={{
+                                            '&:hover': {
+                                                backgroundColor: '#e0e0e0',
+                                            },
+                                        }}
+                                    >
+                                        <ListItemText
+                                            primary="Your Social Group(s)"
+                                            primaryTypographyProps={{
+                                                fontSize: '1rem',
+                                                fontWeight: 'bold',
+                                                textAlign: 'center',
+                                            }}
+                                        />
                                     </ListItem>
-                                    <ListItem button component={Link} to="/lend-books" onClick={() => setDrawerOpen(false)}>
-                                        <ListItemText primary="Your Lending Shelf" />
+                                    <ListItem
+                                        button
+                                        component={Link}
+                                        to="/lend-books"
+                                        onClick={() => setDrawerOpen(false)}
+                                        sx={{
+                                            '&:hover': {
+                                                backgroundColor: '#e0e0e0',
+                                            },
+                                        }}
+                                    >
+                                        <ListItemText
+                                            primary="Your Lending Shelf"
+                                            primaryTypographyProps={{
+                                                fontSize: '1rem',
+                                                fontWeight: 'bold',
+                                                textAlign: 'center',
+                                            }}
+                                        />
                                     </ListItem>
-                                    <ListItem button component={Link} to="/request-books" onClick={() => setDrawerOpen(false)}>
-                                        <ListItemText primary="Your Wishlist" />
+                                    <ListItem
+                                        button
+                                        component={Link}
+                                        to="/request-books"
+                                        onClick={() => setDrawerOpen(false)}
+                                        sx={{
+                                            '&:hover': {
+                                                backgroundColor: '#e0e0e0',
+                                            },
+                                        }}
+                                    >
+                                        <ListItemText
+                                            primary="Your Wishlist"
+                                            primaryTypographyProps={{
+                                                fontSize: '1rem',
+                                                fontWeight: 'bold',
+                                                textAlign: 'center',
+                                            }}
+                                        />
                                     </ListItem>
-                                    <ListItem button component={Link} to="/messages" onClick={() => setDrawerOpen(false)}>
-                                        <ListItemText primary="Messages" />
+                                    <ListItem
+                                        button
+                                        component={Link}
+                                        to="/messages"
+                                        onClick={() => setDrawerOpen(false)}
+                                        sx={{
+                                            '&:hover': {
+                                                backgroundColor: '#e0e0e0',
+                                            },
+                                        }}
+                                    >
+                                        <ListItemText
+                                            primary="Messages"
+                                            primaryTypographyProps={{
+                                                fontSize: '1rem',
+                                                fontWeight: 'bold',
+                                                textAlign: 'center',
+                                            }}
+                                        />
                                     </ListItem>
-                                    <ListItem button onClick={handleLogout}>
-                                        <ListItemText primary="Logout" />
+                                    <ListItem
+                                        button
+                                        onClick={handleLogout}
+                                        sx={{
+                                            backgroundColor: '#d32f2f',
+                                            '&:hover': {
+                                                backgroundColor: '#c62828',
+                                            },
+                                            color: '#fff',
+                                            textAlign: 'center',
+                                        }}
+                                    >
+                                        <ListItemText
+                                            primary="Logout"
+                                            primaryTypographyProps={{
+                                                fontSize: '1rem',
+                                                fontWeight: 'bold',
+                                                textAlign: 'center',
+                                            }}
+                                        />
                                     </ListItem>
                                 </List>
                             </Drawer>
+
                         </>
                     ) : (
                         <>

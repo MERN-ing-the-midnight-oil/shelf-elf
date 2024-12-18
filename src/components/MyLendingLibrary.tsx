@@ -150,29 +150,40 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
       ) : (
         <>
           <h1>You are offering to lend the following books:</h1>
-          <TableContainer component={Paper}>
+          <TableContainer
+            component={Paper}
+            sx={{
+              overflowX: 'auto', // Enable horizontal scrolling for small screens
+              maxWidth: '100%',
+            }}
+          >
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Cover</TableCell> {/* Add this line for the new "Cover" column header */}
+                  <TableCell>Cover</TableCell>
                   <TableCell>Title</TableCell>
-                  <TableCell>Author</TableCell>
-                  <TableCell>Requested By</TableCell>
+                  <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Author</TableCell>
+                  <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Requested By</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell align="right">Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {myBooks.map((book) => (
-                  <TableRow key={book._id || book.googleBooksId} style={{ backgroundColor: book.status === 'unavailable' ? '#e0e0e0' : '' }}>
+                  <TableRow
+                    key={book._id || book.googleBooksId}
+                    sx={{
+                      backgroundColor: book.status === 'unavailable' ? '#e0e0e0' : '',
+                    }}
+                  >
                     <TableCell>
                       {book.imageUrl && (
                         <img src={book.imageUrl} alt="Book cover" style={{ height: 60 }} />
                       )}
                     </TableCell>
                     <TableCell>{book.title}</TableCell>
-                    <TableCell>{book.author}</TableCell>
-                    <TableCell>
+                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{book.author}</TableCell>
+                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
                       {book.requestedBy && book.requestedBy.length > 0
                         ? book.requestedBy.map((request) => request.username).join(', ')
                         : 'No current requests.'}
@@ -182,7 +193,10 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
                       {book.status === 'unavailable' ? (
                         <Tooltip title="Mark as Available">
                           <span>
-                            <IconButton onClick={() => handleMarkAsAvailable(book._id)} color="primary">
+                            <IconButton
+                              onClick={() => handleMarkAsAvailable(book._id)}
+                              color="primary"
+                            >
                               <VisibilityIcon />
                             </IconButton>
                           </span>
@@ -190,7 +204,10 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
                       ) : (
                         <Tooltip title="Mark as Unavailable">
                           <span>
-                            <IconButton onClick={() => handleMarkAsUnavailable(book._id)} color="warning">
+                            <IconButton
+                              onClick={() => handleMarkAsUnavailable(book._id)}
+                              color="warning"
+                            >
                               <BlockIcon />
                             </IconButton>
                           </span>
@@ -205,10 +222,9 @@ const MyLendingLibrary: React.FC<MyLendingLibraryProps> = ({ token, setRefetchCo
                   </TableRow>
                 ))}
               </TableBody>
-
-
             </Table>
           </TableContainer>
+
 
         </>
       )}
