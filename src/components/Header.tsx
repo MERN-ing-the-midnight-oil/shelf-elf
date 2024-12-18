@@ -1,18 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { AppBar, Toolbar, Box, Tabs, Tab, Button, Typography } from '@mui/material';
+import {
+    AppBar,
+    Toolbar,
+    Box,
+    Tabs,
+    Tab,
+    Button,
+    Typography,
+    IconButton,
+    Drawer,
+    List,
+    ListItem,
+    ListItemText,
+} from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 import { useAuth } from '../context/AuthContext';
-
 
 const Header: React.FC = () => {
     const { user, setToken, setUser } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [value, setValue] = useState(location.pathname);
+    const [isMobile, setIsMobile] = useState(false);
+    const [drawerOpen, setDrawerOpen] = useState(false);
 
     useEffect(() => {
         setValue(location.pathname);
     }, [location]);
+
+    useEffect(() => {
+        // Adjust layout based on window size
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        handleResize(); // Check initially
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const handleLogout = () => {
         setToken(null);
@@ -34,74 +57,60 @@ const Header: React.FC = () => {
         <AppBar position="static">
             <Toolbar>
                 <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    {/* Include the app icon image before the welcome text */}
-                    <img src="/app_icon.png" alt="App Icon" style={{ height: '30px', marginRight: '10px' }} />
-                    <Typography variant="h6" color="inherit" sx={{ flexGrow: 0, flexShrink: 0, marginRight: '20px', marginLeft: '20px' }}>
-                        Welcome, {user.username}!
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <img src="/app_icon.png" alt="App Icon" style={{ height: '30px', marginRight: '10px' }} />
+                        <Typography variant="h6" color="inherit">
+                            Welcome, {user.username}!
+                        </Typography>
+                    </Box>
 
-                    <Tabs value={value} onChange={handleChange} aria-label="Navigation Tabs" sx={{ flexGrow: 1, '& .MuiTab-root': { padding: '0 12px', marginRight: '24px', marginLeft: '24px' } }}>
-                        <Tab
-                            label="Your Social Group(s)"
-                            value="/manage-communities"
-                            component={Link}
-                            to="/manage-communities"
-                            sx={{
-                                color: 'white',
-                                '&.Mui-selected': {
-                                    backgroundColor: 'secondary.main',
-                                    color: 'white',
-                                    fontWeight: 'bold'
-                                }
-                            }}
-                        />
-                        <Tab
-                            label="Your Lending Shelf"
-                            value="/lend-books"
-                            component={Link}
-                            to="/lend-books"
-                            sx={{
-                                color: 'white',
-                                '&.Mui-selected': {
-                                    backgroundColor: 'secondary.main',
-                                    color: 'white',
-                                    fontWeight: 'bold'
-                                }
-                            }}
-                        />
-                        <Tab
-                            label="Your Wishlist"
-                            value="/request-books"
-                            component={Link}
-                            to="/request-books"
-                            sx={{
-                                color: 'white',
-                                '&.Mui-selected': {
-                                    backgroundColor: 'secondary.main',
-                                    color: 'white',
-                                    fontWeight: 'bold'
-                                }
-                            }}
-                        />
-                        <Tab
-                            label="Messages"
-                            value="/messages"
-                            component={Link}
-                            to="/messages"
-                            sx={{
-                                color: 'white',
-                                '&.Mui-selected': {
-                                    backgroundColor: 'secondary.main',
-                                    color: 'white',
-                                    fontWeight: 'bold'
-                                }
-                            }}
-                        />
-
-                    </Tabs>
-                    <Button color="inherit" onClick={handleLogout} sx={{ marginRight: '20px' }}>
-                        Logout
-                    </Button>
+                    {isMobile ? (
+                        <>
+                            <IconButton
+                                edge="start"
+                                color="inherit"
+                                aria-label="menu"
+                                onClick={() => setDrawerOpen(true)}
+                            >
+                                <MenuIcon />
+                            </IconButton>
+                            <Drawer
+                                anchor="right"
+                                open={drawerOpen}
+                                onClose={() => setDrawerOpen(false)}
+                            >
+                                <List>
+                                    <ListItem button component={Link} to="/manage-communities" onClick={() => setDrawerOpen(false)}>
+                                        <ListItemText primary="Your Social Group(s)" />
+                                    </ListItem>
+                                    <ListItem button component={Link} to="/lend-books" onClick={() => setDrawerOpen(false)}>
+                                        <ListItemText primary="Your Lending Shelf" />
+                                    </ListItem>
+                                    <ListItem button component={Link} to="/request-books" onClick={() => setDrawerOpen(false)}>
+                                        <ListItemText primary="Your Wishlist" />
+                                    </ListItem>
+                                    <ListItem button component={Link} to="/messages" onClick={() => setDrawerOpen(false)}>
+                                        <ListItemText primary="Messages" />
+                                    </ListItem>
+                                    <ListItem button onClick={handleLogout}>
+                                        <ListItemText primary="Logout" />
+                                    </ListItem>
+                                </List>
+                            </Drawer>
+                        </>
+                    ) : (
+                        <>
+                            <Tabs value={value} onChange={handleChange} aria-label="Navigation Tabs">
+                                <Tab label="Your Social Group(s)" value="/manage-communities" component={Link} to="/manage-communities" />
+                                <Tab label="Your Lending Shelf" value="/lend-books" component={Link} to="/lend-books" />
+                                <Tab label="Your Wishlist" value="/request-books" component={Link} to="/request-books" />
+                                <Tab label="Messages" value="/messages" component={Link} to="/messages" />
+                            </Tabs>
+                            <Button color="inherit" onClick={handleLogout}>
+                                Logout
+                            </Button>
+                        </>
+                    )}
                 </Box>
             </Toolbar>
         </AppBar>

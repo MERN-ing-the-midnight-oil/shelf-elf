@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
 const app = express();
+require("dotenv").config();
 
 const allowedOrigins = [
 	"http://localhost:3000",
