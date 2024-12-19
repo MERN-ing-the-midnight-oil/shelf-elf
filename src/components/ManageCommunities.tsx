@@ -194,7 +194,7 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token }) => {
                 <Typography variant="h6" gutterBottom textAlign="center">Don't see the Social Group you want to join? Create it!</Typography>
                 <form onSubmit={handleCreateCommunity} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <TextField
-                        label="Social Group Name"
+                        label="Create Group Name"
                         value={newCommunityName}
                         onChange={(e) => setNewCommunityName(e.target.value)}
                         variant="outlined"
@@ -214,7 +214,7 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token }) => {
                         rows={2}
                     />
                     <TextField
-                        label="Passcode"
+                        label="Create Passcode"
                         value={newCommunityPasscode}
                         onChange={(e) => setNewCommunityPasscode(e.target.value)}
                         type="password"

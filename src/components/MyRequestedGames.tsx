@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Snackbar, Typography, Card, CardContent, CardMedia, Grid, Button } from '@mui/material';
+import { Snackbar, Typography, Card, CardContent, CardMedia, Grid, Button, Box } from '@mui/material';
 import { SharedComponentProps } from '../types'; // Ensure this import path is correct
 
 const MyRequestedGames: React.FC<SharedComponentProps> = ({ token, setRefetchCounter, refetchCounter }) => {
     const [requestedGames, setRequestedGames] = useState<any[]>([]);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
-
 
     useEffect(() => {
         const fetchRequestedGames = async () => {
@@ -50,14 +49,14 @@ const MyRequestedGames: React.FC<SharedComponentProps> = ({ token, setRefetchCou
         }
     };
 
-
-
     return (
-        <div>
-            <Typography variant="h5">My Requested Games</Typography>
-            <Grid container spacing={3}>
-                {requestedGames.length > 0 ? (
-                    requestedGames.map((requestedGame) => (
+        <Box sx={{ padding: '20px' }}>
+            <Typography variant="h5" gutterBottom>
+                My Requested Games
+            </Typography>
+            {requestedGames.length > 0 ? (
+                <Grid container spacing={3}>
+                    {requestedGames.map((requestedGame) => (
                         <Grid item key={requestedGame._id} xs={12} sm={6} md={4}>
                             <Card>
                                 <CardMedia
@@ -98,18 +97,31 @@ const MyRequestedGames: React.FC<SharedComponentProps> = ({ token, setRefetchCou
                                 </CardContent>
                             </Card>
                         </Grid>
-                    ))
-                ) : (
-                    <Typography variant="body1">You have not requested any games yet.</Typography>
-                )}
-            </Grid>
+                    ))}
+                </Grid>
+            ) : (
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '50vh',
+                        textAlign: 'center',
+                    }}
+                >
+                    <Typography variant="body1" color="text.secondary" gutterBottom>
+                        You have not requested any games yet.
+                    </Typography>
+                </Box>
+            )}
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={6000}
                 onClose={() => setSnackbarOpen(false)}
                 message={snackbarMessage}
             />
-        </div>
+        </Box>
     );
 };
 
