@@ -43,6 +43,13 @@ mongoose
 	.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
 	.then(() => console.log("MongoDB Connected"))
 	.catch((err) => console.log("there is a problem with mongoose " + err));
+
+// Import authentication middlewares
+const {
+	checkAuthentication,
+	adminCheck,
+} = require("../middlewares/authentication");
+
 // Import and use routes
 const bookRoutes = require("./routes/books");
 const userRoutes = require("./routes/users");
@@ -55,6 +62,11 @@ app.use("/api/users", userRoutes);
 app.use("/api/communities", communityRoutes);
 app.use("/api/games", gameRoutes);
 app.use("/api/messages", messageRoutes);
+
+// Test route to verify authentication and admin access
+app.get("/api/admin-test", checkAuthentication, adminCheck, (req, res) => {
+	res.status(200).json({ message: `Hello, Admin ${req.user.username}` });
+});
 
 // Deployment - Serving the static files from express
 if (process.env.NODE_ENV === "production") {

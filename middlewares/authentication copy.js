@@ -1,14 +1,5 @@
-require("dotenv").config({
-	path: require("path").resolve(__dirname, "../.env"),
-});
 const jwt = require("jsonwebtoken");
 const User = require("../server/models/user"); // Adjust the path as needed
-
-console.log("JWT_SECRET in middleware:", process.env.JWT_SECRET); // Debug statement
-
-require("dotenv").config({
-	path: require("path").resolve(__dirname, "../.env"),
-}); // Load .env file
 
 exports.checkAuthentication = async (req, res, next) => {
 	console.log("checkAuthentication middleware called");
@@ -25,17 +16,13 @@ exports.checkAuthentication = async (req, res, next) => {
 
 		const decodedToken = jwt.verify(
 			token,
-			process.env.JWT_SECRET || "mysecretkey" // Use secret from .env or fallback
+			process.env.JWT_SECRET || "mysecretkey"
 		);
-		console.log("Decoded token:", decodedToken);
 
 		const user = await User.findById(decodedToken.userId);
 		if (!user) {
-			console.log("User not found for ID:", decodedToken.userId);
 			return res.status(401).json({ error: "Invalid token" });
 		}
-
-		console.log("Authenticated user:", user);
 
 		req.user = user.toObject();
 		req.user._id = user._id;
@@ -43,7 +30,6 @@ exports.checkAuthentication = async (req, res, next) => {
 
 		next();
 	} catch (error) {
-		console.error("Token verification error:", error.message);
 		if (error.name === "JsonWebTokenError") {
 			return res.status(401).json({ error: "Invalid token" });
 		}
@@ -52,14 +38,4 @@ exports.checkAuthentication = async (req, res, next) => {
 		}
 		res.status(500).json({ error: "Internal Server Error" });
 	}
-};
-
-// Middleware to check for admin role
-exports.adminCheck = (req, res, next) => {
-	console.log("adminCheck middleware called for user:", req.user?.username);
-	if (!req.user || req.user.role !== "admin") {
-		console.log("Access denied for user:", req.user?.username || "unknown");
-		return res.status(403).json({ error: "Access denied. Admins only." });
-	}
-	next();
 };

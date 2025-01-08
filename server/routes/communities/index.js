@@ -2,29 +2,28 @@ const express = require("express");
 const router = express.Router();
 const Community = require("../../models/community");
 const User = require("../../models/user");
-const { checkAuthentication } = require("../../../middlewares/authentication");
+const {
+	checkAuthentication,
+	adminCheck,
+} = require("../../../middlewares/authentication");
 
 // Route to create a new community and add the user to this community
 router.post("/create", checkAuthentication, async (req, res) => {
 	const { name, description, passcode } = req.body;
-	const userId = req.user._id; // Now, assuming you have middleware to authenticate and add user to req should work
+	const userId = req.user._id;
 
 	try {
-		// Create new community
 		const newCommunity = new Community({
 			name,
 			description,
 			passcode,
-			members: [userId], // Add the user as a member of the new community
+			members: [userId],
 		});
 		const savedCommunity = await newCommunity.save();
 
-		// Add newly created community to user's communities
 		await User.findByIdAndUpdate(
 			userId,
-			{
-				$push: { communities: savedCommunity._id },
-			},
+			{ $push: { communities: savedCommunity._id } },
 			{ new: true }
 		);
 
@@ -38,9 +37,36 @@ router.post("/create", checkAuthentication, async (req, res) => {
 	}
 });
 
-// GET route to list all communities
+// GET route to list all communities (Admin only)
+router.get("/admin-list", checkAuthentication, adminCheck, async (req, res) => {
+	try {
+		const communities = await Community.find();
+		res.status(200).json(communities);
+	} catch (error) {
+		console.error("Error fetching communities:", error);
+		res.status(500).json({ message: "Failed to fetch communities" });
+	}
+});
+
+// DELETE route to delete a community by ID (Admin only)
+router.delete("/:id", checkAuthentication, adminCheck, async (req, res) => {
+	try {
+		const communityId = req.params.id;
+		const deletedCommunity = await Community.findByIdAndDelete(communityId);
+		if (!deletedCommunity) {
+			return res.status(404).json({ message: "Community not found" });
+		}
+		res.status(200).json({ message: "Community deleted successfully" });
+	} catch (error) {
+		console.error("Error deleting community:", error);
+		res.status(500).json({ message: "Failed to delete community" });
+	}
+});
+
+// Existing routes remain unchanged
+
+// GET route to list all communities (public)
 router.get("/list", async (req, res) => {
-	console.log("Fetching list of all communities");
 	try {
 		const communities = await Community.find({});
 		res.status(200).json(communities);
@@ -52,37 +78,25 @@ router.get("/list", async (req, res) => {
 
 // POST route for a user to join a community
 router.post("/join", checkAuthentication, async (req, res) => {
-	console.log(
-		"User",
-		req.user._id,
-		"requesting to join community",
-		req.body.communityId
-	);
-
 	try {
-		// Fetch the Community document
 		const community = await Community.findById(req.body.communityId);
 		if (!community) {
 			return res.status(404).json({ message: "Community not found" });
 		}
 
-		// Check if the passcode matches
 		if (community.passcode !== req.body.passcode) {
 			return res.status(401).json({ message: "Invalid passcode" });
 		}
 
-		// Check if user is already a member of the community
 		if (community.members.includes(req.user._id)) {
 			return res
 				.status(400)
 				.json({ message: "User already a member of this community" });
 		}
 
-		// Add user to the community's member list
 		community.members.push(req.user._id);
 		await community.save();
 
-		// Update the User document to include the community
 		const user = await User.findById(req.user._id);
 		if (!user.communities.includes(req.body.communityId)) {
 			user.communities.push(req.body.communityId);
@@ -92,66 +106,6 @@ router.post("/join", checkAuthentication, async (req, res) => {
 		res.status(200).json({ message: "Joined community successfully" });
 	} catch (error) {
 		console.error("Error joining community:", error);
-		res.status(500).send("Internal Server Error");
-	}
-});
-router.post("/:communityId/leave", checkAuthentication, async (req, res) => {
-	console.log("Leave community route hit", req.params.communityId); // Log when route is hit
-	const { communityId } = req.params;
-	const userId = req.user._id; // Assuming checkAuthentication populates req.user with the authenticated user's info
-
-	try {
-		console.log(`Looking for community with ID: ${communityId}`); // Log community search
-		const community = await Community.findById(communityId);
-		if (!community) {
-			console.log("Community not found", communityId); // Log if community is not found
-			return res.status(404).send("Community not found.");
-		}
-
-		console.log(
-			`Checking if user ${userId} is a member of community ${communityId}`
-		); // Log member check
-		const isMember = community.members.some((member) => member.equals(userId));
-		if (!isMember) {
-			console.log(`User ${userId} is not a member of community ${communityId}`); // Log if user is not a member
-			return res.status(400).send("You are not a member of this community.");
-		}
-
-		// Proceed to remove the user from the community's members list
-		console.log(`Removing user ${userId} from community ${communityId}`); // Log removal action
-		community.members = community.members.filter(
-			(member) => !member.equals(userId)
-		);
-		await community.save();
-
-		// Remove the community from the user's list of communities
-		console.log(
-			`Removing community ${communityId} from user ${userId}'s community list`
-		); // Log user update
-		const user = await User.findById(userId);
-		user.communities = user.communities.filter(
-			(communityId) => !communityId.equals(community._id)
-		);
-		await user.save();
-
-		console.log(`User ${userId} successfully left community ${communityId}`); // Log successful leave
-		res.send("You have successfully left the community.");
-	} catch (error) {
-		console.error("Error leaving community:", error);
-		res.status(500).send("Internal Server Error");
-	}
-});
-
-// GET route to list all communities a user belongs to
-router.get("/user-communities", checkAuthentication, async (req, res) => {
-	try {
-		const userId = req.user._id; // Assuming your checkAuthentication middleware sets req.user
-		const userCommunities = await Community.find({
-			members: userId,
-		});
-		res.status(200).json(userCommunities);
-	} catch (error) {
-		console.error("Error fetching user communities:", error);
 		res.status(500).send("Internal Server Error");
 	}
 });

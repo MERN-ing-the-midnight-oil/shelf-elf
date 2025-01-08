@@ -9,6 +9,8 @@ import ManageCommunities from './components/ManageCommunities';
 import LandingHeader from './components/LandingHeader';
 import Messages from './components/Messages'; // Added import for Messages component
 import { useAuth } from './context/AuthContext';
+import CommunitiesTable from './components/CommunitiesTable';
+
 
 function App() {
   const { token } = useAuth();
@@ -29,6 +31,9 @@ function App() {
             <Route path="/manage-communities" element={<ManageCommunities token={token} />} />
             <Route path="/messages" element={<Messages token={token} />} />
             <Route path="*" element={<Navigate replace to="/manage-communities" />} />
+            <Routes>
+              <Route path="/admin/communities" element={<CommunitiesTable />} />
+            </Routes>
           </Routes>
         ) : (
           <div className="landing-container">
