@@ -6,27 +6,23 @@ const User = require("../../models/user"); // Adjust the path as needed
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 const { checkAuthentication } = require("../../../middlewares/authentication");
 
 router.get("/me", checkAuthentication, async (req, res) => {
 	try {
-		// Assuming that the checkAuthentication middleware sets req.user
+		console.log("GET /me route accessed");
+		console.log("Authenticated user from middleware:", req.user);
+
 		if (!req.user) {
-			return res.status(401).json({ error: "Not authenticated" });
+			return res.status(401).json({ error: "Unauthorized" });
 		}
 
-		// Adjust the response to include only the necessary user fields
-		const userData = {
-			username: req.user.username,
-			_id: req.user._id,
-			// Add any other user fields that you might need in the frontend
-		};
-
-		res.json(userData);
+		res.status(200).json(req.user);
 	} catch (error) {
-		console.error(error);
-		res.status(500).send("Internal Server Error");
+		console.error("Error in /me route:", error.message);
+		res.status(500).json({ error: "Internal Server Error" });
 	}
 });
 
@@ -92,7 +88,7 @@ router.post("/login", async (req, res) => {
 		// User is authenticated, generate a token
 		const token = jwt.sign(
 			{ userId: user._id, username: user.username },
-			"mysecretkey", //  store secret key in environment variables
+			process.env.JWT_SECRET,
 			{ expiresIn: "365d" }
 		);
 

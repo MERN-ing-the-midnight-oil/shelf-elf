@@ -4,6 +4,7 @@ import { Formik, Form, Field, FieldProps, ErrorMessage } from 'formik';
 import { Typography, Button, TextField } from '@mui/material';
 import styled from 'styled-components';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import * as Yup from 'yup';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -32,7 +33,7 @@ const ErrorText = styled.div`
 const LoginForm: React.FC = () => {
   const { setToken, setUser } = useAuth();
   const [showPassword, setShowPassword] = React.useState(false);
-
+  const navigate = useNavigate(); // Initialize navigate
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -48,7 +49,7 @@ const LoginForm: React.FC = () => {
   return (
     <div className="App-header">
       <Formik
-        initialValues={{ username: 'Hermione Granger', password: 'Muggles' }}
+        initialValues={{ username: '', password: '' }}
         validationSchema={validationSchema}
         onSubmit={async (values, { setSubmitting, setErrors }) => {
           try {
@@ -69,6 +70,13 @@ const LoginForm: React.FC = () => {
                 const userId = userResponse.data._id;
                 if (userId) {
                   localStorage.setItem('userId', userId);
+                }
+
+                // Redirect based on user role
+                if (userResponse.data.role === 'admin') {
+                  navigate('/admin/dashboard'); // Redirect admin users
+                } else {
+                  navigate('/'); // Redirect regular users
                 }
               } else {
                 setErrors({ username: ' ', password: loginResponse.data.message || 'Invalid credentials' });

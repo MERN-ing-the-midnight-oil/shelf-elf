@@ -30,11 +30,10 @@ function App() {
             <Route path="/request-books" element={<RequestBooks token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />} />
             <Route path="/manage-communities" element={<ManageCommunities token={token} />} />
             <Route path="/messages" element={<Messages token={token} />} />
+            <Route path="/admin/communities" element={<CommunitiesTable />} /> {/* Moved to main Routes */}
             <Route path="*" element={<Navigate replace to="/manage-communities" />} />
-            <Routes>
-              <Route path="/admin/communities" element={<CommunitiesTable />} />
-            </Routes>
           </Routes>
+
         ) : (
           <div className="landing-container">
             <LandingHeader />

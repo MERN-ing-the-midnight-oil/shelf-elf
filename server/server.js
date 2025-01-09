@@ -36,8 +36,9 @@ app.use(cors(corsOptions)); // Apply CORS middleware
 app.use(express.json()); // For parsing application/json
 
 // MongoDB Connection
-const MONGODB_URI =
-	process.env.MONGODB_URI || "mongodb://localhost:27017/others-covers-database";
+const MONGODB_URI = process.env.MONGODB_URI;
+
+console.log("Connecting to MongoDB URI:", MONGODB_URI);
 
 mongoose
 	.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })

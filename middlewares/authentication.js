@@ -13,29 +13,33 @@ require("dotenv").config({
 exports.checkAuthentication = async (req, res, next) => {
 	console.log("checkAuthentication middleware called");
 	try {
+		// Log headers for debugging
+		console.log("Request Headers:", req.headers);
+
 		if (!req.headers.authorization) {
+			console.error("Authorization header missing");
 			return res.status(401).json({ error: "Authorization header missing" });
 		}
 
 		const tokenParts = req.headers.authorization.split(" ");
 		if (tokenParts.length !== 2 || tokenParts[0] !== "Bearer") {
+			console.error("Invalid token format");
 			return res.status(401).json({ error: "Invalid token format" });
 		}
-		const token = tokenParts[1];
 
-		const decodedToken = jwt.verify(
-			token,
-			process.env.JWT_SECRET || "mysecretkey" // Use secret from .env or fallback
-		);
+		const token = tokenParts[1];
+		console.log("Token received:", token);
+
+		const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
 		console.log("Decoded token:", decodedToken);
 
 		const user = await User.findById(decodedToken.userId);
 		if (!user) {
-			console.log("User not found for ID:", decodedToken.userId);
+			console.error("User not found for ID:", decodedToken.userId);
 			return res.status(401).json({ error: "Invalid token" });
 		}
 
-		console.log("Authenticated user:", user);
+		console.log("Authenticated user:", user.username);
 
 		req.user = user.toObject();
 		req.user._id = user._id;

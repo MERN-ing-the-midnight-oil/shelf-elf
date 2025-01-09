@@ -7,6 +7,19 @@ const {
 	adminCheck,
 } = require("../../../middlewares/authentication");
 
+router.get("/user-communities", checkAuthentication, async (req, res) => {
+	try {
+		const user = await User.findById(req.user._id).populate("communities");
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+		res.status(200).json(user.communities);
+	} catch (error) {
+		console.error("Error fetching user communities:", error);
+		res.status(500).json({ message: "Internal Server Error" });
+	}
+});
+
 // Route to create a new community and add the user to this community
 router.post("/create", checkAuthentication, async (req, res) => {
 	const { name, description, passcode } = req.body;
@@ -40,10 +53,14 @@ router.post("/create", checkAuthentication, async (req, res) => {
 // GET route to list all communities (Admin only)
 router.get("/admin-list", checkAuthentication, adminCheck, async (req, res) => {
 	try {
+		console.log("GET /admin-list route accessed by:", req.user.username);
+
 		const communities = await Community.find();
+		console.log("Communities fetched:", communities);
+
 		res.status(200).json(communities);
 	} catch (error) {
-		console.error("Error fetching communities:", error);
+		console.error("Error fetching communities:", error.message);
 		res.status(500).json({ message: "Failed to fetch communities" });
 	}
 });

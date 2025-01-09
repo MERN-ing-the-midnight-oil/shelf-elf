@@ -4,6 +4,7 @@ import axios from 'axios';
 interface User {
   id: string;
   username: string;
+  role: string;
 }
 
 interface AuthContextProps {
@@ -26,10 +27,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
           const config = { headers: { Authorization: `Bearer ${token}` } };
           const response = await axios.get(`${API_URL}/api/users/me`, config);
-          setUser(response.data);
+          setUser(response.data); // Ensure the response includes role
         } catch (error) {
           console.error('Error fetching user data:', error);
-          // Handle error (e.g., token might be invalid or expired)
           setToken(null);
           localStorage.removeItem('userToken');
         }
@@ -38,6 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     fetchUser();
   }, [token]);
+
 
   return (
     <AuthContext.Provider value={{ token, setToken, user, setUser }}>
