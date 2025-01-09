@@ -30,9 +30,8 @@ const Header: React.FC = () => {
     }, [location]);
 
     useEffect(() => {
-        // Adjust layout based on window size
         const handleResize = () => setIsMobile(window.innerWidth <= 768);
-        handleResize(); // Check initially
+        handleResize();
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -81,8 +80,8 @@ const Header: React.FC = () => {
                                 PaperProps={{
                                     sx: {
                                         width: 250,
-                                        backgroundColor: '#f9f9f9', // Light background color
-                                        color: '#333', // Text color
+                                        backgroundColor: '#f9f9f9',
+                                        color: '#333',
                                         boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
                                     },
                                 }}
@@ -93,11 +92,7 @@ const Header: React.FC = () => {
                                         component={Link}
                                         to="/manage-communities"
                                         onClick={() => setDrawerOpen(false)}
-                                        sx={{
-                                            '&:hover': {
-                                                backgroundColor: '#e0e0e0',
-                                            },
-                                        }}
+                                        sx={{ '&:hover': { backgroundColor: '#e0e0e0' } }}
                                     >
                                         <ListItemText
                                             primary="Your Social Group(s)"
@@ -113,11 +108,7 @@ const Header: React.FC = () => {
                                         component={Link}
                                         to="/lend-books"
                                         onClick={() => setDrawerOpen(false)}
-                                        sx={{
-                                            '&:hover': {
-                                                backgroundColor: '#e0e0e0',
-                                            },
-                                        }}
+                                        sx={{ '&:hover': { backgroundColor: '#e0e0e0' } }}
                                     >
                                         <ListItemText
                                             primary="Your Lending Shelf"
@@ -133,11 +124,7 @@ const Header: React.FC = () => {
                                         component={Link}
                                         to="/request-books"
                                         onClick={() => setDrawerOpen(false)}
-                                        sx={{
-                                            '&:hover': {
-                                                backgroundColor: '#e0e0e0',
-                                            },
-                                        }}
+                                        sx={{ '&:hover': { backgroundColor: '#e0e0e0' } }}
                                     >
                                         <ListItemText
                                             primary="Your Wishlist"
@@ -153,11 +140,7 @@ const Header: React.FC = () => {
                                         component={Link}
                                         to="/messages"
                                         onClick={() => setDrawerOpen(false)}
-                                        sx={{
-                                            '&:hover': {
-                                                backgroundColor: '#e0e0e0',
-                                            },
-                                        }}
+                                        sx={{ '&:hover': { backgroundColor: '#e0e0e0' } }}
                                     >
                                         <ListItemText
                                             primary="Messages"
@@ -168,14 +151,30 @@ const Header: React.FC = () => {
                                             }}
                                         />
                                     </ListItem>
+                                    {user.role === 'admin' && (
+                                        <ListItem
+                                            button
+                                            component={Link}
+                                            to="/admin-dashboard"
+                                            onClick={() => setDrawerOpen(false)}
+                                            sx={{ '&:hover': { backgroundColor: '#e0e0e0' } }}
+                                        >
+                                            <ListItemText
+                                                primary="Admin Controls"
+                                                primaryTypographyProps={{
+                                                    fontSize: '1rem',
+                                                    fontWeight: 'bold',
+                                                    textAlign: 'center',
+                                                }}
+                                            />
+                                        </ListItem>
+                                    )}
                                     <ListItem
                                         button
                                         onClick={handleLogout}
                                         sx={{
                                             backgroundColor: '#d32f2f',
-                                            '&:hover': {
-                                                backgroundColor: '#c62828',
-                                            },
+                                            '&:hover': { backgroundColor: '#c62828' },
                                             color: '#fff',
                                             textAlign: 'center',
                                         }}
@@ -191,7 +190,6 @@ const Header: React.FC = () => {
                                     </ListItem>
                                 </List>
                             </Drawer>
-
                         </>
                     ) : (
                         <>
@@ -200,6 +198,9 @@ const Header: React.FC = () => {
                                 <Tab label="Your Lending Shelf" value="/lend-books" component={Link} to="/lend-books" />
                                 <Tab label="Your Wishlist" value="/request-books" component={Link} to="/request-books" />
                                 <Tab label="Messages" value="/messages" component={Link} to="/messages" />
+                                {user.role === 'admin' && (
+                                    <Tab label="Admin Controls" value="/admin-dashboard" component={Link} to="/admin-dashboard" />
+                                )}
                             </Tabs>
                             <Button color="inherit" onClick={handleLogout}>
                                 Logout

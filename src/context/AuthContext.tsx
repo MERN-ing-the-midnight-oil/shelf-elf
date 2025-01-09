@@ -4,7 +4,7 @@ import axios from 'axios';
 interface User {
   id: string;
   username: string;
-  role: string;
+  role?: string; // Add role for admin detection
 }
 
 interface AuthContextProps {
@@ -12,6 +12,7 @@ interface AuthContextProps {
   setToken: React.Dispatch<React.SetStateAction<string | null>>;
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  isAdmin: boolean; // Derived flag to check if user is admin
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -27,7 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
           const config = { headers: { Authorization: `Bearer ${token}` } };
           const response = await axios.get(`${API_URL}/api/users/me`, config);
-          setUser(response.data); // Ensure the response includes role
+          setUser(response.data); // Ensure server response includes user role
         } catch (error) {
           console.error('Error fetching user data:', error);
           setToken(null);
@@ -39,9 +40,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     fetchUser();
   }, [token]);
 
+  const isAdmin = user?.role === 'admin';
 
   return (
-    <AuthContext.Provider value={{ token, setToken, user, setUser }}>
+    <AuthContext.Provider value={{ token, setToken, user, setUser, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );
