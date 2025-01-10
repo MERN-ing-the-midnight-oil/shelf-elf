@@ -7,6 +7,17 @@ const {
 	adminCheck,
 } = require("../../../middlewares/authentication");
 
+// Routes for public and authenticated user actions
+router.get("/list", async (req, res) => {
+	try {
+		const communities = await Community.find({});
+		res.status(200).json(communities);
+	} catch (error) {
+		console.error("Error fetching communities:", error);
+		res.status(500).send("Internal Server Error");
+	}
+});
+
 router.get("/user-communities", checkAuthentication, async (req, res) => {
 	try {
 		const user = await User.findById(req.user._id).populate("communities");
@@ -20,7 +31,6 @@ router.get("/user-communities", checkAuthentication, async (req, res) => {
 	}
 });
 
-// Route to create a new community and add the user to this community
 router.post("/create", checkAuthentication, async (req, res) => {
 	const { name, description, passcode } = req.body;
 	const userId = req.user._id;
@@ -50,50 +60,6 @@ router.post("/create", checkAuthentication, async (req, res) => {
 	}
 });
 
-// GET route to list all communities (Admin only)
-router.get("/admin-list", checkAuthentication, adminCheck, async (req, res) => {
-	try {
-		console.log("GET /admin-list route accessed by:", req.user.username);
-
-		const communities = await Community.find();
-		console.log("Communities fetched:", communities);
-
-		res.status(200).json(communities);
-	} catch (error) {
-		console.error("Error fetching communities:", error.message);
-		res.status(500).json({ message: "Failed to fetch communities" });
-	}
-});
-
-// DELETE route to delete a community by ID (Admin only)
-router.delete("/:id", checkAuthentication, adminCheck, async (req, res) => {
-	try {
-		const communityId = req.params.id;
-		const deletedCommunity = await Community.findByIdAndDelete(communityId);
-		if (!deletedCommunity) {
-			return res.status(404).json({ message: "Community not found" });
-		}
-		res.status(200).json({ message: "Community deleted successfully" });
-	} catch (error) {
-		console.error("Error deleting community:", error);
-		res.status(500).json({ message: "Failed to delete community" });
-	}
-});
-
-// Existing routes remain unchanged
-
-// GET route to list all communities (public)
-router.get("/list", async (req, res) => {
-	try {
-		const communities = await Community.find({});
-		res.status(200).json(communities);
-	} catch (error) {
-		console.error("Error fetching communities:", error);
-		res.status(500).send("Internal Server Error");
-	}
-});
-
-// POST route for a user to join a community
 router.post("/join", checkAuthentication, async (req, res) => {
 	try {
 		const community = await Community.findById(req.body.communityId);
@@ -126,5 +92,104 @@ router.post("/join", checkAuthentication, async (req, res) => {
 		res.status(500).send("Internal Server Error");
 	}
 });
+
+// Admin routes
+router.get("/admin-list", checkAuthentication, adminCheck, async (req, res) => {
+	try {
+		const communities = await Community.find();
+		res.status(200).json(communities);
+	} catch (error) {
+		console.error("Error fetching communities:", error.message);
+		res.status(500).json({ message: "Failed to fetch communities" });
+	}
+});
+// Get members of a specific community
+router.get(
+	"/:id/members",
+	checkAuthentication,
+	adminCheck,
+	async (req, res) => {
+		try {
+			const community = await Community.findById(req.params.id).populate(
+				"members",
+				"username email _id"
+			);
+			if (!community) {
+				return res.status(404).json({ message: "Community not found" });
+			}
+			res.status(200).json(community.members);
+		} catch (error) {
+			console.error("Error fetching community members:", error);
+			res.status(500).json({ message: "Failed to fetch community members" });
+		}
+	}
+);
+
+router.put("/:id", checkAuthentication, adminCheck, async (req, res) => {
+	try {
+		const { id } = req.params;
+		const { name, description, passcode } = req.body;
+		const updatedCommunity = await Community.findByIdAndUpdate(
+			id,
+			{ name, description, passcode },
+			{ new: true }
+		);
+		if (!updatedCommunity) {
+			return res.status(404).json({ message: "Community not found" });
+		}
+		res.status(200).json(updatedCommunity);
+	} catch (error) {
+		console.error("Error updating community:", error);
+		res.status(500).json({ message: "Failed to update community" });
+	}
+});
+
+router.delete("/:id", checkAuthentication, adminCheck, async (req, res) => {
+	try {
+		const communityId = req.params.id;
+		const deletedCommunity = await Community.findByIdAndDelete(communityId);
+		if (!deletedCommunity) {
+			return res.status(404).json({ message: "Community not found" });
+		}
+		res.status(200).json({ message: "Community deleted successfully" });
+	} catch (error) {
+		console.error("Error deleting community:", error);
+		res.status(500).json({ message: "Failed to delete community" });
+	}
+});
+
+// DELETE route to remove a member from a community (Admin only)
+router.delete(
+	"/:id/members/:memberId",
+	checkAuthentication,
+	adminCheck,
+	async (req, res) => {
+		try {
+			const { id: communityId, memberId } = req.params;
+
+			const community = await Community.findById(communityId);
+			if (!community) {
+				return res.status(404).json({ message: "Community not found" });
+			}
+
+			// Check if the member exists in the community
+			const memberIndex = community.members.indexOf(memberId);
+			if (memberIndex === -1) {
+				return res
+					.status(404)
+					.json({ message: "Member not found in this community" });
+			}
+
+			// Remove the member
+			community.members.splice(memberIndex, 1);
+			await community.save();
+
+			res.status(200).json({ message: "Member removed successfully" });
+		} catch (error) {
+			console.error("Error removing member:", error);
+			res.status(500).json({ message: "Failed to remove member" });
+		}
+	}
+);
 
 module.exports = router;

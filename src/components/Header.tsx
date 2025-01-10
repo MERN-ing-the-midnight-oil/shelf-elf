@@ -193,7 +193,11 @@ const Header: React.FC = () => {
                         </>
                     ) : (
                         <>
-                            <Tabs value={value} onChange={handleChange} aria-label="Navigation Tabs">
+                            <Tabs
+                                value={value || '/manage-communities'} // Default value if current value is invalid
+                                onChange={handleChange}
+                                aria-label="Navigation Tabs"
+                            >
                                 <Tab label="Your Social Group(s)" value="/manage-communities" component={Link} to="/manage-communities" />
                                 <Tab label="Your Lending Shelf" value="/lend-books" component={Link} to="/lend-books" />
                                 <Tab label="Your Wishlist" value="/request-books" component={Link} to="/request-books" />
@@ -202,6 +206,7 @@ const Header: React.FC = () => {
                                     <Tab label="Admin Controls" value="/admin-dashboard" component={Link} to="/admin-dashboard" />
                                 )}
                             </Tabs>
+
                             <Button color="inherit" onClick={handleLogout}>
                                 Logout
                             </Button>

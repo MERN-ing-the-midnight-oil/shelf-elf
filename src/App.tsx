@@ -27,14 +27,48 @@ function App() {
         <Header />
         {token ? (
           <Routes>
-            <Route path="/lend-books" element={<LendBooks token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />} />
-            <Route path="/request-books" element={<RequestBooks token={token} setRefetchCounter={setRefetchCounter} refetchCounter={refetchCounter} />} />
-            <Route path="/manage-communities" element={<ManageCommunities token={token} />} />
-            <Route path="/messages" element={<Messages token={token} />} />
-            <Route path="/admin/communities" element={<CommunitiesTable />} /> {/* Moved to main Routes */}
-            <Route path="*" element={<Navigate replace to="/manage-communities" />} />
-            <Route path="/admin-dashboard" element={<AdminDashboard />} />
+            <Route
+              path="/lend-books"
+              element={
+                <LendBooks
+                  token={token}
+                  setRefetchCounter={setRefetchCounter}
+                  refetchCounter={refetchCounter}
+                />
+              }
+            />
+            <Route
+              path="/request-books"
+              element={
+                <RequestBooks
+                  token={token}
+                  setRefetchCounter={setRefetchCounter}
+                  refetchCounter={refetchCounter}
+                />
+              }
+            />
+            <Route
+              path="/manage-communities"
+              element={<ManageCommunities token={token} />}
+            />
+            <Route
+              path="/messages"
+              element={<Messages token={token} />}
+            />
+            <Route
+              path="/admin/communities"
+              element={<AdminDashboard token={token} />}
+            />
+            <Route
+              path="/admin-dashboard"
+              element={<AdminDashboard token={token} />}
+            />
+            <Route
+              path="*"
+              element={<Navigate replace to="/manage-communities" />}
+            />
           </Routes>
+
 
         ) : (
           <div className="landing-container">
