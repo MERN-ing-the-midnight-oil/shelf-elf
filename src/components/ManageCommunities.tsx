@@ -214,7 +214,7 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token }) => {
                         rows={2}
                     />
                     <TextField
-                        label="Create Passcode"
+                        label="Create Group Join Code"
                         value={newCommunityPasscode}
                         onChange={(e) => setNewCommunityPasscode(e.target.value)}
                         type="password"

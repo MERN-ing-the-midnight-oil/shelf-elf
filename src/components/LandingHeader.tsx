@@ -9,12 +9,11 @@ function LandingHeader() {
                 className="landing-title-img"
             />
             <h2 className="landing-heading">
-                Where your favorite books and games meet new people.
+                Where your books and games meet your trusted friends.
             </h2>
             <h3 className="landing-subheading">
-                Shelf Elf is an easy way for your social group to borrow and lend favorite books and games.
-                It's great for bookclubs, regular game nights, church coffee hours, or any other social group
-                that meets up on a regular basis.
+                Shelf Elf is an easy way for friends to swap games and books.
+                It's useful for bookclubs, game nights, church coffee hours, or any other regular meetup.
             </h3>
             <img
                 src={process.env.PUBLIC_URL + '/BlordGameOxes.png'}
