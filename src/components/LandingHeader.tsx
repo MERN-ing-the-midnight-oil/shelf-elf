@@ -12,7 +12,7 @@ function LandingHeader() {
                 Where your books and games meet your trusted friends.
             </h2>
             <h3 className="landing-subheading">
-                Shelf Elf is an easy way for friends to swap games and books.
+                Shelf Elf is an easy way for trusted friends to browse each other's game and book libraries.
                 It's useful for bookclubs, game nights, church coffee hours, or any other regular meetup.
             </h3>
             <img

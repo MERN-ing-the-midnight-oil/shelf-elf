@@ -93,7 +93,7 @@ const AvailableBooks: React.FC<SharedComponentProps> = ({ token, setRefetchCount
 
     return (
         <div>
-            <Typography variant="h5">Books you can borrow:</Typography>
+            <Typography variant="h5"> Your friends are offering the following books:</Typography>
             <AvailableTable
                 books={books}
                 onRequestClick={handleRequestClick}

@@ -52,7 +52,7 @@ const MyRequestedGames: React.FC<SharedComponentProps> = ({ token, setRefetchCou
     return (
         <Box sx={{ padding: '20px' }}>
             <Typography variant="h5" gutterBottom>
-                My Requested Games
+                Games you have requested
             </Typography>
             {requestedGames.length > 0 ? (
                 <Grid container spacing={3}>

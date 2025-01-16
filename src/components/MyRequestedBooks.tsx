@@ -75,7 +75,7 @@ const MyRequestedBooks: React.FC<SharedComponentProps> = ({ token, setRefetchCou
 
     return (
         <div>
-            <Typography variant="h5">You have asked to borrow the following books:</Typography>
+            <Typography variant="h5">Books you have requested:</Typography>
             <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 650 }} aria-label="requested books table">
                     <TableHead>

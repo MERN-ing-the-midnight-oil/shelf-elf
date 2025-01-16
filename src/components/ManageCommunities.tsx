@@ -1,236 +1,195 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Typography, Box, List, ListItem, ListItemText, Button } from '@mui/material';
+import ExistingCommunities from './ExistingCommunities'; // Import ExistingCommunities
+import CreateNewCommunity from './CreateNewCommunity'; // Import CreateNewCommunity
 import axios from 'axios';
-import {
-    Button,
-    TextField,
-    Typography,
-    Box,
-    List,
-    ListItem,
-    Accordion,
-    AccordionSummary,
-    AccordionDetails,
-    ListItemText,
-    SxProps
-} from '@mui/material'; import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 interface Community {
     _id: string;
     name: string;
     description: string;
+    creatorId: string;
+    members: Array<{ _id: string; username: string }>;
 }
 
 interface ManageCommunitiesProps {
     token: string;
+    userId: string;
 }
 
-const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token }) => {
-    const [communities, setCommunities] = useState<Community[]>([]);
+const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) => {
     const [userCommunities, setUserCommunities] = useState<Community[]>([]);
-    const [newCommunityName, setNewCommunityName] = useState('');
-    const [newCommunityPasscode, setNewCommunityPasscode] = useState('');
-    const [newCommunityDescription, setNewCommunityDescription] = useState('');
+    const [managingCommunity, setManagingCommunity] = useState<Community | null>(null);
 
     const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+    const manageMembersRef = useRef<HTMLDivElement>(null); // Ref for the modal
 
-    const fetchCommunities = async () => {
-        const allCommunitiesResponse = await axios.get(`${API_URL}/api/communities/list`, { headers: { Authorization: `Bearer ${token}` } });
-        setCommunities(allCommunitiesResponse.data);
-        const userCommunitiesResponse = await axios.get(`${API_URL}/api/communities/user-communities`, { headers: { Authorization: `Bearer ${token}` } });
-        setUserCommunities(userCommunitiesResponse.data);
+    // Fetch user-specific communities
+    const fetchUserCommunities = async () => {
+        try {
+            const response = await axios.get(`${API_URL}/api/communities/user-communities`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            console.log("Fetched user communities:", response.data); // Debug log
+            setUserCommunities(response.data);
+        } catch (error) {
+            console.error("Error fetching user communities:", error);
+            alert("Failed to fetch your social groups.");
+        }
     };
+
+
+
 
     useEffect(() => {
-        const fetchCommunities = async () => {
-            const allCommunitiesResponse = await axios.get(`${API_URL}/api/communities/list`, { headers: { Authorization: `Bearer ${token}` } });
-            setCommunities(allCommunitiesResponse.data);
-            const userCommunitiesResponse = await axios.get(`${API_URL}/api/communities/user-communities`, { headers: { Authorization: `Bearer ${token}` } });
-            setUserCommunities(userCommunitiesResponse.data);
-        };
-        fetchCommunities();
-    }, [token]); // Removed API_URL from dependencies as it's not expected to change
-
-
-    const handleJoinCommunity = async (communityId: string, joinCode: string) => {
-        try {
-            await axios.post(`${API_URL}/api/communities/join`, { communityId, passcode: joinCode }, { headers: { Authorization: `Bearer ${token}` } });
-            alert('Joined group successfully.');
-            fetchCommunities(); // Refresh communities list
-        } catch (error) {
-            console.error('Error joining community:', error);
-            alert('Failed to join group.');
-        }
-    };
-
-    const handleCreateCommunity = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            await axios.post(`${API_URL}/api/communities/create`, { name: newCommunityName, description: newCommunityDescription, passcode: newCommunityPasscode }, { headers: { Authorization: `Bearer ${token}` } });
-            alert('Group created successfully.');
-            setNewCommunityName('');
-            setNewCommunityDescription('');
-            setNewCommunityPasscode('');
-            fetchCommunities(); // Refresh communities list
-        } catch (error) {
-            console.error('Error creating community:', error);
-            alert('Failed to create group.');
-        }
-    };
+        fetchUserCommunities();
+    }, [token]);
 
     const handleLeaveCommunity = async (communityId: string) => {
         if (!window.confirm('Are you sure you want to leave this community?')) return;
-
         try {
-            await axios.post(`${API_URL}/api/communities/${communityId}/leave`, {}, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            await axios.post(
+                `${API_URL}/api/communities/${communityId}/leave`,
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
             alert('You have left the community.');
-            fetchCommunities(); // Refresh the list to show updated membership
+            fetchUserCommunities(); // Refresh user communities
         } catch (error) {
             console.error('Error leaving community:', error);
             alert('Failed to leave the community.');
         }
     };
 
+    const handleManageMembers = (community: Community) => {
+        setManagingCommunity(community);
+        setTimeout(() => {
+            manageMembersRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 0); // Scroll to modal after setting state
+    };
+
+    const handleRemoveMember = async (communityId: string, memberId: string) => {
+        if (!window.confirm('Are you sure you want to remove this member?')) return;
+        try {
+            await axios.post(
+                `${API_URL}/api/communities/${communityId}/remove-member`,
+                { memberId },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            alert('Member removed successfully.');
+            const updatedCommunity = {
+                ...managingCommunity!,
+                members: managingCommunity!.members.filter((member) => member._id !== memberId),
+            };
+            setManagingCommunity(updatedCommunity); // Update the community's members
+            fetchUserCommunities(); // Refresh user communities
+        } catch (error) {
+            console.error('Error removing member:', error);
+            alert('Failed to remove member.');
+        }
+    };
+
     return (
         <Box sx={{ maxWidth: '600px', margin: 'auto', mt: 4 }}>
-            {/* Manage Your Social Groups Header */}
-            <Typography variant="h4" gutterBottom textAlign="center">Manage Your Social Groups</Typography>
+            <Typography variant="h4" gutterBottom textAlign="center">
+                Manage Your Social Groups
+            </Typography>
 
-            {/* Your Social Groups Section */}
-            <Box
-                sx={{
-                    mb: 4,
-                    p: 2,
-                    boxShadow: 1,
-                    borderRadius: '5px',
-                    backgroundColor: '#f0f0f0',
-                    border: '1px solid #e0e0e0',
-                }}
-            >
-                <Typography variant="h5" gutterBottom textAlign="center">
+            {/* User's Communities */}
+            <Box sx={{ mb: 4 }}>
+                <Typography variant="h5" gutterBottom>
                     Your Social Groups:
                 </Typography>
                 {userCommunities.length > 0 ? (
                     <List>
                         {userCommunities.map((community) => (
-                            <ListItem
-                                key={community._id}
-                                sx={{
-                                    display: 'flex',
-                                    flexDirection: { xs: 'column', sm: 'row' },
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                }}
-                            >
-                                {/* Community Name and Description */}
+                            <ListItem key={community._id} sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <ListItemText
                                     primary={community.name}
-                                    primaryTypographyProps={{ textAlign: 'center' }}
                                     secondary={community.description}
-                                    secondaryTypographyProps={{ textAlign: 'center' }}
-                                    sx={{ mb: { xs: 1, sm: 0 } }} // Add margin-bottom on mobile
                                 />
-
-                                {/* Leave Social Group Button */}
-                                <Button
-                                    color="secondary"
-                                    variant="contained"
-                                    size="small"
-                                    onClick={() => handleLeaveCommunity(community._id)}
-                                    sx={{ width: { xs: '100%', sm: 'auto' } }} // Full-width on mobile
-                                >
-                                    Leave Social Group
-                                </Button>
+                                <Box>
+                                    <Button
+                                        variant="contained"
+                                        color="secondary"
+                                        onClick={() => handleLeaveCommunity(community._id)}
+                                    >
+                                        Leave Social Group
+                                    </Button>
+                                    {community.creatorId === userId && (
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={() => handleManageMembers(community)}
+                                            sx={{ ml: 2 }}
+                                        >
+                                            Manage Members
+                                        </Button>
+                                    )}
+                                </Box>
                             </ListItem>
                         ))}
                     </List>
                 ) : (
-                    <Typography textAlign="center">
-                        You have not joined a Social Group yet. Ask another user for a Social Group name and join code, or if you
-                        are the first one in your social group to use this app, please create a new Social Group.
-                    </Typography>
+                    <Typography>You are not a member of any social groups.</Typography>
                 )}
+
             </Box>
 
+            {/* Existing Communities */}
+            <ExistingCommunities
+                token={token}
+                onCommunityJoin={async (communityId, passcode) => {
+                    try {
+                        await axios.post(
+                            `${API_URL}/api/communities/join`,
+                            { communityId, passcode },
+                            { headers: { Authorization: `Bearer ${token}` } }
+                        );
+                        alert('Successfully joined the community.');
+                        fetchUserCommunities(); // Refresh user communities
+                    } catch (error) {
+                        console.error('Error joining community:', error);
+                        alert('Failed to join the community.');
+                    }
+                }}
+            />
 
-            {/* Join an Existing Social Group Section */}
-            <Box sx={{ mb: 4, backgroundColor: '#ffffff' }}>
-                <Typography variant="h6" gutterBottom textAlign="center">Join an Existing Social Group:</Typography>
-                {communities.map((community) => (
-                    <Accordion key={community._id}>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id={`panel1a-header-${community._id}`}>
-                            {/* Center the names of the Social Groups */}
-                            <Typography textAlign="center">{community.name}</Typography>
-                        </AccordionSummary>
-                        <AccordionDetails>
-                            <Typography variant="body1" textAlign="center">{community.description}</Typography>
-                            {/* Community join form */}
-                            <form onSubmit={(e) => {
-                                e.preventDefault();
-                                const formData = new FormData(e.currentTarget);
-                                const joinCode = formData.get('joinCode') as string;
-                                handleJoinCommunity(community._id, joinCode);
-                            }} style={{ textAlign: 'center' }}>
-                                <TextField
-                                    name="joinCode"
-                                    label="Enter Join Code"
-                                    variant="outlined"
-                                    size="small"
-                                    margin="normal"
-                                />
-                                <Button variant="contained" color="primary" type="submit" sx={{ mt: 1 }}>
-                                    Join
+            {/* Create a New Community */}
+            <CreateNewCommunity token={token} onCommunityCreated={fetchUserCommunities} />
+
+            {/* Manage Members Section */}
+            {managingCommunity && (
+                <Box ref={manageMembersRef} sx={{ mt: 4 }}>
+                    <Typography variant="h5" gutterBottom>
+                        Manage Members for {managingCommunity.name}
+                    </Typography>
+                    <List>
+                        {managingCommunity.members.map((member) => (
+                            <ListItem key={member._id} sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <ListItemText primary={member.username} />
+                                <Button
+                                    variant="contained"
+                                    color="secondary"
+                                    onClick={() => handleRemoveMember(managingCommunity._id, member._id)}
+                                >
+                                    Remove
                                 </Button>
-                            </form>
-
-                        </AccordionDetails>
-                    </Accordion>
-                ))}
-            </Box>
-
-            {/* New Social Group Creation Form */}
-            <Box sx={{ p: 2, boxShadow: 1, borderRadius: '5px', backgroundColor: '#e3f2fd', border: '1px solid #e0e0e0' }}>
-                <Typography variant="h6" gutterBottom textAlign="center">Don't see the Social Group you want to join? Create it!</Typography>
-                <form onSubmit={handleCreateCommunity} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <TextField
-                        label="Create Group Name"
-                        value={newCommunityName}
-                        onChange={(e) => setNewCommunityName(e.target.value)}
-                        variant="outlined"
-                        size="small"
-                        margin="normal"
-                        fullWidth
-                    />
-                    <TextField
-                        label="Description"
-                        value={newCommunityDescription}
-                        onChange={(e) => setNewCommunityDescription(e.target.value)}
-                        variant="outlined"
-                        size="small"
-                        margin="normal"
-                        fullWidth
-                        multiline
-                        rows={2}
-                    />
-                    <TextField
-                        label="Create Group Join Code"
-                        value={newCommunityPasscode}
-                        onChange={(e) => setNewCommunityPasscode(e.target.value)}
-                        type="password"
-                        variant="outlined"
-                        size="small"
-                        margin="normal"
-                        fullWidth
-                    />
-                    <Button variant="contained" color="primary" type="submit" sx={{ mt: 1 }}>
-                        Create Social Group
+                            </ListItem>
+                        ))}
+                    </List>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => setManagingCommunity(null)}
+                        sx={{ mt: 2 }}
+                    >
+                        Done
                     </Button>
-                </form>
-            </Box>
+                </Box>
+            )}
         </Box>
     );
-
 };
 
 export default ManageCommunities;

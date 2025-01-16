@@ -127,7 +127,7 @@ const Header: React.FC = () => {
                                         sx={{ '&:hover': { backgroundColor: '#e0e0e0' } }}
                                     >
                                         <ListItemText
-                                            primary="Your Wishlist"
+                                            primary="Available to Borrow"
                                             primaryTypographyProps={{
                                                 fontSize: '1rem',
                                                 fontWeight: 'bold',

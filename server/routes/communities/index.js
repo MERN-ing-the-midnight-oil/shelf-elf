@@ -18,32 +18,53 @@ router.get("/list", async (req, res) => {
 	}
 });
 
+// Fetch communities the user belongs to
 router.get("/user-communities", checkAuthentication, async (req, res) => {
 	try {
-		const user = await User.findById(req.user._id).populate("communities");
-		if (!user) {
-			return res.status(404).json({ message: "User not found" });
-		}
-		res.status(200).json(user.communities);
+		const userId = req.user._id; // The ID of the logged-in user
+		console.log("Fetching communities for user ID:", userId);
+
+		// Fetch all communities where the user is a member
+		const communities = await Community.find({
+			members: userId,
+		}).populate("members", "username _id"); // Populate the members field
+
+		// Log the communities fetched
+		console.log(
+			"Communities fetched for user:",
+			JSON.stringify(communities, null, 2)
+		);
+
+		// Respond with the communities
+		res.json(communities);
 	} catch (error) {
 		console.error("Error fetching user communities:", error);
-		res.status(500).json({ message: "Internal Server Error" });
+		res.status(500).json({ message: "Error fetching user communities" });
 	}
 });
 
 router.post("/create", checkAuthentication, async (req, res) => {
 	const { name, description, passcode } = req.body;
-	const userId = req.user._id;
+	const userId = req.user._id; // Get the user ID from req.user
+
+	if (!name || !description || !passcode) {
+		return res.status(400).json({ message: "All fields are required." });
+	}
+
+	console.log("Creator ID:", userId); // Log the creatorId for debugging
 
 	try {
 		const newCommunity = new Community({
 			name,
 			description,
 			passcode,
-			members: [userId],
+			creatorId: userId, // Add the creatorId field
+			members: [userId], // Optionally add the creator as the first member
 		});
+
 		const savedCommunity = await newCommunity.save();
 
+		// Add the new community to the user's list of communities
 		await User.findByIdAndUpdate(
 			userId,
 			{ $push: { communities: savedCommunity._id } },
@@ -59,6 +80,38 @@ router.post("/create", checkAuthentication, async (req, res) => {
 		res.status(500).json({ message: "Error creating community", error });
 	}
 });
+//remove a member of a community you created
+router.post(
+	"/:communityId/remove-member",
+	checkAuthentication,
+	async (req, res) => {
+		const { communityId } = req.params;
+		const { memberId } = req.body;
+		const userId = req.user._id;
+
+		try {
+			const community = await Community.findById(communityId);
+
+			if (!community) {
+				return res.status(404).json({ message: "Community not found" });
+			}
+
+			if (community.creatorId.toString() !== userId.toString()) {
+				return res.status(403).json({
+					message: "Access denied. Only the creator can manage members.",
+				});
+			}
+
+			community.members.pull(memberId);
+			await community.save();
+
+			res.status(200).json({ message: "Member removed successfully" });
+		} catch (error) {
+			console.error("Error removing member:", error);
+			res.status(500).json({ message: "Failed to remove member" });
+		}
+	}
+);
 
 router.post("/join", checkAuthentication, async (req, res) => {
 	try {
@@ -93,6 +146,35 @@ router.post("/join", checkAuthentication, async (req, res) => {
 	}
 });
 
+// POST route for a user to leave a community
+router.post("/:id/leave", checkAuthentication, async (req, res) => {
+	try {
+		const communityId = req.params.id;
+		const userId = req.user._id;
+
+		// Remove the user from the community's members array
+		const updatedCommunity = await Community.findByIdAndUpdate(
+			communityId,
+			{ $pull: { members: userId } },
+			{ new: true }
+		);
+
+		if (!updatedCommunity) {
+			return res.status(404).json({ message: "Community not found" });
+		}
+
+		// Remove the community from the user's communities array
+		await User.findByIdAndUpdate(userId, {
+			$pull: { communities: communityId },
+		});
+
+		res.status(200).json({ message: "Successfully left the community" });
+	} catch (error) {
+		console.error("Error leaving community:", error);
+		res.status(500).json({ message: "Failed to leave the community", error });
+	}
+});
+
 // Admin routes
 router.get("/admin-list", checkAuthentication, adminCheck, async (req, res) => {
 	try {
@@ -124,6 +206,36 @@ router.get(
 		}
 	}
 );
+
+router.delete("/:id/remove-member", checkAuthentication, async (req, res) => {
+	const { memberId } = req.body;
+	const communityId = req.params.id;
+	const userId = req.user._id;
+
+	try {
+		const community = await Community.findById(communityId);
+
+		if (!community) {
+			return res.status(404).json({ message: "Community not found." });
+		}
+
+		if (String(community.creator) !== String(userId)) {
+			return res
+				.status(403)
+				.json({ message: "Only the creator can manage members." });
+		}
+
+		community.members = community.members.filter(
+			(member) => String(member) !== String(memberId)
+		);
+		await community.save();
+
+		res.status(200).json({ message: "Member removed successfully." });
+	} catch (error) {
+		console.error("Error removing member:", error);
+		res.status(500).json({ message: "Failed to remove member." });
+	}
+});
 
 router.put("/:id", checkAuthentication, adminCheck, async (req, res) => {
 	try {
@@ -191,5 +303,35 @@ router.delete(
 		}
 	}
 );
+
+router.delete("/:id/remove-member", checkAuthentication, async (req, res) => {
+	const { memberId } = req.body;
+	const communityId = req.params.id;
+	const userId = req.user._id;
+
+	try {
+		const community = await Community.findById(communityId);
+
+		if (!community) {
+			return res.status(404).json({ message: "Community not found." });
+		}
+
+		if (String(community.creator) !== String(userId)) {
+			return res
+				.status(403)
+				.json({ message: "Only the group creator can manage members." });
+		}
+
+		community.members = community.members.filter(
+			(member) => String(member._id) !== memberId
+		);
+		await community.save();
+
+		res.status(200).json({ message: "Member removed successfully." });
+	} catch (error) {
+		console.error("Error removing member:", error);
+		res.status(500).json({ message: "Failed to remove member." });
+	}
+});
 
 module.exports = router;

@@ -9,12 +9,14 @@ import ManageCommunities from './components/ManageCommunities';
 import LandingHeader from './components/LandingHeader';
 import Messages from './components/Messages'; // Added import for Messages component
 import { useAuth } from './context/AuthContext';
+
 import CommunitiesTable from './components/CommunitiesTable';
 import AdminDashboard from './components/AdminDashboard';
 
 
+
 function App() {
-  const { token } = useAuth();
+  const { user, token } = useAuth(); // Now, user and token are available
   const [refetchCounter, setRefetchCounter] = useState(0);
 
   useEffect(() => {
@@ -27,6 +29,7 @@ function App() {
         <Header />
         {token ? (
           <Routes>
+
             <Route
               path="/lend-books"
               element={
@@ -49,8 +52,11 @@ function App() {
             />
             <Route
               path="/manage-communities"
-              element={<ManageCommunities token={token} />}
+              element={<ManageCommunities token={token!} userId={user?._id || ''} />}
             />
+
+
+
             <Route
               path="/messages"
               element={<Messages token={token} />}

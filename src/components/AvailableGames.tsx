@@ -59,7 +59,7 @@ const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCount
     return (
         <Container maxWidth="md">
             <Typography variant="h5" gutterBottom>
-                Browse games available in your social groups:
+                Your friends are offering the following games:
             </Typography>
             {isLoading ? (
                 <CircularProgress />

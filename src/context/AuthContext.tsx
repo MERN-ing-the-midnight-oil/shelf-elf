@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
 interface User {
-  id: string;
+  _id: string;
   username: string;
   role?: string; // Add role for admin detection
 }
