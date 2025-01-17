@@ -23,27 +23,33 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
 
     const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
     const manageMembersRef = useRef<HTMLDivElement>(null); // Ref for the modal
+    const isMounted = useRef(true);
 
-    // Fetch user-specific communities
+    useEffect(() => {
+        isMounted.current = true;
+        fetchUserCommunities();
+
+        return () => {
+            isMounted.current = false; // Mark as unmounted on cleanup
+        };
+    }, [token]);
+
     const fetchUserCommunities = async () => {
         try {
             const response = await axios.get(`${API_URL}/api/communities/user-communities`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            console.log("Fetched user communities:", response.data); // Debug log
-            setUserCommunities(response.data);
+            if (isMounted.current) {
+                console.log("Fetched user communities:", response.data); // Debug log
+                setUserCommunities(response.data);
+            }
         } catch (error) {
             console.error("Error fetching user communities:", error);
-            alert("Failed to fetch your social groups.");
+            if (isMounted.current) {
+                alert("Failed to fetch your social groups.");
+            }
         }
     };
-
-
-
-
-    useEffect(() => {
-        fetchUserCommunities();
-    }, [token]);
 
     const handleLeaveCommunity = async (communityId: string) => {
         if (!window.confirm('Are you sure you want to leave this community?')) return;
@@ -133,7 +139,6 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
                 ) : (
                     <Typography>You are not a member of any social groups.</Typography>
                 )}
-
             </Box>
 
             {/* Existing Communities */}
