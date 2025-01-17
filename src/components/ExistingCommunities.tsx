@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import {
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
+    Typography,
+    TextField,
+    Button,
+    Box,
+} from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 interface Community {
     _id: string;
@@ -12,8 +22,7 @@ interface ExistingCommunitiesProps {
     onCommunityJoin: (communityId: string, passcode: string) => Promise<void>;
 }
 
-
-const ExistingCommunities: React.FC<ExistingCommunitiesProps> = ({ token }) => {
+const ExistingCommunities: React.FC<ExistingCommunitiesProps> = ({ token, onCommunityJoin }) => {
     const [communities, setCommunities] = useState<Community[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -47,18 +56,47 @@ const ExistingCommunities: React.FC<ExistingCommunitiesProps> = ({ token }) => {
     }, [token]);
 
     if (loading) {
-        return <p>Loading...</p>;
+        return <Typography>Loading...</Typography>;
     }
 
     return (
-        <div>
-            <h3>Existing Communities</h3>
-            <ul>
-                {communities.map((community) => (
-                    <li key={community._id}>{community.name}</li>
-                ))}
-            </ul>
-        </div>
+        <Box sx={{ mb: 4 }}>
+            <Typography variant="h5" gutterBottom>
+                Join an Existing Social Group:
+            </Typography>
+            {communities.length > 0 ? (
+                communities.map((community) => (
+                    <Accordion key={community._id}>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                            <Typography>{community.name}</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <Typography>{community.description}</Typography>
+                            <form
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    const formData = new FormData(e.currentTarget);
+                                    const passcode = formData.get('joinCode') as string;
+                                    onCommunityJoin(community._id, passcode);
+                                }}
+                            >
+                                <TextField
+                                    name="joinCode"
+                                    label="Passcode"
+                                    fullWidth
+                                    margin="normal"
+                                />
+                                <Button type="submit" variant="contained" fullWidth>
+                                    Join
+                                </Button>
+                            </form>
+                        </AccordionDetails>
+                    </Accordion>
+                ))
+            ) : (
+                <Typography>No social groups available to join.</Typography>
+            )}
+        </Box>
     );
 };
 

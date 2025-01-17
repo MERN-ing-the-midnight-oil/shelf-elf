@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Typography, Box, List, ListItem, ListItemText, Button } from '@mui/material';
+import { Typography, Box, List, ListItem, ListItemText, Button, TextField } from '@mui/material';
 import ExistingCommunities from './ExistingCommunities'; // Import ExistingCommunities
 import CreateNewCommunity from './CreateNewCommunity'; // Import CreateNewCommunity
 import axios from 'axios';
@@ -9,6 +9,7 @@ interface Community {
     name: string;
     description: string;
     creatorId: string;
+    passcode: string;
     members: Array<{ _id: string; username: string }>;
 }
 
@@ -20,9 +21,11 @@ interface ManageCommunitiesProps {
 const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) => {
     const [userCommunities, setUserCommunities] = useState<Community[]>([]);
     const [managingCommunity, setManagingCommunity] = useState<Community | null>(null);
+    const [editingCommunity, setEditingCommunity] = useState<Community | null>(null);
 
     const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
-    const manageMembersRef = useRef<HTMLDivElement>(null); // Ref for the modal
+    const manageMembersRef = useRef<HTMLDivElement>(null);
+    const editGroupRef = useRef<HTMLDivElement>(null);
     const isMounted = useRef(true);
 
     useEffect(() => {
@@ -30,7 +33,7 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
         fetchUserCommunities();
 
         return () => {
-            isMounted.current = false; // Mark as unmounted on cleanup
+            isMounted.current = false;
         };
     }, [token]);
 
@@ -40,13 +43,12 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (isMounted.current) {
-                console.log("Fetched user communities:", response.data); // Debug log
                 setUserCommunities(response.data);
             }
         } catch (error) {
-            console.error("Error fetching user communities:", error);
+            console.error('Error fetching user communities:', error);
             if (isMounted.current) {
-                alert("Failed to fetch your social groups.");
+                alert('Failed to fetch your social groups.');
             }
         }
     };
@@ -60,7 +62,7 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             alert('You have left the community.');
-            fetchUserCommunities(); // Refresh user communities
+            fetchUserCommunities();
         } catch (error) {
             console.error('Error leaving community:', error);
             alert('Failed to leave the community.');
@@ -71,28 +73,14 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
         setManagingCommunity(community);
         setTimeout(() => {
             manageMembersRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 0); // Scroll to modal after setting state
+        }, 0);
     };
 
-    const handleRemoveMember = async (communityId: string, memberId: string) => {
-        if (!window.confirm('Are you sure you want to remove this member?')) return;
-        try {
-            await axios.post(
-                `${API_URL}/api/communities/${communityId}/remove-member`,
-                { memberId },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            alert('Member removed successfully.');
-            const updatedCommunity = {
-                ...managingCommunity!,
-                members: managingCommunity!.members.filter((member) => member._id !== memberId),
-            };
-            setManagingCommunity(updatedCommunity); // Update the community's members
-            fetchUserCommunities(); // Refresh user communities
-        } catch (error) {
-            console.error('Error removing member:', error);
-            alert('Failed to remove member.');
-        }
+    const handleEditCommunity = (community: Community) => {
+        setEditingCommunity(community);
+        setTimeout(() => {
+            editGroupRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 0);
     };
 
     return (
@@ -123,14 +111,24 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
                                         Leave Social Group
                                     </Button>
                                     {community.creatorId === userId && (
-                                        <Button
-                                            variant="contained"
-                                            color="primary"
-                                            onClick={() => handleManageMembers(community)}
-                                            sx={{ ml: 2 }}
-                                        >
-                                            Manage Members
-                                        </Button>
+                                        <>
+                                            <Button
+                                                variant="contained"
+                                                color="primary"
+                                                onClick={() => handleManageMembers(community)}
+                                                sx={{ ml: 2 }}
+                                            >
+                                                Manage Members
+                                            </Button>
+                                            <Button
+                                                variant="contained"
+                                                color="info"
+                                                onClick={() => handleEditCommunity(community)}
+                                                sx={{ ml: 2 }}
+                                            >
+                                                Edit Group Info
+                                            </Button>
+                                        </>
                                     )}
                                 </Box>
                             </ListItem>
@@ -152,7 +150,7 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
                             { headers: { Authorization: `Bearer ${token}` } }
                         );
                         alert('Successfully joined the community.');
-                        fetchUserCommunities(); // Refresh user communities
+                        fetchUserCommunities();
                     } catch (error) {
                         console.error('Error joining community:', error);
                         alert('Failed to join the community.');
@@ -176,7 +174,7 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
                                 <Button
                                     variant="contained"
                                     color="secondary"
-                                    onClick={() => handleRemoveMember(managingCommunity._id, member._id)}
+                                    onClick={() => console.log('Remove', member.username)}
                                 >
                                     Remove
                                 </Button>
@@ -191,6 +189,74 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
                     >
                         Done
                     </Button>
+                </Box>
+            )}
+
+            {/* Edit Group Info Modal */}
+            {editingCommunity && (
+                <Box ref={editGroupRef} sx={{ mt: 4 }}>
+                    <Typography variant="h5" gutterBottom>
+                        Edit Group Info for {editingCommunity.name}
+                    </Typography>
+                    <form
+                        onSubmit={async (e) => {
+                            e.preventDefault();
+                            const formData = new FormData(e.currentTarget);
+                            const updatedName = formData.get('name') as string;
+                            const updatedDescription = formData.get('description') as string;
+                            const updatedPasscode = formData.get('passcode') as string;
+
+                            try {
+                                await axios.put(
+                                    `${API_URL}/api/communities/${editingCommunity._id}/update`,
+                                    { name: updatedName, description: updatedDescription, passcode: updatedPasscode },
+                                    { headers: { Authorization: `Bearer ${token}` } }
+                                );
+                                alert('Community updated successfully.');
+                                setEditingCommunity(null);
+                                fetchUserCommunities(); // Refresh communities
+                            } catch (error) {
+                                console.error('Error updating community:', error);
+                                alert('Failed to update community.');
+                            }
+                        }}
+                    >
+                        <TextField
+                            label="Group Name"
+                            defaultValue={editingCommunity.name}
+                            name="name"
+                            fullWidth
+                            margin="normal"
+                        />
+                        <TextField
+                            label="Description"
+                            defaultValue={editingCommunity.description}
+                            name="description"
+                            fullWidth
+                            margin="normal"
+                            multiline
+                            rows={2}
+                        />
+                        <TextField
+                            label="Passcode"
+                            defaultValue={editingCommunity.passcode}
+                            name="passcode"
+                            type="password"
+                            fullWidth
+                            margin="normal"
+                        />
+                        <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
+                            Save Changes
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            fullWidth
+                            onClick={() => setEditingCommunity(null)}
+                            sx={{ mt: 2 }}
+                        >
+                            Cancel
+                        </Button>
+                    </form>
                 </Box>
             )}
         </Box>

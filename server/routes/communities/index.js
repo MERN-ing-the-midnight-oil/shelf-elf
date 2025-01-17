@@ -303,6 +303,39 @@ router.delete(
 		}
 	}
 );
+//updates group info (group name, passcode, group description) if user is the group creator
+router.put("/:communityId/update", checkAuthentication, async (req, res) => {
+	const { communityId } = req.params;
+	const { name, description, passcode } = req.body;
+	const userId = req.user._id;
+
+	try {
+		const community = await Community.findById(communityId);
+
+		if (!community) {
+			return res.status(404).json({ message: "Community not found" });
+		}
+
+		if (community.creatorId.toString() !== userId.toString()) {
+			return res
+				.status(403)
+				.json({ message: "You are not authorized to edit this community" });
+		}
+
+		community.name = name || community.name;
+		community.description = description || community.description;
+		community.passcode = passcode || community.passcode;
+
+		const updatedCommunity = await community.save();
+		res.status(200).json({
+			message: "Community updated successfully",
+			community: updatedCommunity,
+		});
+	} catch (error) {
+		console.error("Error updating community:", error);
+		res.status(500).json({ message: "Error updating community", error });
+	}
+});
 
 router.delete("/:id/remove-member", checkAuthentication, async (req, res) => {
 	const { memberId } = req.body;
