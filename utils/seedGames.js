@@ -1,7 +1,7 @@
 const fs = require("fs");
 const csv = require("csv-parser");
 const mongoose = require("mongoose");
-const Game = require("../server/models/Game");
+const Game = require("./server/models/Game");
 
 // MongoDB connection
 const MONGODB_URI =

@@ -7,15 +7,18 @@ require("dotenv").config();
 
 const allowedOrigins = [
 	"http://localhost:3000",
+	"http://192.168.1.35:3000", // Add your MacBook's IP for development
 	"https://bellingham-buy-nothing-books-9fe5de7a4a15.herokuapp.com",
 	"https://shelf-elf-4b02ddd52e38.herokuapp.com",
 ];
 
 const corsOptions = {
 	origin: function (origin, callback) {
+		// Allow requests from allowed origins or no origin (e.g., mobile apps)
 		if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
 			callback(null, true);
 		} else {
+			console.error(`CORS error: Origin ${origin} not allowed`);
 			callback(new Error("Not allowed by CORS"));
 		}
 	},
@@ -43,7 +46,7 @@ console.log("Connecting to MongoDB URI:", MONGODB_URI);
 mongoose
 	.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
 	.then(() => console.log("MongoDB Connected"))
-	.catch((err) => console.log("there is a problem with mongoose " + err));
+	.catch((err) => console.log("There is a problem with mongoose: " + err));
 
 // Import authentication middlewares
 const {
