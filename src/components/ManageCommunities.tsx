@@ -174,7 +174,30 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
                                 <Button
                                     variant="contained"
                                     color="secondary"
-                                    onClick={() => console.log('Remove', member.username)}
+                                    onClick={async () => {
+                                        if (!window.confirm(`Are you sure you want to remove ${member.username}?`)) {
+                                            return;
+                                        }
+                                        try {
+                                            await axios.post(
+                                                `${API_URL}/api/communities/${managingCommunity._id}/remove-member`,
+                                                { memberId: member._id },
+                                                { headers: { Authorization: `Bearer ${token}` } }
+                                            );
+                                            alert(`${member.username} has been removed.`);
+                                            // Refresh the community data after member removal
+                                            const updatedCommunity = {
+                                                ...managingCommunity,
+                                                members: managingCommunity.members.filter(
+                                                    (m) => m._id !== member._id
+                                                ),
+                                            };
+                                            setManagingCommunity(updatedCommunity);
+                                        } catch (error) {
+                                            console.error(`Error removing member ${member._id}:`, error);
+                                            alert("Failed to remove member. Please try again.");
+                                        }
+                                    }}
                                 >
                                     Remove
                                 </Button>
@@ -191,6 +214,7 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
                     </Button>
                 </Box>
             )}
+
 
             {/* Edit Group Info Modal */}
             {editingCommunity && (

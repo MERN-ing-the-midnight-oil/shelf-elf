@@ -1,124 +1,65 @@
 const express = require("express");
 const router = express.Router();
 const { checkAuthentication } = require("../../../middlewares/authentication");
+const fetchGameImage = require("./fetchGameThumbnail");
 const User = require("../../models/user");
 const Community = require("../../models/community");
 const GameRequest = require("../../models/gameRequest");
-const axios = require("axios");
-const xml2js = require("xml2js");
 const Game = require("../../models/game");
 
-// Search for games by title
+// routes/games/index.js
 router.get("/search", checkAuthentication, async (req, res) => {
 	const { title } = req.query;
 
-	if (!title) {
-		return res.status(400).json({ message: "Title is required" });
-	}
-
 	try {
-		const localGames = await Game.find({ title: new RegExp(title, "i") }).limit(
-			10
-		);
+		// Limit the search results to the first 10 games
+		let games = await Game.find({
+			$text: { $search: title },
+		})
+			.sort({ score: { $meta: "textScore" } })
+			.limit(10); // Limit to 10 results
 
-		const parser = new xml2js.Parser();
-
-		// Step 1: Check for missing thumbnails in local games
-		for (const game of localGames) {
-			if (!game.thumbnailUrl || game.thumbnailUrl === null) {
+		// Attempt to fetch thumbnailUrl only for these 10 games, if missing
+		for (let game of games) {
+			if (!game.thumbnailUrl && game.bggId) {
+				// Ensure there's a BGG ID to fetch the image
 				try {
-					const detailUrl = `https://boardgamegeek.com/xmlapi2/thing?id=${game.bggId}&stats=1`;
-					const detailResponse = await axios.get(detailUrl);
-					const detailResult = await parser.parseStringPromise(
-						detailResponse.data
-					);
-					const detailGame = detailResult.items.item[0];
-
-					// Update the game's thumbnail in the database
-					game.thumbnailUrl = detailGame.thumbnail
-						? detailGame.thumbnail[0]
-						: null;
-					await game.save();
-
-					console.log(
-						`Updated thumbnail for game ${game.title} (${game.bggId}): ${game.thumbnailUrl}`
-					);
-				} catch (error) {
+					const thumbnailUrl = await fetchGameImage(game.bggId); // Assuming this function is async
+					game.thumbnailUrl = thumbnailUrl;
+					await game.save(); // Persist the thumbnail URL
+				} catch (fetchError) {
 					console.error(
-						`Error updating thumbnail for game ${game.title} (${game.bggId}):`,
-						error
+						"Failed to fetch thumbnail for game:",
+						game.title,
+						fetchError
 					);
+					// Optionally handle the failure gracefully
 				}
 			}
 		}
 
-		// Return updated local games to the frontend
-		if (localGames.length > 0) {
-			return res.json(localGames);
-		}
-
-		// Step 2: Fallback to the BGG API if no local matches
-		const searchUrl = `https://boardgamegeek.com/xmlapi2/search?query=${encodeURIComponent(
-			title
-		)}&type=boardgame`;
-		const searchResponse = await axios.get(searchUrl);
-		const searchResult = await parser.parseStringPromise(searchResponse.data);
-
-		if (searchResult.items.$.total === "0") {
-			return res.status(404).json({ message: "No games found" });
-		}
-
-		const games = [];
-		for (const game of searchResult.items.item) {
-			const gameId = game.$.id;
-			const detailUrl = `https://boardgamegeek.com/xmlapi2/thing?id=${gameId}&stats=1`;
-
-			try {
-				const detailResponse = await axios.get(detailUrl);
-				const detailResult = await parser.parseStringPromise(
-					detailResponse.data
-				);
-				const detailGame = detailResult.items.item[0];
-
-				const thumbnail = detailGame.thumbnail ? detailGame.thumbnail[0] : null;
-				const image = detailGame.image ? detailGame.image[0] : null;
-
-				games.push({
-					bggId: gameId,
-					title: game.name[0].$.value,
-					bggLink: `https://boardgamegeek.com/boardgame/${gameId}`,
-					thumbnailUrl: thumbnail,
-					image: image,
-					bggRating: null, // Placeholder
-				});
-			} catch (detailError) {
-				console.error(
-					`Error fetching details for game ID ${gameId}:`,
-					detailError
-				);
-			}
-		}
-
-		// Save new games to the database
-		await Game.insertMany(games, { ordered: false }).catch((err) => {
-			if (err.code !== 11000)
-				console.error("Error saving games to DB:", err.message);
-		});
-
-		res.json(games);
+		console.log(
+			"Sending search results:",
+			games.map((game) => ({
+				title: game.title,
+				thumbnailUrl: game.thumbnailUrl,
+			}))
+		); // Log game titles and thumbnails
+		res.json(games); // This will include up to 10 games with their thumbnails if fetched
 	} catch (error) {
-		console.error("Error searching games:", error);
-		res.status(500).json({ message: "Error searching games", error });
+		console.error("Error searching for games:", error);
+		res.status(500).json({ message: "Error searching for games" });
 	}
 });
 
-// Add a game to the user's lending library
+// Add a game to the user's library
+// Assuming LendingLibraryGame is imported
 router.post("/lend", checkAuthentication, async (req, res) => {
 	const userId = req.user._id;
 	const gameId = req.body.gameId;
 
 	try {
-		// Verify that the game exists
+		// Find the game to ensure it exists
 		const game = await Game.findById(gameId);
 		if (!game) {
 			console.log("Game not found");
@@ -126,7 +67,6 @@ router.post("/lend", checkAuthentication, async (req, res) => {
 		}
 
 		// Create a new LendingLibraryGame document
-		const LendingLibraryGame = require("../../models/lendingLibraryGame");
 		const newLendingLibraryGame = new LendingLibraryGame({
 			game: gameId,
 			owner: userId,
@@ -148,18 +88,19 @@ router.post("/lend", checkAuthentication, async (req, res) => {
 	}
 });
 
-// Remove a game from the user's lending library
+// Route to remove a game from the user's lending library
+const LendingLibraryGame = require("../../models/lendingLibraryGame"); // Adjust the path as needed
+
 router.delete("/remove-game/:gameId", checkAuthentication, async (req, res) => {
 	try {
 		const userId = req.user._id;
 		const gameId = req.params.gameId;
 
-		const LendingLibraryGame = require("../../models/lendingLibraryGame");
-
-		// Find and remove the game
+		// Find and remove the LendingLibraryGame document
+		// Note: This assumes that gameId passed is the LendingLibraryGame document's ID
 		const lendingLibraryGame = await LendingLibraryGame.findOneAndRemove({
 			_id: gameId,
-			owner: userId,
+			owner: userId, // Ensure that the game belongs to the user making the request
 		});
 
 		if (!lendingLibraryGame) {
@@ -167,6 +108,8 @@ router.delete("/remove-game/:gameId", checkAuthentication, async (req, res) => {
 				.status(404)
 				.json({ message: "Game not found or not owned by user" });
 		}
+
+		// Optional: Handle associated game requests (e.g., delete or update them)
 
 		res.json({
 			message: "Game removed from lending library successfully.",
@@ -179,10 +122,6 @@ router.delete("/remove-game/:gameId", checkAuthentication, async (req, res) => {
 			.json({ message: "Error removing game from lending library" });
 	}
 });
-
-// Additional routes (e.g., mark available/unavailable) remain unchanged
-
-module.exports = router;
 
 // Route to get the logged-in user's lending library games
 router.get("/my-library-games", checkAuthentication, async (req, res) => {

@@ -111,7 +111,7 @@ const Header: React.FC = () => {
                                         sx={{ '&:hover': { backgroundColor: '#e0e0e0' } }}
                                     >
                                         <ListItemText
-                                            primary="Your Lending Shelf"
+                                            primary="Your Offered Titles"
                                             primaryTypographyProps={{
                                                 fontSize: '1rem',
                                                 fontWeight: 'bold',
@@ -127,7 +127,7 @@ const Header: React.FC = () => {
                                         sx={{ '&:hover': { backgroundColor: '#e0e0e0' } }}
                                     >
                                         <ListItemText
-                                            primary="Available to Borrow"
+                                            primary="Ask to Borrow"
                                             primaryTypographyProps={{
                                                 fontSize: '1rem',
                                                 fontWeight: 'bold',
@@ -199,7 +199,7 @@ const Header: React.FC = () => {
                                 aria-label="Navigation Tabs"
                             >
                                 <Tab label="Your Lending Group(s)" value="/manage-communities" component={Link} to="/manage-communities" />
-                                <Tab label="Your Lending Shelf" value="/lend-books" component={Link} to="/lend-books" />
+                                <Tab label="Your Offered Titles" value="/lend-books" component={Link} to="/lend-books" />
                                 <Tab label="Your Wishlist" value="/request-books" component={Link} to="/request-books" />
                                 <Tab label="Messages" value="/messages" component={Link} to="/messages" />
                                 {user.role === 'admin' && (
