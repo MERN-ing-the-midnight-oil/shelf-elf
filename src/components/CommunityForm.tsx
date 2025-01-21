@@ -57,7 +57,7 @@ const CommunityForm: React.FC<CommunityFormProps> = ({ token, onRefetch }) => {
                     name="communityName"
                     value={communityName}
                     onChange={(e) => setCommunityName(e.target.value)}
-                    label="Name your Social Group (e.g. Cora G.'s thursday night game-night)"
+                    label="Name your Lending Group (e.g. Cora G.'s thursday night game-night)"
                     variant="outlined"
                 />
                 <TextField
@@ -82,7 +82,7 @@ const CommunityForm: React.FC<CommunityFormProps> = ({ token, onRefetch }) => {
                     type="password"
                 />
                 <Button type="submit" variant="contained" color="primary">
-                    Create Social Group
+                    Create Lending Group
                 </Button>
             </form>
         </FormContainer>

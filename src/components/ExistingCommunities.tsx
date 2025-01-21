@@ -62,7 +62,7 @@ const ExistingCommunities: React.FC<ExistingCommunitiesProps> = ({ token, onComm
     return (
         <Box sx={{ mb: 4 }}>
             <Typography variant="h5" gutterBottom>
-                Join an Existing Social Group:
+                Join an Existing Lending Group:
             </Typography>
             {communities.length > 0 ? (
                 communities.map((community) => (
@@ -94,7 +94,7 @@ const ExistingCommunities: React.FC<ExistingCommunitiesProps> = ({ token, onComm
                     </Accordion>
                 ))
             ) : (
-                <Typography>No social groups available to join.</Typography>
+                <Typography>No Lending Groups available to join.</Typography>
             )}
         </Box>
     );

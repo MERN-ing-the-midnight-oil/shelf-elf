@@ -48,7 +48,7 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
         } catch (error) {
             console.error('Error fetching user communities:', error);
             if (isMounted.current) {
-                alert('Failed to fetch your social groups.');
+                alert('Failed to fetch your Lending Groups.');
             }
         }
     };
@@ -86,13 +86,13 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
     return (
         <Box sx={{ maxWidth: '600px', margin: 'auto', mt: 4 }}>
             <Typography variant="h4" gutterBottom textAlign="center">
-                Manage Your Social Groups
+                Manage Your Lending Groups
             </Typography>
 
             {/* User's Communities */}
             <Box sx={{ mb: 4 }}>
                 <Typography variant="h5" gutterBottom>
-                    Your Social Groups:
+                    Your Lending Groups:
                 </Typography>
                 {userCommunities.length > 0 ? (
                     <List>
@@ -108,7 +108,7 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
                                         color="secondary"
                                         onClick={() => handleLeaveCommunity(community._id)}
                                     >
-                                        Leave Social Group
+                                        Leave Lending Group
                                     </Button>
                                     {community.creatorId === userId && (
                                         <>
@@ -135,7 +135,7 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
                         ))}
                     </List>
                 ) : (
-                    <Typography>You are not a member of any social groups.</Typography>
+                    <Typography>You are not a member of any Lending Groups.</Typography>
                 )}
             </Box>
 

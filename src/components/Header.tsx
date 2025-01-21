@@ -95,7 +95,7 @@ const Header: React.FC = () => {
                                         sx={{ '&:hover': { backgroundColor: '#e0e0e0' } }}
                                     >
                                         <ListItemText
-                                            primary="Your Social Group(s)"
+                                            primary="Your Lending Group(s)"
                                             primaryTypographyProps={{
                                                 fontSize: '1rem',
                                                 fontWeight: 'bold',
@@ -198,7 +198,7 @@ const Header: React.FC = () => {
                                 onChange={handleChange}
                                 aria-label="Navigation Tabs"
                             >
-                                <Tab label="Your Social Group(s)" value="/manage-communities" component={Link} to="/manage-communities" />
+                                <Tab label="Your Lending Group(s)" value="/manage-communities" component={Link} to="/manage-communities" />
                                 <Tab label="Your Lending Shelf" value="/lend-books" component={Link} to="/lend-books" />
                                 <Tab label="Your Wishlist" value="/request-books" component={Link} to="/request-books" />
                                 <Tab label="Messages" value="/messages" component={Link} to="/messages" />

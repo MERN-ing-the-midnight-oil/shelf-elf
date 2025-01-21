@@ -40,7 +40,7 @@ const CreateNewCommunity: React.FC<CreateNewCommunityProps> = ({ token, onCommun
     return (
         <Box sx={{ p: 2, border: '1px solid #ddd', borderRadius: '8px', backgroundColor: '#f9f9f9', mt: 4 }}>
             <Typography variant="h5" gutterBottom>
-                Create a New Social Group:
+                Create a New Lending Group:
             </Typography>
             <form onSubmit={handleCreateCommunity}>
                 <TextField

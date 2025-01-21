@@ -80,7 +80,7 @@ const GroupDetails: React.FC<GroupDetailsProps> = ({
                     alert("Leaving group functionality not implemented yet.");
                 }}
             >
-                Leave Social Group
+                Leave Lending Group
             </button>
         </div>
     );
