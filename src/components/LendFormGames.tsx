@@ -3,8 +3,7 @@ import { TextField, Button, Typography, CircularProgress, Container, Link } from
 import { styled } from '@mui/system';
 import { Game } from '../types';
 import { SharedComponentProps } from '../types';
-
-
+import BarcodeScanner from './BarcodeScanner'; // Import the BarcodeScanner component
 
 const ContainerStyled = styled(Container)({
     display: 'flex',
@@ -24,10 +23,10 @@ const GameItem = styled('div')({
 });
 
 const LendFormGames: React.FC<SharedComponentProps> = ({ token, setRefetchCounter, refetchCounter }) => {
-
     const [searchTerm, setSearchTerm] = useState('');
     const [games, setGames] = useState<Game[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isScannerOpen, setIsScannerOpen] = useState(false); // State for barcode scanner visibility
 
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
@@ -92,10 +91,16 @@ const LendFormGames: React.FC<SharedComponentProps> = ({ token, setRefetchCounte
         }
     };
 
+    const handleBarcodeDetected = (barcode: string) => {
+        console.log("Detected barcode:", barcode);
+        setSearchTerm(barcode); // Set barcode as the search term
+        setIsScannerOpen(false); // Close the scanner
+    };
+
     return (
         <ContainerStyled maxWidth="sm">
             <Typography variant="h5" gutterBottom>
-                Add board game titles to your games lending shelf:
+                Add board game titles to your lending shelf:
             </Typography>
             <TextField
                 fullWidth
@@ -106,17 +111,58 @@ const LendFormGames: React.FC<SharedComponentProps> = ({ token, setRefetchCounte
                 placeholder="Type a game title"
                 margin="normal"
             />
+            <Button
+                variant="contained"
+                color="secondary"
+                style={{ marginTop: '10px', marginBottom: '20px' }}
+                onClick={() => setIsScannerOpen(true)}
+            >
+                SCAN BARCODE
+            </Button>
+            {isScannerOpen && (
+                <>
+                    <BarcodeScanner
+                        onDetected={handleBarcodeDetected}
+                        onClose={() => setIsScannerOpen(false)} // Automatically close on detection
+                    />
+                    <div style={{ textAlign: 'center', marginTop: '10px' }}>
+                        <Button
+                            variant="contained"
+                            color="error"
+                            onClick={() => setIsScannerOpen(false)}
+                        >
+                            STOP SCANNER
+                        </Button>
+                    </div>
+                </>
+            )}
             {isLoading && <CircularProgress />}
             {games.map((game) => (
-                <GameItem key={game._id} style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}>
+                <GameItem
+                    key={game._id}
+                    style={{
+                        marginBottom: '20px',
+                        padding: '10px',
+                        border: '1px solid #ccc',
+                        borderRadius: '5px',
+                    }}
+                >
                     {game.thumbnailUrl && (
-                        <img src={game.thumbnailUrl} alt={game.gameTitle} style={{ maxWidth: '100%', marginBottom: '10px' }} />
+                        <img
+                            src={game.thumbnailUrl}
+                            alt={game.gameTitle}
+                            style={{ maxWidth: '100%', marginBottom: '10px' }}
+                        />
                     )}
-                    {/* Include "The game title is: " before the game title */}
                     <Typography variant="h6" component="p" style={{ marginBottom: '10px' }}>
                         {game.title}
                     </Typography>
-                    <Link href={game.bggLink} target="_blank" rel="noopener noreferrer" style={{ display: 'block', marginBottom: '10px' }}>
+                    <Link
+                        href={game.bggLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ display: 'block', marginBottom: '10px' }}
+                    >
                         View on BoardGameGeek
                     </Link>
                     <Button variant="contained" color="primary" onClick={() => offerToLend(game)}>
@@ -124,9 +170,11 @@ const LendFormGames: React.FC<SharedComponentProps> = ({ token, setRefetchCounte
                     </Button>
                 </GameItem>
             ))}
-
-
         </ContainerStyled>
+
+
+
+
     );
 };
 

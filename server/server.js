@@ -10,7 +10,7 @@ const allowedOrigins = [
 	"http://192.168.1.35:3000", // my local machine for development
 	"https://bellingham-buy-nothing-books-9fe5de7a4a15.herokuapp.com",
 	"https://shelf-elf-4b02ddd52e38.herokuapp.com",
-	"https://8a41-76-121-26-76.ngrok-free.app",
+	"https://c20a-76-121-26-76.ngrok-free.app",
 ];
 
 const corsOptions = {

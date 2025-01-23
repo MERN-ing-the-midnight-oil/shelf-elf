@@ -23,6 +23,7 @@
     "csv-parser": "^3.0.0",
     "dotenv": "^16.4.7",
     "formik": "^2.4.5",
+    "html5-qrcode": "^2.3.8",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.6.8",
     "react": "^17.0.2",
