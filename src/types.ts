@@ -34,3 +34,4 @@ export interface SharedComponentProps {
   setRefetchCounter: React.Dispatch<React.SetStateAction<number>>;
   refetchCounter: number;
 }
+

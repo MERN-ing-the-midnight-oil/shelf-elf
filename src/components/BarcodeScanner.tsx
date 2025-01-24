@@ -6,6 +6,7 @@ interface BarcodeScannerProps {
     onClose: () => void;
 }
 
+
 const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onDetected, onClose }) => {
     let html5QrCode: Html5Qrcode | null = null;
     let isRunning = false;
@@ -23,18 +24,26 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onDetected, onClose }) 
                 isRunning = true;
                 // Request the rear-facing camera
                 await html5QrCode.start(
-                    { facingMode: 'environment' }, // Rear-facing camera
-                    cameraConfig,
-                    (decodedText) => {
+                    { facingMode: 'environment' }, // Ensure rear-facing camera
+                    {
+                        fps: 15, // Speed up the frame rate
+                        qrbox: { width: 200, height: 200 }, // Limit scanning area
+                        videoConstraints: {
+                            focusMode: 'continuous', // Autofocus support
+                        } as MediaTrackConstraints, // Type assertion for TypeScript safety
+                    },
+                    (decodedText: string) => {
                         if (!isRunning) return;
                         isRunning = false;
-                        onDetected(decodedText);
-                        stopScanner();
+                        onDetected(decodedText); // Trigger the detected callback
+                        stopScanner(); // Stop the scanner after detection
                     },
-                    (error) => {
+                    (error: string) => {
                         console.debug('QR code error:', error);
                     }
                 );
+
+
             } catch (err) {
                 console.error('Error starting scanner:', err);
             }
