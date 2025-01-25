@@ -91,11 +91,46 @@ const LendFormGames: React.FC<SharedComponentProps> = ({ token, setRefetchCounte
         }
     };
 
-    const handleBarcodeDetected = (barcode: string) => {
+    const handleBarcodeDetected = async (barcode: string) => {
         console.log("Detected barcode:", barcode);
-        setSearchTerm(barcode); // Set barcode as the search term
-        setIsScannerOpen(false); // Close the scanner
+
+        const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+
+        try {
+            const response = await fetch(`${API_URL}/api/barcodes/lookup?barcode=${barcode}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch game title: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log("Full API response data:", data); // Log the entire parsed response
+
+            const title = data?.title; // Adjusted to reflect the correct key
+            if (title) {
+                console.log("Fetched game title:", title);
+                setSearchTerm(title); // Set the fetched title as the search term
+            } else {
+                console.warn("No title found in the response:", data);
+                alert("Shoot. I couldn't find that barcode. Please type the game title by hand.");
+            }
+        } catch (error) {
+            console.error("Error fetching game title:", error);
+            alert("An error occurred while fetching the game title.");
+        } finally {
+            setIsScannerOpen(false); // Close the scanner
+        }
     };
+
+
+
+
+
 
     return (
         <ContainerStyled maxWidth="sm">

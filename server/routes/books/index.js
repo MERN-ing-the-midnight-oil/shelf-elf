@@ -63,9 +63,6 @@ router.delete(
 );
 // Display the logged-in user's lending library
 router.get("/my-library", checkAuthentication, async (req, res) => {
-	// Log when route is accessed
-	// console.log("Accessed /books/my-library route");
-
 	// Check if req.user exists
 	if (!req.user) {
 		console.error("User not authenticated or user object not populated.");
@@ -137,12 +134,6 @@ router.get("/booksFromMyCommunities", checkAuthentication, async (req, res) => {
 			owner: { $in: userIds, $ne: req.user._id },
 		}).populate("owner", "username");
 
-		// Log each book's title and status before sending the response
-		console.log("Sending book data to frontend:");
-		books.forEach((book) => {
-			console.log(`Title: ${book.title}, Status: ${book.status}`);
-		});
-
 		res.status(200).json(books);
 	} catch (error) {
 		console.error("Error fetching books from user communities:", error);
@@ -202,7 +193,6 @@ router.post("/return/:bookId", checkAuthentication, async (req, res) => {
 router.patch("/request/:bookId", checkAuthentication, async (req, res) => {
 	try {
 		// Log the user object to verify its structure
-		console.log("Authenticated user object:", req.user);
 
 		// Fetch the book to be requested using its ID
 		const bookToRequest = await Book.findById(req.params.bookId);
@@ -211,16 +201,12 @@ router.patch("/request/:bookId", checkAuthentication, async (req, res) => {
 			return res.status(404).json({ error: "Book not found." });
 		}
 
-		// Log the current state of 'requestedBy' for this book
-		console.log("Current state of requestedBy:", bookToRequest.requestedBy);
-
 		// Check if the book is already requested by the user
 		const isAlreadyRequested = bookToRequest.requestedBy.some(
 			(request) => request.userId.toString() === req.user._id.toString()
 		);
 
 		if (isAlreadyRequested) {
-			console.log("User has already requested this book");
 			return res
 				.status(400)
 				.json({ error: "You've already requested this book." });
@@ -235,15 +221,12 @@ router.patch("/request/:bookId", checkAuthentication, async (req, res) => {
 			username: req.user.username, // Assuming the username is on the req.user object
 		});
 
-		// Log the updated state of 'requestedBy' before saving
-		console.log("Updated state of requestedBy:", bookToRequest.requestedBy);
 		// Update the user's `requestedBooks` list
 		await User.findByIdAndUpdate(req.user._id, {
 			$push: { requestedBooks: bookToRequest._id },
 		});
 		//Save the updated book
 		await bookToRequest.save();
-		console.log("Book and user updated successfully");
 
 		res.status(200).json({ message: "The Book was requested successfully." });
 	} catch (error) {

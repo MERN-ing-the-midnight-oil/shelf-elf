@@ -10,7 +10,7 @@ const allowedOrigins = [
 	"http://192.168.1.35:3000", // my local machine for development
 	"https://bellingham-buy-nothing-books-9fe5de7a4a15.herokuapp.com",
 	"https://shelf-elf-4b02ddd52e38.herokuapp.com",
-	"https://c20a-76-121-26-76.ngrok-free.app",
+	"https://f8d4-76-121-26-76.ngrok-free.app",
 ];
 
 const corsOptions = {
@@ -59,12 +59,14 @@ const userRoutes = require("./routes/users");
 const communityRoutes = require("./routes/communities");
 const gameRoutes = require("./routes/games");
 const messageRoutes = require("./routes/messages");
+const barcodesRoutes = require("./routes/barcodes");
 
 app.use("/api/books", bookRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/communities", communityRoutes);
 app.use("/api/games", gameRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/barcodes", barcodesRoutes);
 
 // Test route to verify authentication and admin access
 app.get("/api/admin-test", checkAuthentication, adminCheck, (req, res) => {

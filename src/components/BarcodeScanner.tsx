@@ -6,44 +6,34 @@ interface BarcodeScannerProps {
     onClose: () => void;
 }
 
-
 const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onDetected, onClose }) => {
     let html5QrCode: Html5Qrcode | null = null;
-    let isRunning = false;
 
     useEffect(() => {
         const initScanner = async () => {
             html5QrCode = new Html5Qrcode('scanner');
 
-            const cameraConfig: Html5QrcodeCameraScanConfig = {
-                fps: 10,
-                qrbox: { width: 250, height: 250 },
-            };
-
             try {
-                isRunning = true;
-                // Request the rear-facing camera
+                // Start the scanner with rear camera
                 await html5QrCode.start(
-                    { facingMode: 'environment' }, // Ensure rear-facing camera
+                    { facingMode: 'environment' },
                     {
-                        fps: 15, // Speed up the frame rate
-                        qrbox: { width: 200, height: 200 }, // Limit scanning area
-                        videoConstraints: {
-                            focusMode: 'continuous', // Autofocus support
-                        } as MediaTrackConstraints, // Type assertion for TypeScript safety
+                        fps: 15,
+                        qrbox: { width: 200, height: 200 },
                     },
-                    (decodedText: string) => {
-                        if (!isRunning) return;
-                        isRunning = false;
-                        onDetected(decodedText); // Trigger the detected callback
-                        stopScanner(); // Stop the scanner after detection
+                    (decodedText) => {
+                        console.log('Detected barcode:', decodedText);
+
+                        // Stop the scanner immediately after detecting a barcode
+                        stopScanner();
+                        onDetected(decodedText); // Notify parent component with the detected barcode
                     },
-                    (error: string) => {
-                        console.debug('QR code error:', error);
+                    (error) => {
+                        if (html5QrCode && !html5QrCode.isScanning) {
+                            console.debug('QR code error:', error);
+                        }
                     }
                 );
-
-
             } catch (err) {
                 console.error('Error starting scanner:', err);
             }
@@ -51,23 +41,26 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onDetected, onClose }) 
 
         initScanner();
 
+        // Cleanup scanner on component unmount
         return () => {
             stopScanner();
         };
     }, []);
 
     const stopScanner = async () => {
-        if (html5QrCode && isRunning) {
+        if (html5QrCode && html5QrCode.isScanning) { // Only stop if scanner is running
             try {
-                isRunning = false;
                 await html5QrCode.stop();
                 await html5QrCode.clear();
-                console.log('Scanner stopped successfully.');
+                console.log("Scanner stopped successfully.");
             } catch (err) {
-                console.error('Error stopping scanner:', err);
+                console.error("Error stopping scanner:", err);
             }
+        } else {
+            console.log("Scanner is already stopped or not running.");
         }
     };
+
 
     return (
         <div>
