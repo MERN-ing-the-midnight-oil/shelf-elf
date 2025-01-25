@@ -1,32 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { TextField, Button, Typography, CircularProgress, Container, Link } from '@mui/material';
-import { styled } from '@mui/system';
-import { Game } from '../types';
-import { SharedComponentProps } from '../types';
-import BarcodeScanner from './BarcodeScanner'; // Import the BarcodeScanner component
+import React, { useState, useEffect } from "react";
+import { TextField, Button, Typography, CircularProgress, Container } from "@mui/material";
+import { styled } from "@mui/system";
+import BarcodeScanner from "./BarcodeScanner";
 
-const ContainerStyled = styled(Container)({
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginTop: 20,
+const GameItem = styled("div")({
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "start",
+    width: "100%",
+    margin: "10px 0",
+    borderBottom: "1px solid #ccc",
+    paddingBottom: "10px",
 });
 
-const GameItem = styled('div')({
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'start',
-    width: '100%',
-    margin: '10px 0',
-    borderBottom: '1px solid #ccc',
-    paddingBottom: '10px',
-});
+interface LendFormGamesProps {
+    token: string;
+    setRefetchCounter: React.Dispatch<React.SetStateAction<number>>;
+    refetchCounter: number;
+}
 
-const LendFormGames: React.FC<SharedComponentProps> = ({ token, setRefetchCounter, refetchCounter }) => {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [games, setGames] = useState<Game[]>([]);
+const LendFormGames: React.FC<LendFormGamesProps> = ({ token, setRefetchCounter, refetchCounter }) => {
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [games, setGames] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [isScannerOpen, setIsScannerOpen] = useState(false); // State for barcode scanner visibility
+    const [isFetchingTitle, setIsFetchingTitle] = useState(false); // NEW: Spinner for fetching game title
 
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
@@ -40,100 +38,88 @@ const LendFormGames: React.FC<SharedComponentProps> = ({ token, setRefetchCounte
 
     const handleSearch = async (title: string) => {
         setIsLoading(true);
-        const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+        const API_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001";
         try {
             const response = await fetch(`${API_URL}/api/games/search?title=${title}`, {
-                method: 'GET',
+                method: "GET",
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
                 },
             });
-            if (!response.ok) throw new Error('Network response was not ok');
+            if (!response.ok) throw new Error("Network response was not ok");
 
             const data = await response.json();
             setGames(data);
         } catch (error) {
-            console.error('Error searching games:', error);
+            console.error("Error searching games:", error);
         } finally {
             setIsLoading(false);
-        }
-    };
-
-    const offerToLend = async (game: Game) => {
-        console.log("Offering to lend game:", game); // Add this line to log the game object
-
-        const requestOptions = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            //figure out why the game incorrectly has property "_id" instead of "gameId"
-            body: JSON.stringify({ gameId: game._id }), // Ensure correct ID is sent
-        };
-
-        try {
-            const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
-            const response = await fetch(`${API_URL}/api/games/lend`, requestOptions);
-
-            if (response.ok) {
-                setRefetchCounter(prev => prev + 1);
-                setGames([]);
-            } else if (response.status === 400) {
-                const errorMessage = await response.json();
-                alert(errorMessage.message);
-            } else {
-                throw new Error('Network response was not ok');
-            }
-        } catch (error) {
-            console.error('Error offering game to lend:', error);
         }
     };
 
     const handleBarcodeDetected = async (barcode: string) => {
         console.log("Detected barcode:", barcode);
 
-        const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+        const API_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001";
 
         try {
+            setIsFetchingTitle(true); // Start spinner while fetching
             const response = await fetch(`${API_URL}/api/barcodes/lookup?barcode=${barcode}`, {
-                method: 'GET',
+                method: "GET",
                 headers: {
-                    'Content-Type': 'application/json',
+                    "Content-Type": "application/json",
                 },
             });
 
             if (!response.ok) {
-                throw new Error(`Failed to fetch game title: ${response.statusText}`);
+                throw new Error("Failed to fetch game title");
             }
 
             const data = await response.json();
-            console.log("Full API response data:", data); // Log the entire parsed response
-
-            const title = data?.title; // Adjusted to reflect the correct key
-            if (title) {
-                console.log("Fetched game title:", title);
-                setSearchTerm(title); // Set the fetched title as the search term
+            if (data?.title) {
+                console.log("Fetched game title:", data.title);
+                setSearchTerm(data.title); // Automatically trigger search
             } else {
-                console.warn("No title found in the response:", data);
-                alert("Shoot. I couldn't find that barcode. Please type the game title by hand.");
+                console.warn("No title found for this barcode");
+                alert("Unable to find a game for the scanned barcode. Please enter it manually.");
             }
         } catch (error) {
-            console.error("Error fetching game title:", error);
-            alert("An error occurred while fetching the game title.");
+            console.error("Error fetching barcode information:", error);
+            alert("An error occurred while looking up the barcode.");
         } finally {
-            setIsScannerOpen(false); // Close the scanner
+            setIsFetchingTitle(false); // Stop spinner
+            setIsScannerOpen(false); // Close scanner
         }
     };
 
+    const offerToLend = async (game: any) => {
+        const API_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001";
+        const requestOptions = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ gameId: game._id }),
+        };
 
-
-
-
+        try {
+            const response = await fetch(`${API_URL}/api/games/lend`, requestOptions);
+            if (response.ok) {
+                setRefetchCounter((prev) => prev + 1);
+                setGames([]);
+            } else {
+                const errorMessage = await response.json();
+                alert(errorMessage.message);
+            }
+        } catch (error) {
+            console.error("Error offering game to lend:", error);
+        }
+    };
 
     return (
-        <ContainerStyled maxWidth="sm">
+        <Container maxWidth="sm">
             <Typography variant="h5" gutterBottom>
                 Add board game titles to your lending shelf:
             </Typography>
@@ -146,70 +132,43 @@ const LendFormGames: React.FC<SharedComponentProps> = ({ token, setRefetchCounte
                 placeholder="Type a game title"
                 margin="normal"
             />
+            {isFetchingTitle && <CircularProgress size={24} style={{ margin: "10px 0" }} />} {/* Spinner for fetching title */}
             <Button
                 variant="contained"
                 color="secondary"
-                style={{ marginTop: '10px', marginBottom: '20px' }}
+                style={{ marginTop: 10, marginBottom: 20 }}
                 onClick={() => setIsScannerOpen(true)}
             >
                 SCAN BARCODE
             </Button>
+
             {isScannerOpen && (
-                <>
-                    <BarcodeScanner
-                        onDetected={handleBarcodeDetected}
-                        onClose={() => setIsScannerOpen(false)} // Automatically close on detection
-                    />
-                    <div style={{ textAlign: 'center', marginTop: '10px' }}>
-                        <Button
-                            variant="contained"
-                            color="error"
-                            onClick={() => setIsScannerOpen(false)}
-                        >
-                            STOP SCANNER
-                        </Button>
-                    </div>
-                </>
+                <BarcodeScanner
+                    open={isScannerOpen}
+                    onClose={() => setIsScannerOpen(false)}
+                    onDetected={handleBarcodeDetected}
+                />
             )}
+
             {isLoading && <CircularProgress />}
             {games.map((game) => (
-                <GameItem
-                    key={game._id}
-                    style={{
-                        marginBottom: '20px',
-                        padding: '10px',
-                        border: '1px solid #ccc',
-                        borderRadius: '5px',
-                    }}
-                >
+                <GameItem key={game._id}>
                     {game.thumbnailUrl && (
                         <img
                             src={game.thumbnailUrl}
-                            alt={game.gameTitle}
-                            style={{ maxWidth: '100%', marginBottom: '10px' }}
+                            alt={game.title}
+                            style={{ maxWidth: "100%", marginBottom: "10px" }}
                         />
                     )}
-                    <Typography variant="h6" component="p" style={{ marginBottom: '10px' }}>
+                    <Typography variant="h6" component="p">
                         {game.title}
                     </Typography>
-                    <Link
-                        href={game.bggLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ display: 'block', marginBottom: '10px' }}
-                    >
-                        View on BoardGameGeek
-                    </Link>
                     <Button variant="contained" color="primary" onClick={() => offerToLend(game)}>
                         Offer to Lend
                     </Button>
                 </GameItem>
             ))}
-        </ContainerStyled>
-
-
-
-
+        </Container>
     );
 };
 
