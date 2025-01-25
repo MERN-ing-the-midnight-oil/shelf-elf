@@ -34,8 +34,14 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
             setIsScannerReady(true); // Mark scanner as ready immediately
             try {
                 await html5QrCode.start(
-                    { facingMode: "environment" },
-                    { fps: 15, qrbox: { width: 250, height: 250 } },
+                    {
+                        facingMode: { exact: "environment" }, // Use rear camera with autofocus (if supported)
+                    },
+                    {
+                        fps: 15,
+                        qrbox: { width: 250, height: 250 },
+                        disableFlip: true, // Disable flipping for rear camera
+                    },
                     (decodedText) => {
                         console.log("Detected barcode:", decodedText);
                         stopScanner(); // Stop scanner after detection
@@ -99,7 +105,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
                     borderRadius: "10px",
                 }}
             ></div>
-            {isScannerReady && ( // Button visibility depends on scanner readiness
+            {isScannerReady && (
                 <button
                     style={{
                         position: "absolute", // Ensure it's positioned relative to the entire scanner container
@@ -117,7 +123,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
                 >
                     STOP SCANNING
                 </button>
-
             )}
         </div>
     );
