@@ -1,106 +1,178 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const { checkAuthentication } = require("../../../middlewares/authentication");
-const fetchGameImage = require("./fetchGameThumbnail");
+const fetchGameImage = require("./fetchGameImage");
+const xml2js = require("xml2js");
+const axios = require("axios");
 const User = require("../../models/user");
 const Community = require("../../models/community");
 const GameRequest = require("../../models/gameRequest");
 const Game = require("../../models/game");
+const LendingLibraryGame = require("../../models/lendingLibraryGame");
 
-// routes/games/index.js
+// SEARCH ROUTE
 router.get("/search", checkAuthentication, async (req, res) => {
+	console.log("Search route called with query:", req.query);
 	const { title } = req.query;
 
+	if (!title) {
+		return res.status(400).json({ message: "Title is required." });
+	}
+
 	try {
-		// Limit the search results to the first 10 games
+		console.log("Search title received:", title);
+
 		let games = await Game.find({
-			$text: { $search: title },
+			$text: { $search: `"${title}"` },
 		})
 			.sort({ score: { $meta: "textScore" } })
-			.limit(10); // Limit to 10 results
+			.limit(10);
 
-		// Attempt to fetch thumbnailUrl only for these 10 games, if missing
-		for (let game of games) {
-			if (!game.thumbnailUrl && game.bggId) {
-				// Ensure there's a BGG ID to fetch the image
-				try {
-					const thumbnailUrl = await fetchGameImage(game.bggId); // Assuming this function is async
-					game.thumbnailUrl = thumbnailUrl;
-					await game.save(); // Persist the thumbnail URL
-				} catch (fetchError) {
-					console.error(
-						"Failed to fetch thumbnail for game:",
-						game.title,
-						fetchError
-					);
-					// Optionally handle the failure gracefully
-				}
+		console.log("Results from $text search:", games);
+
+		if (games.length === 0) {
+			console.log("No phrase matches found. Trying regex...");
+			const regex = new RegExp(title, "i");
+			games = await Game.find({ title: regex }).limit(10);
+			console.log("Results from regex search:", games);
+		}
+
+		if (games.length === 0) {
+			console.log("No local matches found. Querying BGG API...");
+			const cleanedTitleForBGG = title
+				.replace(/\b(Board Game|Board|Game)\b/gi, "")
+				.trim();
+			console.log("Cleaned title for BGG API:", cleanedTitleForBGG);
+
+			const bggUrl = `https://boardgamegeek.com/xmlapi2/search?query=${encodeURIComponent(
+				cleanedTitleForBGG
+			)}&type=boardgame`;
+
+			try {
+				const bggResponse = await axios.get(bggUrl);
+				console.log("Raw BGG API response:", bggResponse.data);
+
+				const parsedData = await xml2js.parseStringPromise(bggResponse.data, {
+					mergeAttrs: true,
+				});
+				const bggGames = parsedData.items?.item || [];
+				console.log("Parsed BGG games:", bggGames);
+
+				games = await Promise.all(
+					bggGames
+						.filter(
+							(item) =>
+								Array.isArray(item.name) &&
+								item.name.some((n) => n.type?.[0] === "primary")
+						)
+						.map(async (item) => {
+							const primaryName = item.name.find(
+								(n) => n.type?.[0] === "primary"
+							);
+							const bggId = parseInt(item.id[0], 10);
+							const thumbnailUrl = await fetchGameImage(bggId).catch((err) => {
+								console.error(
+									`Error fetching thumbnail for BGG ID ${bggId}:`,
+									err
+								);
+								return null;
+							});
+							console.log(
+								`Fetched thumbnail for BGG ID ${bggId}:`,
+								thumbnailUrl
+							);
+
+							return {
+								title: primaryName?.value?.[0] || "Unknown Title",
+								bggId,
+								yearPublished: item.yearpublished?.[0]?.value?.[0] || "Unknown",
+								bggLink: `https://boardgamegeek.com/boardgame/${bggId}`,
+								bggRating: null,
+								thumbnailUrl,
+							};
+						})
+				);
+
+				console.log("Filtered and mapped games with thumbnails:", games);
+			} catch (error) {
+				console.error("Error querying BGG API:", error);
 			}
 		}
 
-		console.log(
-			"Sending search results:",
-			games.map((game) => ({
-				title: game.title,
-				thumbnailUrl: game.thumbnailUrl,
-			}))
-		); // Log game titles and thumbnails
-		res.json(games); // This will include up to 10 games with their thumbnails if fetched
+		res.json(games);
 	} catch (error) {
-		console.error("Error searching for games:", error);
+		console.error("Error during search:", error);
 		res.status(500).json({ message: "Error searching for games" });
 	}
 });
 
-// Add a game to the user's library
-// Assuming LendingLibraryGame is imported
+// ADD GAME TO USER LIBRARY
 router.post("/lend", checkAuthentication, async (req, res) => {
+	console.log("Lend route called with body:", req.body);
+
 	const userId = req.user._id;
-	const gameId = req.body.gameId;
+	const { gameId } = req.body;
+
+	if (!gameId) {
+		console.error("Missing gameId in request body.");
+		return res.status(400).json({ message: "gameId is required." });
+	}
 
 	try {
-		// Find the game to ensure it exists
-		const game = await Game.findById(gameId);
+		let game;
+
+		// Validate and fetch game based on gameId
+		if (mongoose.Types.ObjectId.isValid(gameId)) {
+			// If gameId is a valid MongoDB ObjectId
+			console.log("gameId is a valid ObjectId:", gameId);
+			game = await Game.findById(gameId);
+		} else if (!isNaN(gameId)) {
+			// If gameId is a number (bggId)
+			console.log("gameId is a valid bggId:", gameId);
+			game = await Game.findOne({ bggId: parseInt(gameId, 10) });
+		} else {
+			console.error("Invalid gameId format:", gameId);
+			return res.status(400).json({ message: "Invalid gameId format." });
+		}
+
 		if (!game) {
-			console.log("Game not found");
-			return res.status(404).json({ message: "Game not found" });
+			console.error("Game not found for gameId:", gameId);
+			return res.status(404).json({ message: "Game not found." });
 		}
 
 		// Create a new LendingLibraryGame document
 		const newLendingLibraryGame = new LendingLibraryGame({
-			game: gameId,
+			game: game._id, // Use the MongoDB ObjectId
 			owner: userId,
-			requests: [], // Initialize with no requests
-			promisedTo: null, // Initialize with no game promised
+			requests: [],
+			promisedTo: null,
 		});
 
-		// Save the new LendingLibraryGame document
 		await newLendingLibraryGame.save();
+		console.log(
+			`Game ${game._id} added to lending library for user ${userId}.`
+		);
 
-		console.log(`Game ${gameId} added to user ${userId}'s lending library.`);
 		res.status(200).json({
-			message: "Game added to lending library successfully",
+			message: "Game added to lending library successfully.",
 			lendingLibraryGame: newLendingLibraryGame,
 		});
 	} catch (error) {
-		console.error("Error adding game to lending library:", error);
-		res.status(500).json({ message: "Server error" });
+		console.error("Error in lend route:", error);
+		res.status(500).json({ message: "Error adding game to lending library." });
 	}
 });
 
-// Route to remove a game from the user's lending library
-const LendingLibraryGame = require("../../models/lendingLibraryGame"); // Adjust the path as needed
-
+// REMOVE GAME FROM LIBRARY
 router.delete("/remove-game/:gameId", checkAuthentication, async (req, res) => {
 	try {
 		const userId = req.user._id;
 		const gameId = req.params.gameId;
 
-		// Find and remove the LendingLibraryGame document
-		// Note: This assumes that gameId passed is the LendingLibraryGame document's ID
 		const lendingLibraryGame = await LendingLibraryGame.findOneAndRemove({
 			_id: gameId,
-			owner: userId, // Ensure that the game belongs to the user making the request
+			owner: userId,
 		});
 
 		if (!lendingLibraryGame) {
@@ -108,8 +180,6 @@ router.delete("/remove-game/:gameId", checkAuthentication, async (req, res) => {
 				.status(404)
 				.json({ message: "Game not found or not owned by user" });
 		}
-
-		// Optional: Handle associated game requests (e.g., delete or update them)
 
 		res.json({
 			message: "Game removed from lending library successfully.",
@@ -123,26 +193,13 @@ router.delete("/remove-game/:gameId", checkAuthentication, async (req, res) => {
 	}
 });
 
-// Route to get the logged-in user's lending library games
+// GET USER'S LIBRARY GAMES
 router.get("/my-library-games", checkAuthentication, async (req, res) => {
 	try {
-		const userId = req.user._id; // Assuming checkAuthentication middleware correctly sets req.user
-		console.log(`/my-library-games Fetching games for user ID: ${userId}`); // Log the ID of the user whose games are being fetched
-
+		const userId = req.user._id;
 		const lendingLibraryGames = await LendingLibraryGame.find({ owner: userId })
-			.populate({
-				path: "game",
-				select: "title bggLink thumbnailUrl", // Only include these fields from the Game model
-			})
-			.populate({
-				path: "requests",
-				select: "username", // Only include the username from the User model for requests
-			});
-
-		console.log(
-			`Found ${lendingLibraryGames.length} games for user ID: ${userId}`
-		); // Log the number of games found
-		console.log(lendingLibraryGames); // Log the actual game data being returned
+			.populate("game", "title bggLink thumbnailUrl")
+			.populate("requests", "username");
 
 		res.json(lendingLibraryGames);
 	} catch (error) {
@@ -151,39 +208,69 @@ router.get("/my-library-games", checkAuthentication, async (req, res) => {
 	}
 });
 
-// route for a user to mark a game in their lendingLibraryGame collection as unavailable
+// REQUEST GAME
+router.patch("/request", checkAuthentication, async (req, res) => {
+	const { lendingLibraryGameId } = req.body;
+
+	if (!lendingLibraryGameId) {
+		return res
+			.status(400)
+			.json({ message: "lendingLibraryGameId is required." });
+	}
+
+	try {
+		const lendingLibraryGame = await LendingLibraryGame.findById(
+			lendingLibraryGameId
+		);
+		if (!lendingLibraryGame) {
+			return res.status(404).json({ message: "LendingLibraryGame not found" });
+		}
+
+		const requestedBy = req.user._id;
+
+		const newGameRequest = new GameRequest({
+			lendingLibraryGame: lendingLibraryGame._id,
+			wantedBy: requestedBy,
+			status: "requested",
+			messages: [],
+		});
+
+		await newGameRequest.save();
+		lendingLibraryGame.requests.push(requestedBy);
+		await lendingLibraryGame.save();
+
+		res.status(201).json({
+			message: "Game request created successfully.",
+			requestedGame: newGameRequest,
+		});
+	} catch (error) {
+		console.error("Error creating game request:", error);
+		res.status(500).json({ message: "Error creating game request." });
+	}
+});
+
+// MARK GAME UNAVAILABLE
 router.patch(
 	"/mark-unavailable/:gameId",
 	checkAuthentication,
 	async (req, res) => {
-		const { gameId } = req.params; // Extract the gameId from URL parameters
-		console.log(
-			`/api/games/mark-unavailable/:gameId is Attempting to mark game as unavailable: ${gameId}`
-		); // Log the gameId being processed
+		const { gameId } = req.params;
 
 		try {
-			// Assuming checkAuthentication sets req.user
 			const userId = req.user._id;
-			console.log(`User ID making the request: ${userId}`); // Log the userId for additional context
-
-			// Find the game and update its availability, ensuring the requester is the owner
 			const updatedGame = await LendingLibraryGame.findOneAndUpdate(
 				{ _id: gameId, owner: userId },
 				{ isAvailable: false },
 				{ new: true }
-			).populate("game", "title"); // Optionally populate related game details
+			).populate("game", "title");
 
 			if (!updatedGame) {
-				console.log(
-					"Game not found or user not authorized to update its availability."
-				);
 				return res.status(404).json({
 					message:
-						"Game not found or you do not have permission to update its availability.",
+						"Game not found or user not authorized to update availability.",
 				});
 			}
 
-			console.log(`Game marked as unavailable: ${updatedGame._id}`);
 			res.json(updatedGame);
 		} catch (error) {
 			console.error("Error marking game as unavailable:", error);
@@ -194,39 +281,28 @@ router.patch(
 	}
 );
 
-// route for a user to mark a game in their lendingLibraryGame collection as available
+// MARK GAME AVAILABLE
 router.patch(
 	"/mark-available/:gameId",
 	checkAuthentication,
 	async (req, res) => {
-		const { gameId } = req.params; // Extract the gameId from URL parameters
-		console.log(
-			`/api/games/mark-available/:gameId is Attempting to mark game as available: ${gameId}`
-		); // Log the gameId being processed
+		const { gameId } = req.params;
 
 		try {
-			// Assuming checkAuthentication sets req.user
 			const userId = req.user._id;
-			console.log(`User ID making the request: ${userId}`); // Log the userId for additional context
-
-			// Find the game and update its availability, ensuring the requester is the owner
 			const updatedGame = await LendingLibraryGame.findOneAndUpdate(
 				{ _id: gameId, owner: userId },
 				{ isAvailable: true },
 				{ new: true }
-			).populate("game", "title"); // Optionally populate related game details
+			).populate("game", "title");
 
 			if (!updatedGame) {
-				console.log(
-					"Game not found or user not authorized to update its availability."
-				);
 				return res.status(404).json({
 					message:
-						"Game not found or you do not have permission to update its availability.",
+						"Game not found or user not authorized to update availability.",
 				});
 			}
 
-			console.log(`Game marked as available: ${updatedGame._id}`);
 			res.json(updatedGame);
 		} catch (error) {
 			console.error("Error marking game as available:", error);
@@ -237,191 +313,5 @@ router.patch(
 	}
 );
 
-//get all games from all users in all your communities
-router.get("/gamesFromMyCommunities", checkAuthentication, async (req, res) => {
-	console.log("Using the route to get games from all users in a community");
-
-	try {
-		// Fetch all communities the current user is part of
-		const userCommunities = await Community.find({
-			members: req.user._id,
-		});
-		console.log(
-			"Fetched user communities:",
-			userCommunities.map((c) => c.name)
-		);
-
-		// Extract community IDs
-		const communityIds = userCommunities.map((community) => community._id);
-
-		// Fetch all users that are part of these communities
-		const usersInCommunities = await User.find({
-			communities: { $in: communityIds },
-		}).select("_id");
-		console.log(
-			"Fetched users in communities IDs:",
-			usersInCommunities.map((u) => u._id.toString())
-		);
-
-		// Fetch all LendingLibraryGames offered by these users
-		const lendingLibraryGames = await LendingLibraryGame.find({
-			owner: { $in: usersInCommunities.map((user) => user._id) },
-		})
-			.populate({
-				path: "game",
-				select: "title bggRating bggId bggLink thumbnailUrl",
-			})
-			.populate({
-				path: "owner",
-				select: "username",
-			});
-		console.log("Fetched lending library games:", lendingLibraryGames.length);
-
-		// Prepare the games info for response
-		let gamesInfo = lendingLibraryGames.map((lendingLibraryGame) => ({
-			gameIdentification: lendingLibraryGame._id,
-			gameTitle: lendingLibraryGame.game.title,
-			bggLink: lendingLibraryGame.game.bggLink,
-			bggRating: lendingLibraryGame.game.bggRating,
-			thumbnailUrl: lendingLibraryGame.game.thumbnailUrl,
-			ownerUsername: lendingLibraryGame.owner.username,
-		}));
-		console.log("Prepared games info:", gamesInfo);
-
-		// Send the response
-		res.json(gamesInfo);
-	} catch (error) {
-		console.error("Error fetching games from community members:", error);
-		res
-			.status(500)
-			.json({ error: "Failed to fetch games from community members" });
-	}
-});
-
-// PATCH /api/games/request creates a new requested game
-router.patch("/request", checkAuthentication, async (req, res) => {
-	const { lendingLibraryGameId } = req.body; // Assuming the front end sends the ID of the LendingLibraryGame being requested
-
-	console.log("Received request payload:", req.body); // Log the full payload for debugging
-
-	// Check if lendingLibraryGameId is received correctly
-	if (!lendingLibraryGameId) {
-		console.error("Missing lendingLibraryGameId in the request", {
-			lendingLibraryGameId,
-		});
-		return res
-			.status(400)
-			.json({ message: "Missing lendingLibraryGameId in the request" });
-	}
-
-	try {
-		// Find the LendingLibraryGame being requested
-		const lendingLibraryGame = await LendingLibraryGame.findById(
-			lendingLibraryGameId
-		).populate("owner", "username");
-
-		if (!lendingLibraryGame) {
-			console.error(
-				"LendingLibraryGame not found with ID:",
-				lendingLibraryGameId
-			);
-			return res.status(404).json({ message: "LendingLibraryGame not found" });
-		}
-
-		const requestedBy = req.user._id; // The current authenticated user
-
-		// Create a new GameRequest document
-		const newGameRequest = new GameRequest({
-			lendingLibraryGame: lendingLibraryGame._id,
-			wantedBy: requestedBy,
-			status: "requested",
-			messages: [], // Initially empty
-		});
-
-		await newGameRequest.save();
-
-		// Optionally, update the LendingLibraryGame document to include the requesting user's ObjectId in its requests array
-		lendingLibraryGame.requests.push(requestedBy);
-		await lendingLibraryGame.save();
-
-		console.log("New game request created successfully:", newGameRequest);
-
-		res.status(201).json({
-			message: "Game request created successfully",
-			requestedGame: newGameRequest,
-		});
-	} catch (error) {
-		console.error("Error creating game request:", error);
-		res.status(500).json({ message: "Error creating game request", error });
-	}
-});
-
-//show all my requested games
-router.get("/my-requested-games", checkAuthentication, async (req, res) => {
-	try {
-		const requestedGames = await GameRequest.find({ wantedBy: req.user._id })
-			.populate({
-				path: "lendingLibraryGame",
-				populate: {
-					path: "game", // Populates the game details
-				},
-			})
-			.populate({
-				path: "lendingLibraryGame",
-				populate: {
-					path: "owner", // Nested population to get the owner from the lendingLibraryGame
-					select: "username", // Just select the username of the owner
-				},
-			})
-			.populate("messages.sender", "username"); // Assuming you want to populate sender's username in messages
-
-		res.json(requestedGames);
-	} catch (error) {
-		console.error("Error fetching requested games:", error);
-		res.status(500).json({ message: "Error fetching requested games", error });
-	}
-});
-
-// lets a user take back their game request without deleting the record
-// POST /api/games/rescind-game-request/:requestId
-router.patch(
-	"/rescind-game-request/:requestId",
-	checkAuthentication,
-	async (req, res) => {
-		const { requestId } = req.params;
-		console.log(`Rescinding game request with ID: ${requestId}`); // Log the requestId being processed
-		const userId = req.user._id; // Assuming checkAuthentication middleware adds the user ID to the request
-		console.log(`User ID attempting to rescind request: ${userId}`); // Log the userId for debugging
-
-		try {
-			// Find the game request and ensure it's made by the current user
-			const gameRequest = await GameRequest.findOneAndUpdate(
-				{
-					_id: requestId,
-					wantedBy: userId,
-				},
-				{
-					$set: { status: "rescinded" },
-				},
-				{ new: true }
-			);
-
-			if (!gameRequest) {
-				console.log("Game request not found or not authorized to rescind.");
-				return res.status(404).json({
-					message:
-						"Game request not found or you're not authorized to rescind it.",
-				});
-			}
-
-			console.log(`Game request with ID: ${requestId} rescinded successfully.`);
-			res.json({ message: "Game request rescinded successfully", gameRequest });
-		} catch (error) {
-			console.error("Error rescinding game request:", error);
-			res.status(500).json({ message: "Error rescinding game request", error });
-		}
-	}
-);
-
-// Export the router
+// EXPORT ROUTER
 module.exports = router;
