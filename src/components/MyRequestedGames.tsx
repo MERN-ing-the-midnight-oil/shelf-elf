@@ -62,28 +62,30 @@ const MyRequestedGames: React.FC<SharedComponentProps> = ({ token, setRefetchCou
                                 <CardMedia
                                     component="img"
                                     height="140"
-                                    image={requestedGame.lendingLibraryGame.game.thumbnailUrl || 'defaultThumbnail.jpg'}
-                                    alt={requestedGame.lendingLibraryGame.game.title}
+                                    image={
+                                        requestedGame.lendingLibraryGame?.game?.thumbnailUrl || 'defaultThumbnail.jpg'
+                                    }
+                                    alt={requestedGame.lendingLibraryGame?.game?.title || "No title available"}
                                     sx={{
-                                        objectFit: 'contain', // Keeps the aspect ratio and fits the image within the dimensions
-                                        width: '100%', // Use 100% of the card width
-                                        maxHeight: '140px', // Optional: you can set a maximum height to ensure the images are uniform
+                                        objectFit: 'contain',
+                                        width: '100%',
+                                        maxHeight: '140px',
                                     }}
                                 />
 
                                 <CardContent>
                                     <Typography gutterBottom variant="h6" component="div">
-                                        {requestedGame.lendingLibraryGame.game.title}
+                                        {requestedGame.lendingLibraryGame?.game?.title || "Untitled Game"}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        Offered by: {requestedGame.lendingLibraryGame.owner.username}
+                                        Offered by: {requestedGame.lendingLibraryGame?.owner?.username || "Unknown"}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
                                         Status: {requestedGame.status}
                                     </Typography>
                                     <Button
                                         component="a"
-                                        href={requestedGame.lendingLibraryGame.game.bggLink}
+                                        href={requestedGame.lendingLibraryGame?.game?.bggLink || "#"}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         size="small"
@@ -98,6 +100,7 @@ const MyRequestedGames: React.FC<SharedComponentProps> = ({ token, setRefetchCou
                             </Card>
                         </Grid>
                     ))}
+
                 </Grid>
             ) : (
                 <Box

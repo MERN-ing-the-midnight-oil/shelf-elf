@@ -1,25 +1,45 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, Grid, CircularProgress, Card, CardContent, CardActions, Button } from '@mui/material';
-import { Game, SharedComponentProps } from '../types'; // Assuming types.ts is directly under src/
+import {
+    Container,
+    Typography,
+    Grid,
+    CircularProgress,
+    Card,
+    CardContent,
+    CardActions,
+    Button,
+} from '@mui/material';
+import { Game, SharedComponentProps } from '../types'; // Ensure correct path to types
 
 const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCounter, refetchCounter }) => {
     const [games, setGames] = useState<Game[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchGamesFromAllCommunities = async () => {
             setIsLoading(true);
+            setError(null); // Reset error state
             try {
                 const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
                 const response = await fetch(`${API_URL}/api/games/gamesFromMyCommunities`, {
                     headers: { 'Authorization': `Bearer ${token}` },
                 });
-                if (!response.ok) throw new Error('Network response was not ok');
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch games: ${response.statusText}`);
+                }
+
                 const data = await response.json();
-                console.log("Received games data:", data); // Log to see the structure
+
+                if (!Array.isArray(data)) {
+                    throw new Error('Invalid response format: expected an array.');
+                }
+
+                console.log("Received games data:", data); // Log to inspect data structure
                 setGames(data);
-            } catch (error) {
-                console.error('Error fetching games from communities:', error);
+            } catch (err) {
+                console.error('Error fetching games from communities:', err);
+                setError(err instanceof Error ? err.message : 'An unknown error occurred.');
             } finally {
                 setIsLoading(false);
             }
@@ -29,13 +49,10 @@ const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCount
     }, [token]);
 
     const handleRequestGame = async (lendingLibraryGameId: string) => {
-        // Construct the payload with lendingLibraryGameId
-        const payload = {
-            lendingLibraryGameId,
-        };
-
+        const payload = { lendingLibraryGameId };
         try {
-            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001'}/api/games/request`, {
+            const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+            const response = await fetch(`${API_URL}/api/games/request`, {
                 method: 'PATCH',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -43,24 +60,26 @@ const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCount
                 },
                 body: JSON.stringify(payload),
             });
+
             if (!response.ok) {
                 const errorResponse = await response.json();
-                throw new Error(`Failed to request game: ${errorResponse.message || ''}`);
+                throw new Error(`Failed to request game: ${errorResponse.message || 'Unknown error'}`);
             }
+
             console.log("Game requested successfully");
-            // Increment the refetch counter to trigger a refresh of the game listings
-            setRefetchCounter(prev => prev + 1);
-        } catch (error) {
-            console.error('Error requesting game:', error);
+            setRefetchCounter((prev) => prev + 1);
+        } catch (err) {
+            console.error('Error requesting game:', err);
+            alert(err instanceof Error ? err.message : 'An unknown error occurred.');
         }
     };
-
 
     return (
         <Container maxWidth="md">
             <Typography variant="h5" gutterBottom>
                 Your friends are offering the following games:
             </Typography>
+            {error && <Typography color="error">{error}</Typography>}
             {isLoading ? (
                 <CircularProgress />
             ) : (
@@ -76,19 +95,23 @@ const AvailableGames: React.FC<SharedComponentProps> = ({ token, setRefetchCount
                                     <Typography>Rating: {game.bggRating}</Typography>
                                     <Typography>Offered by: {game.ownerUsername}</Typography>
                                     <Typography>Community: {game.communityName}</Typography>
-                                    <Button component="a" href={game.bggLink} target="_blank" rel="noopener noreferrer">
+                                    <Button
+                                        component="a"
+                                        href={game.bggLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
                                         BoardGameGeek Link
                                     </Button>
                                 </CardContent>
                                 <CardActions>
-                                    <Button variant="contained" color="primary" onClick={() => {
-                                        console.log("About to request game with ID:", game.gameIdentification); // Log the gameIdentification
-                                        handleRequestGame(game.gameIdentification) // Call handleRequestGame with only the gameIdentification
-                                    }}>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={() => handleRequestGame(game.gameIdentification)}
+                                    >
                                         Request This Game
                                     </Button>
-
-
                                 </CardActions>
                             </Card>
                         </Grid>

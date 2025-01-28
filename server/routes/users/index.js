@@ -25,39 +25,60 @@ router.get("/me", checkAuthentication, async (req, res) => {
 		res.status(500).json({ error: "Internal Server Error" });
 	}
 });
-
 router.post("/register", async (req, res) => {
 	console.log("Received a create a new user POST request on /register");
-	const { username, password } = req.body;
+	const { username, password, email } = req.body;
 
 	// Basic validation
-	if (!username || !password) {
+	if (!username || !password || !email) {
 		return res
 			.status(400)
-			.json({ error: "Username and password are required" });
+			.json({ error: "Username, password, and email are required." });
 	}
 
 	// Extended password requirements to include maximum length
 	if (password.length < 5 || password.length > 50) {
 		return res
 			.status(400)
-			.json({ error: "Password must be between 5 and 50 characters long" });
+			.json({ error: "Password must be between 5 and 50 characters long." });
 	}
 
-	// Check if the username already exists
-	const existingUser = await User.findOne({ username });
-	if (existingUser) {
-		return res.status(400).json({ error: "Username already exists" });
+	// Validate email format
+	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	if (!emailRegex.test(email)) {
+		return res
+			.status(400)
+			.json({ error: "Please enter a valid email address." });
 	}
 
-	// Encrypt the password and create a new user
-	const hashedPassword = await bcrypt.hash(password, 10);
-	const newUser = new User({ username, password: hashedPassword });
-	await newUser.save();
+	try {
+		// Check if the username or email already exists
+		const existingUser = await User.findOne({
+			$or: [{ username }, { email }],
+		});
+		if (existingUser) {
+			if (existingUser.username === username) {
+				return res.status(400).json({ error: "Username already exists." });
+			}
+			if (existingUser.email === email) {
+				return res.status(400).json({ error: "Email is already in use." });
+			}
+		}
 
-	res
-		.status(201)
-		.json({ message: "User created successfully", user: newUser._id });
+		// Encrypt the password and create a new user
+		const hashedPassword = await bcrypt.hash(password, 10);
+		const newUser = new User({ username, password: hashedPassword, email });
+		await newUser.save();
+
+		console.log("New user created:", newUser);
+
+		res
+			.status(201)
+			.json({ message: "User created successfully", user: newUser._id });
+	} catch (error) {
+		console.error("Error creating user:", error);
+		res.status(500).json({ error: "Failed to create user." });
+	}
 });
 
 // LOGIN route

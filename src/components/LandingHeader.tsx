@@ -2,9 +2,9 @@ import '../App.css'; // Import the App.css for styling
 
 function LandingHeader() {
     return (
-        <header className="App-header landing-header">  <h2 className="landing-heading">
+        <header className="App-header landing-header">  <h1 className="landing-heading">
             Game Lender
-        </h2>
+        </h1>
             <img
                 src={process.env.PUBLIC_URL + '/Title.webp'}
                 alt="Library"

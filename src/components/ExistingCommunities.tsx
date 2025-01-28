@@ -8,6 +8,8 @@ import {
     TextField,
     Button,
     Box,
+    CircularProgress,
+    Alert,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
@@ -25,23 +27,32 @@ interface ExistingCommunitiesProps {
 const ExistingCommunities: React.FC<ExistingCommunitiesProps> = ({ token, onCommunityJoin }) => {
     const [communities, setCommunities] = useState<Community[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        let isMounted = true; // A flag to track if the component is mounted
+        let isMounted = true;
 
         const fetchCommunities = async () => {
             try {
-                const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
-                const response = await axios.get(`${API_URL}/api/communities/list`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
+                const API_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001";
+                console.log("Fetching communities from:", `${API_URL}/api/communities/list`);
+                const response = await axios.get<Community[]>(`${API_URL}/api/communities/list`);
+
                 if (isMounted) {
-                    setCommunities(response.data);
-                    setLoading(false);
+                    if (Array.isArray(response.data)) {
+                        console.log("Communities fetched successfully:", response.data);
+                        setCommunities(response.data);
+                    } else {
+                        throw new Error("Invalid response format");
+                    }
                 }
-            } catch (error) {
+            } catch (err) {
+                console.error("Error fetching communities:", err);
                 if (isMounted) {
-                    console.error('Error fetching communities:', error);
+                    setError("Failed to fetch communities.");
+                }
+            } finally {
+                if (isMounted) {
                     setLoading(false);
                 }
             }
@@ -49,14 +60,23 @@ const ExistingCommunities: React.FC<ExistingCommunitiesProps> = ({ token, onComm
 
         fetchCommunities();
 
-        // Cleanup function to prevent state updates if the component unmounts
         return () => {
             isMounted = false;
         };
     }, [token]);
 
+    const handleJoinCommunity = async (communityId: string, passcode: string) => {
+        try {
+            await onCommunityJoin(communityId, passcode);
+            setError(null);
+        } catch (err) {
+            console.error("Error joining community:", err);
+            setError("Incorrect passcode or unable to join the group. Please try again.");
+        }
+    };
+
     if (loading) {
-        return <Typography>Loading...</Typography>;
+        return <CircularProgress />;
     }
 
     return (
@@ -64,6 +84,7 @@ const ExistingCommunities: React.FC<ExistingCommunitiesProps> = ({ token, onComm
             <Typography variant="h5" gutterBottom>
                 Join an Existing Lending Group:
             </Typography>
+            {error && <Alert severity="error">{error}</Alert>}
             {communities.length > 0 ? (
                 communities.map((community) => (
                     <Accordion key={community._id}>
@@ -76,8 +97,8 @@ const ExistingCommunities: React.FC<ExistingCommunitiesProps> = ({ token, onComm
                                 onSubmit={(e) => {
                                     e.preventDefault();
                                     const formData = new FormData(e.currentTarget);
-                                    const passcode = formData.get('joinCode') as string;
-                                    onCommunityJoin(community._id, passcode);
+                                    const passcode = (formData.get("joinCode") as string) || "";
+                                    handleJoinCommunity(community._id, passcode);
                                 }}
                             >
                                 <TextField

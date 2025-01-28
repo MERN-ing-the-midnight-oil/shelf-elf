@@ -7,11 +7,14 @@ import axios from 'axios';
 import * as Yup from 'yup';
 
 const validationSchema = Yup.object({
-  username: Yup.string().required('Username is required'),
+  username: Yup.string().required("Username is required"),
   password: Yup.string()
-    .required('Password is required')
-    .min(5, 'Password must be at least 5 characters long')
-    .max(50, 'Password cannot be more than 50 characters long'), // Set a maximum length for passwords
+    .required("Password is required")
+    .min(5, "Password must be at least 5 characters long")
+    .max(50, "Password cannot be more than 50 characters long"),
+  email: Yup.string()
+    .required("Email is required")
+    .email("Please enter a valid email address"),
 });
 
 
@@ -34,104 +37,133 @@ const RegisterForm: React.FC = () => {
   const [registrationStatus, setRegistrationStatus] = useState<string | null>(null);
 
   return (
-    <div className="App-header"> <Formik
-      initialValues={{ username: '', password: '' }}
+    <Formik
+      initialValues={{ username: "", password: "", email: "" }} // Add email to initial values
       validationSchema={validationSchema}
       onSubmit={async (values, { setSubmitting }) => {
         try {
-          // First, register the user
-          console.log('Sending registration request with the following registration values:', values);
-          const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+          console.log("Sending registration request with the following values:", values);
+          const API_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001";
+
+          // Step 1: Register the user
           const registrationResponse = await axios.post(`${API_URL}/api/users/register`, values);
 
-          if ((registrationResponse.status === 200 || registrationResponse.status === 201) && registrationResponse.data.user) {
-            console.log('Registration successful for user:', registrationResponse.data.user);
+          if (
+            (registrationResponse.status === 200 || registrationResponse.status === 201) &&
+            registrationResponse.data.user
+          ) {
+            console.log("Registration successful for user:", registrationResponse.data.user);
 
-            // Next, log the user in using the same credentials
-            console.log('Sending login request with the following values:', values);
-            const loginResponse = await axios.post(`${API_URL}/api/users/login`, { username: values.username, password: values.password });
-            console.log('Login Response:', loginResponse.data);
+            // Step 2: Log the user in
+            console.log("Sending login request with the following values:", values);
+            const loginResponse = await axios.post(`${API_URL}/api/users/login`, {
+              username: values.username,
+              password: values.password,
+            });
+            console.log("Login Response:", loginResponse.data);
 
             if (loginResponse.status === 200 && loginResponse.data.token) {
               const token = loginResponse.data.token;
-              localStorage.setItem('userToken', token);
-              setToken(token);  // Set token in context
-              console.log('Token set in RegisterForm:', token);
+              localStorage.setItem("userToken", token); // Save token in localStorage
+              setToken(token); // Set token in context
+              console.log("Token set in RegisterForm:", token);
 
-              // Then, fetch the user data with the obtained token
+              // Step 3: Fetch the logged-in user's data
               const config = { headers: { Authorization: `Bearer ${token}` } };
               const userResponse = await axios.get(`${API_URL}/api/users/me`, config);
-              console.log('User Response:', userResponse.data);
-              setUser(userResponse.data);  // Set user data in context
+              console.log("User Response:", userResponse.data);
 
-              // Store user's ID in local storage
+              setUser(userResponse.data); // Set user data in context
+
+              // Save user ID in localStorage
               const userId = userResponse.data._id;
               if (userId) {
-                localStorage.setItem('userId', userId);
+                localStorage.setItem("userId", userId);
               }
+
+              // Redirect to dashboard
+              window.location.href = "/dashboard"; // Update to match your app's dashboard route
             } else {
-              console.error('Login failed:', loginResponse.data.message);
+              console.error("Login failed:", loginResponse.data.message);
+              setRegistrationStatus("Login failed. Please check your credentials.");
             }
           } else {
-            console.error('Registration failed:', registrationResponse.data.message);
+            console.error("Registration failed:", registrationResponse.data.message);
+            setRegistrationStatus("Registration failed. Please try again.");
           }
         } catch (error) {
-          console.error('Registration Error:', error);
-          setRegistrationStatus('An unexpected error occurred during registration');
+          console.error("Registration Error:", error);
+          setRegistrationStatus("An unexpected error occurred during registration.");
         } finally {
           setSubmitting(false);
         }
       }}
+
     >
       {({ isSubmitting }) => (
         <FormContainer>
           <Form>
-            <Typography variant="h5" gutterBottom style={{ color: 'var(--form-text-color)' }}>Register</Typography>
-
-            {registrationStatus && <Typography variant="body1" color="primary">{registrationStatus}</Typography>}
-
+            <Typography variant="h5" gutterBottom>
+              Register
+            </Typography>
             <Field name="username">
               {({ field, meta }: FieldProps) => (
-                <div style={{ marginBottom: '16px' }}> {/* Add this div with style */}
-                  <TextField
-                    {...field}
-                    label="User Name"
-                    variant="outlined"
-                    fullWidth
-                    error={meta.touched && !!meta.error}
-                    helperText={meta.touched && meta.error}
-                  />
-                </div>
+                <TextField
+                  {...field}
+                  label="User Name/Nickname"
+                  variant="outlined"
+                  fullWidth
+                  error={meta.touched && !!meta.error}
+                  helperText={meta.touched && meta.error}
+                />
               )}
             </Field>
             <ErrorMessage name="username" component={ErrorText} />
 
             <Field name="password">
               {({ field, meta }: FieldProps) => (
-                <div style={{ marginBottom: '16px' }}> {/* Optionally add this div with style if you need space below the password field */}
-                  <TextField
-                    {...field}
-                    type="password"
-                    label="Password"
-                    variant="outlined"
-                    fullWidth
-                    error={meta.touched && !!meta.error}
-                    helperText={meta.touched && meta.error}
-                    style={{ marginBottom: '16px' }}
-                  />
-                </div>
+                <TextField
+                  {...field}
+                  type="password"
+                  label="Password"
+                  variant="outlined"
+                  fullWidth
+                  error={meta.touched && !!meta.error}
+                  helperText={meta.touched && meta.error}
+                />
               )}
             </Field>
             <ErrorMessage name="password" component={ErrorText} />
 
-            <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>Register</Button>
-          </Form>
+            {/* Add email field */}
+            <Field name="email">
+              {({ field, meta }: FieldProps) => (
+                <TextField
+                  {...field}
+                  label="Email (for recieving requests and offers from friends in-app)"
+                  variant="outlined"
+                  fullWidth
+                  error={meta.touched && !!meta.error}
+                  helperText={meta.touched && meta.error}
+                />
+              )}
+            </Field>
+            <ErrorMessage name="email" component={ErrorText} />
 
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={isSubmitting}
+            >
+              Register
+            </Button>
+          </Form>
         </FormContainer>
       )}
-    </Formik></div>
-
+    </Formik>
   );
+
 };
 
 export default RegisterForm;

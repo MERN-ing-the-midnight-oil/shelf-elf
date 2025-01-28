@@ -209,6 +209,7 @@ router.get("/my-library-games", checkAuthentication, async (req, res) => {
 });
 
 // REQUEST GAME
+const transporter = require("../route_utils/emailTransporter");
 router.patch("/request", checkAuthentication, async (req, res) => {
 	const { lendingLibraryGameId } = req.body;
 
@@ -221,13 +222,18 @@ router.patch("/request", checkAuthentication, async (req, res) => {
 	try {
 		const lendingLibraryGame = await LendingLibraryGame.findById(
 			lendingLibraryGameId
-		);
+		)
+			.populate("owner", "email username") // Fetch owner's email and username
+			.populate("game", "title"); // Fetch game title
+
 		if (!lendingLibraryGame) {
 			return res.status(404).json({ message: "LendingLibraryGame not found" });
 		}
 
 		const requestedBy = req.user._id;
+		const requestingUser = req.user.username;
 
+		// Create a new GameRequest document
 		const newGameRequest = new GameRequest({
 			lendingLibraryGame: lendingLibraryGame._id,
 			wantedBy: requestedBy,
@@ -238,6 +244,23 @@ router.patch("/request", checkAuthentication, async (req, res) => {
 		await newGameRequest.save();
 		lendingLibraryGame.requests.push(requestedBy);
 		await lendingLibraryGame.save();
+
+		// Email the owner about the request
+		const mailOptions = {
+			from: `"Shelf Elf Notifications" <${process.env.EMAIL_USER}>`,
+			to: lendingLibraryGame.owner.email, // Owner's email
+			subject: "New Game Request on Shelf Elf",
+			text: `Hello ${lendingLibraryGame.owner.username},\n\nUser "${requestingUser}" has requested your game: "${lendingLibraryGame.game.title}".\n\nPlease log in to your account to review the request.\n\nThanks,\nShelf Elf Team`,
+		};
+
+		// Send email
+		transporter.sendMail(mailOptions, (err, info) => {
+			if (err) {
+				console.error("Error sending email:", err);
+			} else {
+				console.log("Email sent:", info.response);
+			}
+		});
 
 		res.status(201).json({
 			message: "Game request created successfully.",
@@ -312,6 +335,75 @@ router.patch(
 		}
 	}
 );
+// Fetch games requested by the authenticated user
+router.get("/my-requested-games", checkAuthentication, async (req, res) => {
+	const userId = req.user._id; // Get the logged-in user ID
+	console.log(`Fetching requested games for user ID: ${userId}`);
+
+	try {
+		const gameRequests = await GameRequest.find({ wantedBy: userId })
+			.populate({
+				path: "lendingLibraryGame",
+				populate: {
+					path: "game", // Populate game details
+					select: "title bggLink thumbnailUrl", // Select necessary fields
+				},
+			})
+			.populate({
+				path: "lendingLibraryGame",
+				populate: {
+					path: "owner",
+					select: "username", // Populate owner details
+				},
+			});
+
+		console.log("Requested games fetched:", gameRequests);
+		res.json(gameRequests);
+	} catch (error) {
+		console.error("Error fetching requested games:", error);
+		res.status(500).json({ message: "Error fetching requested games" });
+	}
+});
+
+router.get("/gamesFromMyCommunities", checkAuthentication, async (req, res) => {
+	const userId = req.user._id;
+	try {
+		// Fetch user's communities
+		const userCommunities = await Community.find({ members: userId }).select(
+			"_id name members"
+		);
+		console.log("User communities fetched:", userCommunities);
+
+		// Collect all member IDs from the user's communities
+		const communityMemberIds = userCommunities.flatMap(
+			(community) => community.members
+		);
+		console.log("Community member IDs:", communityMemberIds);
+
+		// Fetch games where the owner is a member of these communities
+		const games = await LendingLibraryGame.find({
+			owner: { $in: communityMemberIds },
+		})
+			.populate("game", "title bggLink thumbnailUrl")
+			.populate("owner", "username");
+		console.log("Games fetched:", games);
+
+		// Transform the response for the front end
+		const transformedGames = games.map((entry) => ({
+			gameIdentification: entry._id,
+			gameTitle: entry.game.title,
+			bggLink: entry.game.bggLink,
+			thumbnailUrl: entry.game.thumbnailUrl,
+			ownerUsername: entry.owner.username,
+			isAvailable: entry.isAvailable,
+		}));
+
+		res.status(200).json(transformedGames);
+	} catch (error) {
+		console.error("Error fetching games from communities:", error);
+		res.status(500).json({ message: "Error fetching games from communities." });
+	}
+});
 
 // EXPORT ROUTER
 module.exports = router;

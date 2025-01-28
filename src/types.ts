@@ -18,6 +18,8 @@ interface Message {
     gameTitle: string;
     bggLink: string;
     ownerUsername: string;
+    owner:string;
+    communityId: string;
     communityName: string;
     bggRating: number;
     thumbnailUrl?: string;
@@ -27,7 +29,7 @@ interface Message {
     messages: Message[];
   }
 
-
+ 
 
 export interface SharedComponentProps {
   token: string;

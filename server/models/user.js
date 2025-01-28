@@ -11,6 +11,15 @@ const UserSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
+	email: {
+		type: String,
+		required: true,
+		unique: true,
+		match: [
+			/^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+			"Please enter a valid email address.",
+		],
+	},
 	lendingLibrary: [Book.schema],
 	borrowedBooks: [Book.schema],
 	requestedBooks: [
