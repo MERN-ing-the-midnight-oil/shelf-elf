@@ -27,13 +27,14 @@ const GroupDetails: React.FC<GroupDetailsProps> = ({
         setIsCreator(userId === creatorId);
 
         // Fetch members of the group
+        const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001'; // Ensure this is correct
+
         const fetchMembers = async () => {
             try {
+                console.log(`Fetching members from: ${API_URL}/api/communities/${groupId}/members`);
                 const response = await axios.get(
-                    `/api/communities/${groupId}/members`,
-                    {
-                        headers: { Authorization: `Bearer ${token}` },
-                    }
+                    `${API_URL}/api/communities/${groupId}/members`,
+                    { headers: { Authorization: `Bearer ${token}` } }
                 );
                 setMembers(response.data);
             } catch (error) {
@@ -41,24 +42,33 @@ const GroupDetails: React.FC<GroupDetailsProps> = ({
             }
         };
 
+
         fetchMembers();
     }, [groupId, token, userId, creatorId]);
+
+    const API_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001"; // Ensure this matches your backend
 
     const removeMember = async (memberId: string) => {
         if (!window.confirm("Are you sure you want to remove this member?")) return;
 
         try {
-            await axios.delete(`/api/communities/${groupId}/remove-member`, {
-                headers: { Authorization: `Bearer ${token}` },
-                data: { memberId },
-            });
-            // Remove member locally
+            console.log(`Sending request to remove member: ${API_URL}/api/communities/${groupId}/remove-member`);
+
+            await axios.post(
+                `${API_URL}/api/communities/${groupId}/remove-member`,  // ✅ Corrected URL
+                { memberId },  // ✅ Sending memberId in the body
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
             setMembers((prev) => prev.filter((member) => member._id !== memberId));
+            console.log(`Member ${memberId} removed successfully.`);
         } catch (error) {
             console.error("Error removing member:", error);
             alert("Failed to remove member.");
         }
     };
+
+
 
     return (
         <div>

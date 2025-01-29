@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Typography, Box, List, ListItem, ListItemText, Button, TextField } from '@mui/material';
 import ExistingCommunities from './ExistingCommunities';
 import CreateNewCommunity from './CreateNewCommunity';
+import GroupDetails from './GroupDetails';
 import axios from 'axios';
 
 interface Community {
@@ -29,6 +30,9 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
     const manageMembersRef = useRef<HTMLDivElement>(null);
     const editGroupRef = useRef<HTMLDivElement>(null);
     const isMounted = useRef(true);
+    useEffect(() => {
+        console.log("Managing community state updated:", managingCommunity);
+    }, [managingCommunity]);
 
     useEffect(() => {
         isMounted.current = true;
@@ -77,13 +81,15 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
             alert('Failed to leave the community.');
         }
     };
-
     const handleManageMembers = (community: Community) => {
+        console.log("Manage Members button clicked for community:", community);
         setManagingCommunity(community);
         setTimeout(() => {
             manageMembersRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 0);
     };
+
+
 
     const handleEditCommunity = (community: Community) => {
         setEditingCommunity(community);
@@ -169,8 +175,24 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
             />
 
             <CreateNewCommunity token={token} onCommunityCreated={fetchUserCommunities} />
+
+            {/* ✅ Add GroupDetails.tsx for Managing Members */}
+            {managingCommunity && (
+                <Box ref={manageMembersRef} sx={{ mt: 4, p: 2, border: '1px solid #ccc', borderRadius: '8px' }}>
+                    <Typography variant="h5" gutterBottom>
+                        Managing Members for {managingCommunity.name}
+                    </Typography>
+                    <GroupDetails
+                        token={token}
+                        groupId={managingCommunity._id}
+                        creatorId={managingCommunity.creatorId}
+                        userId={userId}
+                    />
+                </Box>
+            )}
         </Box>
     );
+
 };
 
 export default ManageCommunities;
