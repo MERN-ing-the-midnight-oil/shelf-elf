@@ -247,10 +247,18 @@ router.patch("/request", checkAuthentication, async (req, res) => {
 
 		// Email the owner about the request
 		const mailOptions = {
-			from: `"Shelf Elf Notifications" <${process.env.EMAIL_USER}>`,
+			from: `"Game Lender Notifications" <${process.env.EMAIL_USER}>`,
 			to: lendingLibraryGame.owner.email, // Owner's email
-			subject: "New Game Request on Shelf Elf",
-			text: `Hello ${lendingLibraryGame.owner.username},\n\nUser "${requestingUser}" has requested your game: "${lendingLibraryGame.game.title}".\n\nPlease log in to your account to review the request.\n\nThanks,\nShelf Elf Team`,
+			subject: "New Game Request on Game Lender",
+			text: `Hello ${lendingLibraryGame.owner.username},
+		
+		User "${requestingUser}" has requested to borrow your game: "${lendingLibraryGame.game.title}".
+	
+		
+		Please let ${requestingUser} know if it's still available by visiting your account at: https://bit.ly/GameLender, 
+		
+		Thanks,  
+		Game Lender Team`,
 		};
 
 		// Send email
@@ -404,6 +412,43 @@ router.get("/gamesFromMyCommunities", checkAuthentication, async (req, res) => {
 		res.status(500).json({ message: "Error fetching games from communities." });
 	}
 });
+router.patch(
+	"/rescind-game-request/:requestId",
+	checkAuthentication,
+	async (req, res) => {
+		try {
+			const { requestId } = req.params;
+			const userId = req.user._id; // Your routes use `_id`
+
+			console.log(`Rescinding request ID: ${requestId} by user ${userId}`);
+
+			// Find the game request
+			const gameRequest = await GameRequest.findById(requestId);
+			if (!gameRequest) {
+				return res.status(404).json({ message: "Game request not found." });
+			}
+
+			// Ensure the user owns the request
+			if (gameRequest.wantedBy.toString() !== userId.toString()) {
+				return res
+					.status(403)
+					.json({ message: "Unauthorized to rescind this request." });
+			}
+
+			// Update status to "rescinded"
+			gameRequest.status = "rescinded";
+			await gameRequest.save();
+
+			console.log(`Game request ${requestId} successfully rescinded.`);
+			return res
+				.status(200)
+				.json({ message: "Game request rescinded successfully." });
+		} catch (error) {
+			console.error("Error rescinding game request:", error);
+			return res.status(500).json({ message: "Internal server error." });
+		}
+	}
+);
 
 // EXPORT ROUTER
 module.exports = router;
