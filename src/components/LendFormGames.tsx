@@ -168,25 +168,37 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token, setRefetchCounter,
             )}
 
             {isLoading && <CircularProgress />}
-            {games.map((game) => (
-                <GameItem key={game._id}>
-                    {game.thumbnailUrl && (
-                        <img
-                            src={game.thumbnailUrl}
-                            alt={game.title}
-                            style={{ maxWidth: "100%", marginBottom: "10px" }}
-                        />
-                    )}
-                    <Typography variant="h6" component="p">
-                        {game.title}
-                    </Typography>
-                    <Button variant="contained" color="primary" onClick={() => offerToLend(game)}>
-                        Offer to Lend
-                    </Button>
-                </GameItem>
-            ))}
+
+            {games.map((game) => {
+                console.log(
+                    `Game title: ${game.title}, Image URL: ${game.thumbnailUrl || "No Image Found"}`
+                ); // ✅ Log each game title and its image URL
+
+                return (
+                    <GameItem key={game._id || game.bggId}>
+                        {game.thumbnailUrl ? (
+                            <img
+                                src={game.thumbnailUrl}
+                                alt={game.title}
+                                style={{ maxWidth: "100%", marginBottom: "10px" }}
+                            />
+                        ) : (
+                            <Typography variant="body2" color="error">
+                                No Image Available
+                            </Typography>
+                        )}
+                        <Typography variant="h6" component="p">
+                            {game.title}
+                        </Typography>
+                        <Button variant="contained" color="primary" onClick={() => offerToLend(game)}>
+                            Offer to Lend
+                        </Button>
+                    </GameItem>
+                );
+            })}
         </Container>
     );
+
 };
 
 export default LendFormGames;
