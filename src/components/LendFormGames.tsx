@@ -52,7 +52,7 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token, setRefetchCounter,
         const API_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001";
 
         try {
-            const response = await fetch(`${API_URL}/api/games/search?query=${encodeURIComponent(title)}`, { // ✅ Use "query" instead of "title"
+            const response = await fetch(`${API_URL}/api/games/search?query=${encodeURIComponent(title)}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -63,14 +63,18 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token, setRefetchCounter,
             if (!response.ok) throw new Error("Network response was not ok");
 
             const data = await response.json();
-            console.log("Search results received from backend:", data);
-            setGames(data);
+
+            // 🔥 LOG THE RESULTS (Check if "Forbidden Jungle" is there)
+            console.log("🔍 Search results from backend:", data);
+
+            setGames(data); // Update UI
         } catch (error) {
             console.error("Error searching games:", error);
         } finally {
             setIsLoading(false);
         }
     };
+
 
 
 

@@ -130,35 +130,20 @@ router.get("/search", async (req, res) => {
 
 		console.log(`🔎 Searching for games with query: "${query}"`);
 
-		// Search for games in the local database
+		// ✅ STEP 1: Search MongoDB for Matching Titles
 		let localGames = await Game.find({
 			title: { $regex: query, $options: "i" },
 		});
 
-		console.log(`🗂️ Found ${localGames.length} games locally.`);
+		let localGameIDs = localGames.map((g) => g.bggId);
+		console.log("🗂️ Found locally stored game IDs:", localGameIDs);
 
-		// 🔥 NEW: Fetch missing thumbnails
-		const updatedGames = await Promise.all(
-			localGames.map(async (game) => {
-				if (!game.thumbnailUrl) {
-					console.log(`🖼️ No image found for ${game.title}. Fetching...`);
-					const newThumbnail = await fetchGameImage(game.bggId);
-					game.thumbnailUrl = newThumbnail || null;
-					await game.save(); // ✅ Update database
-				}
-				return game;
-			})
-		);
+		// ✅ STEP 2: Fetch From BGG If Some Titles Are Missing
+		console.log("🌍 Checking if additional games exist on BGG...");
 
-		// If we have games locally, return them
-		if (updatedGames.length > 0) {
-			return res.json(updatedGames);
-		}
-
-		// If no local games, fetch from BGG API
-		console.log("🌍 No local games found. Fetching from BGG API...");
-		const bggApiUrl = `https://boardgamegeek.com/xmlapi/search?search=${query}&exact=0`;
-
+		const bggApiUrl = `https://boardgamegeek.com/xmlapi/search?search=${encodeURIComponent(
+			query
+		)}`;
 		try {
 			const response = await axios.get(bggApiUrl, {
 				headers: { Accept: "application/xml" },
@@ -167,27 +152,42 @@ router.get("/search", async (req, res) => {
 			const { parseStringPromise } = require("xml2js");
 			const jsonResult = await parseStringPromise(xmlData);
 
-			const bggGames = jsonResult.boardgames.boardgame || [];
-			console.log(`🎲 Found ${bggGames.length} games on BGG.`);
+			let bggGames = jsonResult.boardgames?.boardgame?.slice(0, 10) || [];
+			if (bggGames.length === 0) {
+				console.log("❌ No additional games found on BGG.");
+			} else {
+				const fetchedGameIDs = bggGames.map((bggGame) =>
+					parseInt(bggGame.$.objectid, 10)
+				);
+				console.log("🎲 BGG API returned game IDs:", fetchedGameIDs);
 
-			const formattedGames = await Promise.all(
-				bggGames.map(async (bggGame) => {
+				// ✅ STEP 3: Filter Out Games Already in MongoDB
+				const newGames = bggGames.filter(
+					(bggGame) => !localGameIDs.includes(parseInt(bggGame.$.objectid, 10))
+				);
+
+				// ✅ STEP 4: Save New Games to MongoDB
+				for (const bggGame of newGames) {
 					const bggId = parseInt(bggGame.$.objectid, 10);
-					const title = bggGame.name[0]._ || "Unknown Title";
-
-					// Fetch the thumbnail separately
+					const title = bggGame.name?.[0]?._ || "Unknown Title";
+					const bggLink = `https://boardgamegeek.com/boardgame/${bggId}`;
 					const thumbnailUrl = await fetchGameImage(bggId);
 
-					return {
-						bggId,
-						title,
-						bggLink: `https://boardgamegeek.com/boardgame/${bggId}`,
-						thumbnailUrl,
-					};
-				})
-			);
+					console.log(`🆕 Saving new game: ${title} (ID: ${bggId})`);
+					await Game.create({ title, bggId, bggLink, thumbnailUrl });
+				}
 
-			return res.json(formattedGames);
+				// ✅ STEP 5: Query MongoDB Again to Get Updated Results
+				localGames = await Game.find({
+					title: { $regex: query, $options: "i" },
+				});
+			}
+
+			console.log(
+				"🚀 Final list of game IDs sent to frontend:",
+				localGames.map((g) => g.bggId)
+			);
+			return res.json(localGames);
 		} catch (apiError) {
 			console.error("🔥 Error fetching search results from BGG API:", apiError);
 			return res
