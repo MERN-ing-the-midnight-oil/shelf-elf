@@ -46,21 +46,24 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token, setRefetchCounter,
 
 
     const handleSearch = async (title: string) => {
-        console.log("handleSearch called with title:", title); // Add this
+        console.log("handleSearch called with title:", title);
         setIsLoading(true);
+
         const API_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001";
+
         try {
-            const response = await fetch(`${API_URL}/api/games/search?title=${title}`, {
+            const response = await fetch(`${API_URL}/api/games/search?query=${encodeURIComponent(title)}`, { // ✅ Use "query" instead of "title"
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
             });
+
             if (!response.ok) throw new Error("Network response was not ok");
 
             const data = await response.json();
-            console.log("Search results received from backend:", data); // Add this
+            console.log("Search results received from backend:", data);
             setGames(data);
         } catch (error) {
             console.error("Error searching games:", error);
@@ -68,6 +71,7 @@ const LendFormGames: React.FC<LendFormGamesProps> = ({ token, setRefetchCounter,
             setIsLoading(false);
         }
     };
+
 
 
     const handleBarcodeDetected = async (barcode: string) => {

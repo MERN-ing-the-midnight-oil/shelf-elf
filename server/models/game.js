@@ -7,7 +7,7 @@ const gameSchema = new mongoose.Schema({
 	},
 	bggRating: {
 		type: Number,
-		required: true,
+		required: false,
 	},
 	bggId: {
 		type: Number,

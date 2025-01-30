@@ -1,149 +1,24 @@
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
-const { checkAuthentication } = require("../../../middlewares/authentication");
-const fetchGameImage = require("./fetchGameImage");
-const xml2js = require("xml2js");
 const axios = require("axios");
+const { checkAuthentication } = require("../../../middlewares/authentication");
+const { parseStringPromise } = require("xml2js"); // ✅ Direct import
+const fetchGameImage = require("./fetchGameImage"); // ✅ No duplicate
 const User = require("../../models/user");
 const Community = require("../../models/community");
 const GameRequest = require("../../models/gameRequest");
 const Game = require("../../models/game");
 const LendingLibraryGame = require("../../models/lendingLibraryGame");
 
-// SEARCH ROUTE
-router.get("/search", checkAuthentication, async (req, res) => {
-	console.log("🔍 Search route called with query:", req.query);
-	const { title } = req.query;
-
-	if (!title) {
-		console.warn("⚠️ No title provided in search request.");
-		return res.status(400).json({ message: "Title is required." });
-	}
-
-	try {
-		console.log(`🔎 Searching for: "${title}" in local database...`);
-
-		// **Step 1: Search Local Database (Text Search)**
-		let games = await Game.find({
-			$text: { $search: `"${title}"` },
-		})
-			.sort({ score: { $meta: "textScore" } })
-			.limit(10);
-
-		console.log(`✅ Found ${games.length} results from text search.`);
-
-		// **Step 2: Fallback to Regex Search if No Text Matches**
-		if (games.length === 0) {
-			console.log("🔄 No exact matches. Trying regex search...");
-			const regex = new RegExp(title, "i");
-			games = await Game.find({ title: regex }).limit(10);
-			console.log(`✅ Found ${games.length} results from regex search.`);
-		}
-
-		// **Step 3: If No Local Matches, Query BGG API**
-		if (games.length === 0) {
-			console.log("🌍 No local matches found. Querying BoardGameGeek API...");
-
-			const cleanedTitleForBGG = title
-				.replace(/\b(Board Game|Board|Game)\b/gi, "")
-				.trim();
-			console.log(`🛠️ Cleaned title for BGG API: "${cleanedTitleForBGG}"`);
-
-			const bggUrl = `https://boardgamegeek.com/xmlapi2/search?query=${encodeURIComponent(
-				cleanedTitleForBGG
-			)}&type=boardgame`;
-
-			try {
-				const bggResponse = await axios.get(bggUrl);
-				console.log("📡 Received raw response from BGG API.");
-
-				// Parse XML Response
-				const parsedData = await xml2js.parseStringPromise(bggResponse.data, {
-					mergeAttrs: true,
-				});
-				const bggGames = parsedData.items?.item || [];
-				console.log(`✅ Parsed ${bggGames.length} games from BGG API.`);
-
-				// Process BGG Results
-				games = await Promise.all(
-					bggGames
-						.filter(
-							(item) =>
-								Array.isArray(item.name) &&
-								item.name.some((n) => n.type?.[0] === "primary")
-						)
-						.map(async (item) => {
-							const primaryName = item.name.find(
-								(n) => n.type?.[0] === "primary"
-							);
-							const bggId = parseInt(item.id[0], 10);
-
-							console.log(`🖼️ Fetching image for BGG ID: ${bggId}...`);
-							const thumbnailUrl = await fetchGameImage(bggId).catch((err) => {
-								console.error(
-									`❌ Error fetching image for BGG ID ${bggId}:`,
-									err
-								);
-								return null;
-							});
-
-							console.log(
-								`🎨 Image fetched for BGG ID ${bggId}: ${
-									thumbnailUrl || "No Image Found"
-								}`
-							);
-
-							return {
-								title: primaryName?.value?.[0] || "Unknown Title",
-								bggId,
-								yearPublished: item.yearpublished?.[0]?.value?.[0] || "Unknown",
-								bggLink: `https://boardgamegeek.com/boardgame/${bggId}`,
-								bggRating: null,
-								thumbnailUrl,
-							};
-						})
-				);
-
-				console.log("🛠️ Final BGG Games:", games);
-			} catch (error) {
-				console.error("❌ Error querying BGG API:", error);
-			}
-		}
-
-		// **Step 4: Ensure Games Have Images**
-		for (const game of games) {
-			if (!game.thumbnailUrl) {
-				console.log(
-					`🚨 No thumbnail found for "${game.title}" (BGG ID: ${game.bggId}). Fetching from BGG...`
-				);
-				game.thumbnailUrl = await fetchGameImage(game.bggId);
-				console.log(
-					`✅ Updated thumbnail for "${game.title}": ${
-						game.thumbnailUrl || "No Image Found"
-					}`
-				);
-			}
-		}
-
-		// **Return Final Games List**
-		console.log(`📦 Returning ${games.length} games.`);
-		res.json(games);
-	} catch (error) {
-		console.error("❌ Error during search:", error);
-		res.status(500).json({ message: "Error searching for games" });
-	}
-});
-
-// ADD GAME TO USER LIBRARY
 router.post("/lend", checkAuthentication, async (req, res) => {
-	console.log("Lend route called with body:", req.body);
+	console.log("📌 Lend route called with body:", req.body);
 
 	const userId = req.user._id;
 	const { gameId } = req.body;
 
 	if (!gameId) {
-		console.error("Missing gameId in request body.");
+		console.error("⛔ Missing gameId in request body.");
 		return res.status(400).json({ message: "gameId is required." });
 	}
 
@@ -152,20 +27,69 @@ router.post("/lend", checkAuthentication, async (req, res) => {
 
 		// Validate and fetch game based on gameId
 		if (mongoose.Types.ObjectId.isValid(gameId)) {
-			// If gameId is a valid MongoDB ObjectId
-			console.log("gameId is a valid ObjectId:", gameId);
+			console.log("🔍 gameId is a valid ObjectId:", gameId);
 			game = await Game.findById(gameId);
 		} else if (!isNaN(gameId)) {
-			// If gameId is a number (bggId)
-			console.log("gameId is a valid bggId:", gameId);
+			console.log("🔍 gameId is a valid bggId (number-based):", gameId);
 			game = await Game.findOne({ bggId: parseInt(gameId, 10) });
+
+			// If game isn't found locally, fetch from BGG API
+			if (!game) {
+				console.log("🌍 Game not found locally. Fetching from BGG API...");
+				const bggApiUrl = `https://api.geekdo.com/xmlapi/boardgame/${gameId}?stats=1`;
+
+				try {
+					const response = await axios.get(bggApiUrl, {
+						headers: { Accept: "application/xml" },
+					});
+					const xmlData = response.data;
+					console.log("📜 Raw XML response from BGG:", xmlData);
+
+					// Convert XML to JSON
+					const { parseStringPromise } = require("xml2js");
+					const jsonResult = await parseStringPromise(xmlData);
+					const bggGame = jsonResult.boardgames.boardgame?.[0];
+
+					if (!bggGame) {
+						throw new Error("Invalid API response structure");
+					}
+
+					const newGameData = {
+						bggId: parseInt(bggGame.$.objectid, 10),
+						title: bggGame.name[0]._ || "Unknown Title",
+						bggLink: `https://boardgamegeek.com/boardgame/${bggGame.$.objectid}`,
+						bggRating: isNaN(
+							bggGame.statistics?.[0]?.ratings?.[0]?.average?.[0]?._
+						)
+							? null
+							: parseFloat(
+									bggGame.statistics?.[0]?.ratings?.[0]?.average?.[0]?._
+							  ),
+					};
+
+					console.log("✅ Extracted game data from BGG:", newGameData);
+
+					// Save new game to database
+					game = new Game(newGameData);
+					await game.save();
+					console.log(`✅ New game saved to database: ${game._id}`);
+				} catch (apiError) {
+					console.error(
+						"🔥 Error fetching game from BGG API:",
+						apiError.message
+					);
+					return res.status(500).json({
+						message: "Failed to retrieve game data from BoardGameGeek.",
+					});
+				}
+			}
 		} else {
-			console.error("Invalid gameId format:", gameId);
+			console.error("⛔ Invalid gameId format:", gameId);
 			return res.status(400).json({ message: "Invalid gameId format." });
 		}
 
 		if (!game) {
-			console.error("Game not found for gameId:", gameId);
+			console.error("⛔ Game not found for gameId:", gameId);
 			return res.status(404).json({ message: "Game not found." });
 		}
 
@@ -179,7 +103,7 @@ router.post("/lend", checkAuthentication, async (req, res) => {
 
 		await newLendingLibraryGame.save();
 		console.log(
-			`Game ${game._id} added to lending library for user ${userId}.`
+			`✅ Game ${game._id} added to lending library for user ${userId}.`
 		);
 
 		res.status(200).json({
@@ -187,10 +111,87 @@ router.post("/lend", checkAuthentication, async (req, res) => {
 			lendingLibraryGame: newLendingLibraryGame,
 		});
 	} catch (error) {
-		console.error("Error in lend route:", error);
+		console.error("🔥 Error in lend route:", error);
 		res.status(500).json({ message: "Error adding game to lending library." });
 	}
 });
+
+// SEARCH ROUTE
+router.get("/search", async (req, res) => {
+	try {
+		const { query } = req.query;
+		if (!query) {
+			return res.status(400).json({ message: "Query parameter is required." });
+		}
+
+		console.log(`🔎 Searching for games with query: "${query}"`);
+
+		// Search for games in the local database
+		const localGames = await Game.find({
+			title: { $regex: query, $options: "i" },
+		});
+
+		console.log(`🗂️ Found ${localGames.length} games locally.`);
+
+		// Fetch games from BoardGameGeek API if none found locally
+		if (localGames.length === 0) {
+			console.log("🌍 No local games found. Fetching from BGG API...");
+			const bggApiUrl = `https://boardgamegeek.com/xmlapi/search?search=${query}&exact=0`;
+
+			try {
+				const response = await axios.get(bggApiUrl, {
+					headers: { Accept: "application/xml" },
+				});
+				const xmlData = response.data;
+				const { parseStringPromise } = require("xml2js");
+				const jsonResult = await parseStringPromise(xmlData);
+
+				const bggGames = jsonResult.boardgames.boardgame || [];
+				console.log(`🎲 Found ${bggGames.length} games on BGG.`);
+
+				const formattedGames = await Promise.all(
+					bggGames.slice(0, 10).map(async (bggGame) => {
+						// ✅ Limit results to first 10 games
+						const bggId = parseInt(bggGame.$.objectid, 10);
+						const title = bggGame.name[0]._ || "Unknown Title";
+
+						// Fetch the thumbnail separately
+						const thumbnailUrl = await fetchGameImage(bggId);
+
+						return {
+							bggId,
+							title,
+							bggLink: `https://boardgamegeek.com/boardgame/${bggId}`,
+							thumbnailUrl,
+						};
+					})
+				);
+
+				return res.json(formattedGames);
+			} catch (apiError) {
+				console.error(
+					"🔥 Error fetching search results from BGG API:",
+					apiError
+				);
+				return res
+					.status(500)
+					.json({ message: "Failed to retrieve search results from BGG." });
+			}
+		}
+
+		// Return locally found games
+		res.json(localGames);
+	} catch (error) {
+		console.error("🔥 Error in search route:", error);
+		res.status(500).json({ message: "Error searching for games." });
+	}
+});
+
+// ADD GAME TO USER LIBRARY
+
+// ADD GAME TO USER LIBRARY
+
+// ADD GAME TO USER LIBRARY
 
 // REMOVE GAME FROM LIBRARY
 router.delete("/remove-game/:gameId", checkAuthentication, async (req, res) => {
