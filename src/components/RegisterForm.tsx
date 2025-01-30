@@ -140,7 +140,8 @@ const RegisterForm: React.FC = () => {
               {({ field, meta }: FieldProps) => (
                 <TextField
                   {...field}
-                  label="Email (for recieving requests and offers from friends in-app)"
+                  id="email" // ✅ Ensure the label is linked to the input
+                  label="Email (for receiving requests and offers from friends in-app)"
                   variant="outlined"
                   fullWidth
                   error={meta.touched && !!meta.error}

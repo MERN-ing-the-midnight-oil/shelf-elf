@@ -6,7 +6,7 @@ function LandingHeader() {
             Game Lender
         </h1>
             <img
-                src={process.env.PUBLIC_URL + '/Title.webp'}
+                src={process.env.PUBLIC_URL + '/meeple.png'}
                 alt="Library"
                 className="landing-title-img"
             />
