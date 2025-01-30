@@ -84,13 +84,16 @@ function App() {
             <LandingHeader />
             <RegisterForm />
             <LoginForm />
+            <p style={{ fontSize: '18px', fontWeight: 'bold', marginTop: '10px', color: '#333' }}>
+              ⬇️ You are here ⬇️
+            </p>
             <img
               src="/GameLenderQR.png"
               alt="Game Lender QR Code"
               style={{ display: 'block', margin: '20px auto', maxWidth: '100%', height: 'auto' }}
             />
             <p style={{ fontSize: '18px', fontWeight: 'bold', marginTop: '10px', color: '#333' }}>
-              Scan to Share
+              ⬆️ Scan to Share ⬆️
             </p>
             <Share />
           </div>

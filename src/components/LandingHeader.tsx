@@ -12,7 +12,7 @@ function LandingHeader() {
             />
 
             <h3 className="landing-subheading">
-                Making it easy for you and your friends to list, browse, and borrow games (or books!)
+                List, Lend, Borrow, Repeat.
             </h3>
         </header>
     );
