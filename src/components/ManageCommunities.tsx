@@ -176,7 +176,7 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
 
             <CreateNewCommunity token={token} onCommunityCreated={fetchUserCommunities} />
 
-            {/* ✅ Add GroupDetails.tsx for Managing Members */}
+            {/* ✅ Group Member Management Section */}
             {managingCommunity && (
                 <Box ref={manageMembersRef} sx={{ mt: 4, p: 2, border: '1px solid #ccc', borderRadius: '8px' }}>
                     <Typography variant="h5" gutterBottom>
@@ -190,8 +190,58 @@ const ManageCommunities: React.FC<ManageCommunitiesProps> = ({ token, userId }) 
                     />
                 </Box>
             )}
+
+            {/* ✅ Group Editing Form Section */}
+            {editingCommunity && (
+                <Box ref={editGroupRef} sx={{ mt: 4, p: 2, border: '1px solid #ccc', borderRadius: '8px' }}>
+                    <Typography variant="h5" gutterBottom>
+                        Editing {editingCommunity.name}
+                    </Typography>
+                    <TextField
+                        fullWidth
+                        label="Group Name"
+                        variant="outlined"
+                        value={editingCommunity.name}
+                        onChange={(e) => setEditingCommunity({ ...editingCommunity, name: e.target.value })}
+                        sx={{ mb: 2 }}
+                    />
+                    <TextField
+                        fullWidth
+                        label="Group Description"
+                        variant="outlined"
+                        value={editingCommunity.description}
+                        onChange={(e) => setEditingCommunity({ ...editingCommunity, description: e.target.value })}
+                        sx={{ mb: 2 }}
+                    />
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={async () => {
+                            try {
+                                const response = await axios.put(
+                                    `${API_URL}/api/communities/${editingCommunity._id}/update`,
+                                    { name: editingCommunity.name, description: editingCommunity.description },
+                                    { headers: { Authorization: `Bearer ${token}` } }
+                                );
+                                alert('Group updated successfully!');
+                                setEditingCommunity(null);
+                                fetchUserCommunities(); // Refresh list
+                            } catch (error) {
+                                console.error("Error updating community:", error);
+                                alert("Failed to update community.");
+                            }
+                        }}
+                    >
+                        Save Changes
+                    </Button>
+                    <Button variant="contained" color="secondary" onClick={() => setEditingCommunity(null)} sx={{ ml: 2 }}>
+                        Cancel
+                    </Button>
+                </Box>
+            )}
         </Box>
     );
+
 
 };
 

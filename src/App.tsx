@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import RegisterForm from './components/RegisterForm';
 import LoginForm from './components/LoginForm';
+import Share from "./components/Share"; // ✅ Import the Share component
+
+
 import Header from './components/Header';
 import LendBooks from './components/LendBooks';
 import RequestBooks from './components/RequestBooks';
@@ -79,9 +82,19 @@ function App() {
         ) : (
           <div className="landing-container">
             <LandingHeader />
-            <LoginForm />
             <RegisterForm />
+            <LoginForm />
+            <img
+              src="/GameLenderQR.png"
+              alt="Game Lender QR Code"
+              style={{ display: 'block', margin: '20px auto', maxWidth: '100%', height: 'auto' }}
+            />
+            <p style={{ fontSize: '18px', fontWeight: 'bold', marginTop: '10px', color: '#333' }}>
+              Scan to Share
+            </p>
+            <Share />
           </div>
+
         )}
       </div>
     </Router>

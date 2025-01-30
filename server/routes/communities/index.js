@@ -162,6 +162,36 @@ router.post("/:id/leave", checkAuthentication, async (req, res) => {
 // Creator-Specific Routes
 // =============================
 // Fetch members of a community (Only for the creator)
+router.put("/:communityId/update", checkAuthentication, async (req, res) => {
+	const { communityId } = req.params;
+	const { name, description } = req.body;
+	const userId = req.user._id;
+
+	try {
+		const community = await Community.findById(communityId);
+
+		if (!community)
+			return res.status(404).json({ message: "Community not found" });
+		if (community.creatorId.toString() !== userId.toString()) {
+			return res
+				.status(403)
+				.json({ message: "Only the creator can edit this community." });
+		}
+
+		community.name = name || community.name;
+		community.description = description || community.description;
+		await community.save();
+
+		console.log(`✅ Community updated: ${community.name}`);
+		res
+			.status(200)
+			.json({ message: "Community updated successfully", community });
+	} catch (error) {
+		console.error("❌ Error updating community:", error);
+		res.status(500).json({ message: "Failed to update community" });
+	}
+});
+
 router.get("/:communityId/members", checkAuthentication, async (req, res) => {
 	try {
 		const { communityId } = req.params;
