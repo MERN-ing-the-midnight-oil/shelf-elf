@@ -70,14 +70,8 @@ router.get("/my-library", checkAuthentication, async (req, res) => {
 	}
 
 	try {
-		// Log the user details to check if the user info is being correctly retrieved
-		// console.log("Logged-in User ID:", req.user._id);
-
 		// Find all books owned by the logged-in user
 		const myBooks = await Book.find({ owner: req.user._id });
-
-		// Log the found books
-		// console.log("Fetched books:", myBooks);
 
 		res.status(200).json(myBooks);
 	} catch (error) {

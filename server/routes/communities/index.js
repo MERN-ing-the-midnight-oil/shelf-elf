@@ -17,7 +17,7 @@ router.get("/list", async (req, res) => {
 	try {
 		console.log("Fetching all communities...");
 		const communities = await Community.find({});
-		console.log("Communities found:", JSON.stringify(communities, null, 2));
+		//console.log("Communities found:", JSON.stringify(communities, null, 2));
 		res.status(200).json(communities);
 	} catch (error) {
 		console.error("Error fetching communities:", error);
@@ -192,32 +192,29 @@ router.put("/:communityId/update", checkAuthentication, async (req, res) => {
 	}
 });
 
-router.get("/:communityId/members", checkAuthentication, async (req, res) => {
-	try {
-		const { communityId } = req.params;
-		const userId = req.user._id;
+router.get(
+	"/:communityId/members",
+	checkAuthentication,
+	adminCheck,
+	async (req, res) => {
+		try {
+			const { communityId } = req.params;
+			const community = await Community.findById(communityId).populate(
+				"members",
+				"username _id"
+			);
 
-		// Find the community and check if the user is the creator
-		const community = await Community.findById(communityId).populate(
-			"members",
-			"username _id"
-		);
-		if (!community) {
-			return res.status(404).json({ message: "Community not found" });
+			if (!community) {
+				return res.status(404).json({ message: "Community not found" });
+			}
+
+			res.status(200).json(community.members); // ✅ Admins can now fetch members
+		} catch (error) {
+			console.error("Error fetching community members:", error);
+			res.status(500).json({ message: "Failed to fetch community members" });
 		}
-
-		if (community.creatorId.toString() !== userId.toString()) {
-			return res
-				.status(403)
-				.json({ message: "Only the creator can manage members." });
-		}
-
-		res.status(200).json(community.members);
-	} catch (error) {
-		console.error("Error fetching community members:", error);
-		res.status(500).json({ message: "Failed to fetch community members" });
 	}
-});
+);
 
 // Remove a member from a community
 router.post(
@@ -265,6 +262,36 @@ router.get("/admin-list", checkAuthentication, adminCheck, async (req, res) => {
 		res.status(500).json({ message: "Failed to fetch communities" });
 	}
 });
+router.delete(
+	"/:communityId",
+	checkAuthentication,
+	adminCheck,
+	async (req, res) => {
+		try {
+			const { communityId } = req.params;
+
+			const community = await Community.findById(communityId);
+			if (!community)
+				return res.status(404).json({ message: "Community not found" });
+
+			// ✅ Allow admins OR the creator to delete the community
+			if (
+				community.creatorId.toString() !== req.user._id.toString() &&
+				!req.user.isAdmin
+			) {
+				return res.status(403).json({
+					message: "You do not have permission to delete this community.",
+				});
+			}
+
+			await Community.findByIdAndDelete(communityId);
+			res.status(200).json({ message: "Community deleted successfully" });
+		} catch (error) {
+			console.error("Error deleting community:", error);
+			res.status(500).json({ message: "Failed to delete community" });
+		}
+	}
+);
 
 // Get members of a specific community (Admin only)
 router.get(

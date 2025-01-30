@@ -13,7 +13,7 @@ const { checkAuthentication } = require("../../../middlewares/authentication");
 router.get("/me", checkAuthentication, async (req, res) => {
 	try {
 		console.log("GET /me route accessed");
-		console.log("Authenticated user from middleware:", req.user);
+		//console.log("Authenticated user from middleware:", req.user);
 
 		if (!req.user) {
 			return res.status(401).json({ error: "Unauthorized" });
@@ -82,41 +82,57 @@ router.post("/register", async (req, res) => {
 });
 
 // LOGIN route
+// LOGIN route
 router.post("/login", async (req, res) => {
 	try {
-		// Destructure username and password from the request body
 		const { username, password } = req.body;
+		console.log("🔑 Incoming login request for:", username);
 
-		// Check if username and password are provided
-		if (!username || !password) {
-			return res
-				.status(400)
-				.json({ error: "Username and password are required" });
-		}
-
-		// Find user by username
-		const user = await User.findOne({ username });
-		if (!user) {
-			return res.status(400).json({ error: "Invalid username or password" });
-		}
-
-		// Compare the provided password with the hashed password in the database
-		const isMatch = await bcrypt.compare(password, user.password);
-		if (!isMatch) {
-			return res.status(400).json({ error: "Invalid username or password" });
-		}
-
-		// User is authenticated, generate a token
-		const token = jwt.sign(
-			{ userId: user._id, username: user.username },
-			process.env.JWT_SECRET,
-			{ expiresIn: "365d" }
+		// ✅ Ensure we fetch the `role` field from MongoDB
+		const user = await User.findOne({ username }).select(
+			"role username password"
 		);
 
-		// Send token back as a response
+		if (!user) {
+			console.warn("⛔ User not found in database:", username);
+			return res.status(400).json({ error: "Invalid username or password" });
+		}
+
+		console.log("👤 User Found:", user);
+
+		const isMatch = await bcrypt.compare(password, user.password);
+		if (!isMatch) {
+			console.warn("⛔ Password mismatch for user:", username);
+			return res.status(400).json({ error: "Invalid username or password" });
+		}
+
+		// 🔍 Log what we retrieved from the database
+		console.log("🔍 User Role Retrieved from DB:", user.role);
+
+		// ✅ Ensure `isAdmin` is properly assigned
+		const isAdmin = user.role === "admin";
+		console.log(`✅ Assigned isAdmin (${username}):`, isAdmin);
+
+		const tokenPayload = {
+			userId: user._id.toString(),
+			username: user.username,
+			role: user.role, // ✅ Explicitly include the role
+			isAdmin: isAdmin, // ✅ Ensure isAdmin is explicitly included
+		};
+
+		console.log("📌 Token Payload Before Signing:", tokenPayload);
+
+		const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {
+			expiresIn: "365d",
+		});
+
+		// ✅ Log final token payload
+		console.log("✅ Generated Token Payload:", tokenPayload);
+		console.log("🔑 Generated Token:", token);
+
 		res.json({ token });
 	} catch (error) {
-		console.error(error);
+		console.error("❌ Error during login:", error);
 		res.status(500).send("Internal Server Error");
 	}
 });
