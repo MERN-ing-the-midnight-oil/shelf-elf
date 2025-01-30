@@ -67,6 +67,10 @@ router.post("/lend", checkAuthentication, async (req, res) => {
 							  ),
 					};
 
+					// ✅ Fetch the game image separately
+					const thumbnailUrl = await fetchGameImage(newGameData.bggId);
+					newGameData.thumbnailUrl = thumbnailUrl || null;
+
 					console.log("✅ Extracted game data from BGG:", newGameData);
 
 					// Save new game to database
@@ -127,60 +131,69 @@ router.get("/search", async (req, res) => {
 		console.log(`🔎 Searching for games with query: "${query}"`);
 
 		// Search for games in the local database
-		const localGames = await Game.find({
+		let localGames = await Game.find({
 			title: { $regex: query, $options: "i" },
 		});
 
 		console.log(`🗂️ Found ${localGames.length} games locally.`);
 
-		// Fetch games from BoardGameGeek API if none found locally
-		if (localGames.length === 0) {
-			console.log("🌍 No local games found. Fetching from BGG API...");
-			const bggApiUrl = `https://boardgamegeek.com/xmlapi/search?search=${query}&exact=0`;
+		// 🔥 NEW: Fetch missing thumbnails
+		const updatedGames = await Promise.all(
+			localGames.map(async (game) => {
+				if (!game.thumbnailUrl) {
+					console.log(`🖼️ No image found for ${game.title}. Fetching...`);
+					const newThumbnail = await fetchGameImage(game.bggId);
+					game.thumbnailUrl = newThumbnail || null;
+					await game.save(); // ✅ Update database
+				}
+				return game;
+			})
+		);
 
-			try {
-				const response = await axios.get(bggApiUrl, {
-					headers: { Accept: "application/xml" },
-				});
-				const xmlData = response.data;
-				const { parseStringPromise } = require("xml2js");
-				const jsonResult = await parseStringPromise(xmlData);
-
-				const bggGames = jsonResult.boardgames.boardgame || [];
-				console.log(`🎲 Found ${bggGames.length} games on BGG.`);
-
-				const formattedGames = await Promise.all(
-					bggGames.slice(0, 10).map(async (bggGame) => {
-						// ✅ Limit results to first 10 games
-						const bggId = parseInt(bggGame.$.objectid, 10);
-						const title = bggGame.name[0]._ || "Unknown Title";
-
-						// Fetch the thumbnail separately
-						const thumbnailUrl = await fetchGameImage(bggId);
-
-						return {
-							bggId,
-							title,
-							bggLink: `https://boardgamegeek.com/boardgame/${bggId}`,
-							thumbnailUrl,
-						};
-					})
-				);
-
-				return res.json(formattedGames);
-			} catch (apiError) {
-				console.error(
-					"🔥 Error fetching search results from BGG API:",
-					apiError
-				);
-				return res
-					.status(500)
-					.json({ message: "Failed to retrieve search results from BGG." });
-			}
+		// If we have games locally, return them
+		if (updatedGames.length > 0) {
+			return res.json(updatedGames);
 		}
 
-		// Return locally found games
-		res.json(localGames);
+		// If no local games, fetch from BGG API
+		console.log("🌍 No local games found. Fetching from BGG API...");
+		const bggApiUrl = `https://boardgamegeek.com/xmlapi/search?search=${query}&exact=0`;
+
+		try {
+			const response = await axios.get(bggApiUrl, {
+				headers: { Accept: "application/xml" },
+			});
+			const xmlData = response.data;
+			const { parseStringPromise } = require("xml2js");
+			const jsonResult = await parseStringPromise(xmlData);
+
+			const bggGames = jsonResult.boardgames.boardgame || [];
+			console.log(`🎲 Found ${bggGames.length} games on BGG.`);
+
+			const formattedGames = await Promise.all(
+				bggGames.map(async (bggGame) => {
+					const bggId = parseInt(bggGame.$.objectid, 10);
+					const title = bggGame.name[0]._ || "Unknown Title";
+
+					// Fetch the thumbnail separately
+					const thumbnailUrl = await fetchGameImage(bggId);
+
+					return {
+						bggId,
+						title,
+						bggLink: `https://boardgamegeek.com/boardgame/${bggId}`,
+						thumbnailUrl,
+					};
+				})
+			);
+
+			return res.json(formattedGames);
+		} catch (apiError) {
+			console.error("🔥 Error fetching search results from BGG API:", apiError);
+			return res
+				.status(500)
+				.json({ message: "Failed to retrieve search results from BGG." });
+		}
 	} catch (error) {
 		console.error("🔥 Error in search route:", error);
 		res.status(500).json({ message: "Error searching for games." });
