@@ -2,15 +2,36 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 
+// Helper function to fetch from GameUPC API
+async function fetchFromGameUpc(barcode) {
+	// Validate barcode to prevent URL manipulation
+	if (!/^[0-9]+$/.test(barcode)) {
+		throw new Error("Invalid barcode format");
+	}
+	
+	const gameUpcUrl = `https://api.gameupc.com/test/upc/${barcode}`;
+	const response = await axios.get(gameUpcUrl);
+	console.log("GameUPC Response:", response.data);
+	
+	if (response.data.status === "ok" && response.data.name) {
+		return response.data.name;
+	}
+	return null;
+}
+
 router.get("/lookup", async (req, res) => {
 	const { barcode } = req.query;
 	if (!barcode) {
 		return res.status(400).json({ error: "Barcode is required" });
 	}
 
+	// Validate barcode format to prevent injection attacks
+	if (!/^[0-9]+$/.test(barcode)) {
+		return res.status(400).json({ error: "Invalid barcode format" });
+	}
+
 	const apiKey = process.env.BARCODE_LOOKUP_API_KEY;
 	const rapidApiUrl = `https://barcodes-lookup.p.rapidapi.com/?query=${barcode}`;
-	const gameUpcUrl = `https://api.gameupc.com/test/upc/${barcode}`;
 	
 	let rapidApiTried = false;
 
@@ -34,11 +55,9 @@ router.get("/lookup", async (req, res) => {
 		// If RapidAPI didn't find a title, fall back to GameUPC
 		console.log("No title from RapidAPI, trying GameUPC fallback...");
 		
-		const gameUpcResponse = await axios.get(gameUpcUrl);
-		console.log("GameUPC Response:", gameUpcResponse.data);
-
-		if (gameUpcResponse.data.status === "ok" && gameUpcResponse.data.name) {
-			return res.json({ title: gameUpcResponse.data.name });
+		const gameUpcTitle = await fetchFromGameUpc(barcode);
+		if (gameUpcTitle) {
+			return res.json({ title: gameUpcTitle });
 		}
 
 		// Neither API found a result
@@ -49,11 +68,9 @@ router.get("/lookup", async (req, res) => {
 		if (rapidApiTried) {
 			try {
 				console.log("RapidAPI error, trying GameUPC fallback...");
-				const gameUpcResponse = await axios.get(gameUpcUrl);
-				console.log("GameUPC Response:", gameUpcResponse.data);
-
-				if (gameUpcResponse.data.status === "ok" && gameUpcResponse.data.name) {
-					return res.json({ title: gameUpcResponse.data.name });
+				const gameUpcTitle = await fetchFromGameUpc(barcode);
+				if (gameUpcTitle) {
+					return res.json({ title: gameUpcTitle });
 				}
 			} catch (fallbackError) {
 				console.error("GameUPC fallback also failed:", fallbackError.message);
