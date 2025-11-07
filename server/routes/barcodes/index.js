@@ -10,9 +10,13 @@ router.get("/lookup", async (req, res) => {
 
 	const apiKey = process.env.BARCODE_LOOKUP_API_KEY;
 	const rapidApiUrl = `https://barcodes-lookup.p.rapidapi.com/?query=${barcode}`;
+	const gameUpcUrl = `https://api.gameupc.com/test/upc/${barcode}`;
+	
+	let rapidApiTried = false;
 
 	try {
 		// Try RapidAPI Barcodes Lookup first
+		rapidApiTried = true;
 		const rapidResponse = await axios.get(rapidApiUrl, {
 			headers: {
 				"x-rapidapi-host": "barcodes-lookup.p.rapidapi.com",
@@ -29,7 +33,6 @@ router.get("/lookup", async (req, res) => {
 
 		// If RapidAPI didn't find a title, fall back to GameUPC
 		console.log("No title from RapidAPI, trying GameUPC fallback...");
-		const gameUpcUrl = `https://api.gameupc.com/test/upc/${barcode}`;
 		
 		const gameUpcResponse = await axios.get(gameUpcUrl);
 		console.log("GameUPC Response:", gameUpcResponse.data);
@@ -42,11 +45,10 @@ router.get("/lookup", async (req, res) => {
 		console.warn("No title found in either API");
 		res.status(404).json({ error: "Product not found" });
 	} catch (error) {
-		// If RapidAPI fails, try GameUPC as fallback
-		if (error.message.includes("barcodes-lookup")) {
+		// If RapidAPI failed, try GameUPC as fallback
+		if (rapidApiTried) {
 			try {
 				console.log("RapidAPI error, trying GameUPC fallback...");
-				const gameUpcUrl = `https://api.gameupc.com/test/upc/${barcode}`;
 				const gameUpcResponse = await axios.get(gameUpcUrl);
 				console.log("GameUPC Response:", gameUpcResponse.data);
 
