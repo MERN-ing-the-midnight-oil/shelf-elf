@@ -45,11 +45,15 @@ Welcome to the documentation for Shelf-Elf, a platform designed for sharing book
 
 ## Barcode Lookup API
 
-This project uses the **Barcodes Lookup API** from **RapidAPI** for barcode scanning functionality when adding games to the lending library.
+This project uses **two barcode lookup APIs** with a fallback mechanism for barcode scanning functionality when adding games to the lending library:
 
-- **API Provider**: RapidAPI
-- **Service**: Barcodes Lookup
-- **Endpoint**: `https://barcodes-lookup.p.rapidapi.com/`
+1. **Primary API**: Barcodes Lookup API from RapidAPI
+2. **Fallback API**: GameUPC API (gameupc.com)
+
+If the primary API doesn't find a result, the system automatically tries GameUPC as a fallback, which specializes in board game barcodes and includes BoardGameGeek (BGG) information.
+
+- **Primary Endpoint**: `https://barcodes-lookup.p.rapidapi.com/`
+- **Fallback Endpoint**: `https://api.gameupc.com/test/upc/`
 
 For detailed information about the barcode API implementation, authentication, and usage, see [BARCODE_API_INFO.md](./BARCODE_API_INFO.md).
 

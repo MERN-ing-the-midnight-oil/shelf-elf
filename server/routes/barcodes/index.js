@@ -9,26 +9,55 @@ router.get("/lookup", async (req, res) => {
 	}
 
 	const apiKey = process.env.BARCODE_LOOKUP_API_KEY;
-	const apiUrl = `https://barcodes-lookup.p.rapidapi.com/?query=${barcode}`;
+	const rapidApiUrl = `https://barcodes-lookup.p.rapidapi.com/?query=${barcode}`;
 
 	try {
-		const response = await axios.get(apiUrl, {
+		// Try RapidAPI Barcodes Lookup first
+		const rapidResponse = await axios.get(rapidApiUrl, {
 			headers: {
 				"x-rapidapi-host": "barcodes-lookup.p.rapidapi.com",
 				"x-rapidapi-key": apiKey,
 			},
 		});
 
-		console.log("API Response:", response.data); // Log the entire response for debugging
+		console.log("RapidAPI Response:", rapidResponse.data);
 
-		const title = response.data.product?.title;
+		const title = rapidResponse.data.product?.title;
 		if (title) {
-			res.json({ title });
-		} else {
-			console.warn("No title found in API response:", response.data);
-			res.status(404).json({ error: "Product not found" });
+			return res.json({ title });
 		}
+
+		// If RapidAPI didn't find a title, fall back to GameUPC
+		console.log("No title from RapidAPI, trying GameUPC fallback...");
+		const gameUpcUrl = `https://api.gameupc.com/test/upc/${barcode}`;
+		
+		const gameUpcResponse = await axios.get(gameUpcUrl);
+		console.log("GameUPC Response:", gameUpcResponse.data);
+
+		if (gameUpcResponse.data.status === "ok" && gameUpcResponse.data.name) {
+			return res.json({ title: gameUpcResponse.data.name });
+		}
+
+		// Neither API found a result
+		console.warn("No title found in either API");
+		res.status(404).json({ error: "Product not found" });
 	} catch (error) {
+		// If RapidAPI fails, try GameUPC as fallback
+		if (error.message.includes("barcodes-lookup")) {
+			try {
+				console.log("RapidAPI error, trying GameUPC fallback...");
+				const gameUpcUrl = `https://api.gameupc.com/test/upc/${barcode}`;
+				const gameUpcResponse = await axios.get(gameUpcUrl);
+				console.log("GameUPC Response:", gameUpcResponse.data);
+
+				if (gameUpcResponse.data.status === "ok" && gameUpcResponse.data.name) {
+					return res.json({ title: gameUpcResponse.data.name });
+				}
+			} catch (fallbackError) {
+				console.error("GameUPC fallback also failed:", fallbackError.message);
+			}
+		}
+
 		console.error("Error fetching barcode info:", error.message);
 		res.status(500).json({ error: "Internal server error" });
 	}
