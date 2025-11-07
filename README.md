@@ -4,6 +4,8 @@ Welcome to the documentation for Shelf-Elf, a platform designed for sharing book
 
 ## Table of Contents
 
+- [External APIs](#external-apis)
+  - [Barcode Lookup API](#barcode-lookup-api)
 - [Front End Components](#front-end-components)
   - [App.tsx](#apptsx)
   - [Index.tsx](#indextsx)
@@ -38,6 +40,22 @@ Welcome to the documentation for Shelf-Elf, a platform designed for sharing book
   - [User Model](#user-model)
   - [Lending Library Game Model](#lending-library-game-model)
   - [Game Request Model](#game-request-model)
+
+# External APIs
+
+## Barcode Lookup API
+
+This project uses **two barcode lookup APIs** with a fallback mechanism for barcode scanning functionality when adding games to the lending library:
+
+1. **Primary API**: Barcodes Lookup API from RapidAPI
+2. **Fallback API**: GameUPC API (gameupc.com)
+
+If the primary API doesn't find a result, the system automatically tries GameUPC as a fallback, which specializes in board game barcodes and includes BoardGameGeek (BGG) information.
+
+- **Primary Endpoint**: `https://barcodes-lookup.p.rapidapi.com/`
+- **Fallback Endpoint**: `https://api.gameupc.com/test/upc/`
+
+For detailed information about the barcode API implementation, authentication, and usage, see [BARCODE_API_INFO.md](./BARCODE_API_INFO.md).
 
 # Front End Components
 
@@ -126,11 +144,32 @@ The routing structure of the Shelf-Elf application is organized into distinct do
 
 ## Table of Contents
 
+- [Barcodes Routes](#barcodes-routes)
 - [Books Routes](#books-routes)
 - [Communities Routes](#communities-routes)
 - [Games Routes](#games-routes)
 - [Messages Routes](#messages-routes)
 - [Users Routes](#users-routes)
+
+## Barcodes Routes
+
+Provides barcode lookup functionality to retrieve product information from scanned barcodes, primarily used for adding games to the lending library.
+
+### Features:
+
+- **Barcode Lookup**: Queries the RapidAPI Barcodes Lookup service to fetch product titles from barcode numbers.
+- **Integration with Game Lending**: Works seamlessly with the game lending form to auto-populate game titles.
+
+### Endpoints:
+
+- `GET /api/barcodes/lookup?barcode={code}`: Looks up a product by barcode number and returns the product title.
+
+### Implementation Details:
+
+- Uses the RapidAPI Barcodes Lookup API
+- Requires `BARCODE_LOOKUP_API_KEY` environment variable
+- Returns JSON with product title or error message
+- See [BARCODE_API_INFO.md](./BARCODE_API_INFO.md) for complete API documentation
 
 ## Books Routes
 
